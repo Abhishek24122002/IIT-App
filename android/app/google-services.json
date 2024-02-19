@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "737994431569",
+    "project_id": "alzheimer-iit-6af6f",
+    "storage_bucket": "alzheimer-iit-6af6f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737994431569:android:5af2d39ee7b135d8a8ec70",
+        "android_client_info": {
+          "package_name": "com.example.alzymer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJN1MfITjT2YY3iZwWMqO2yq9TUmRxPvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

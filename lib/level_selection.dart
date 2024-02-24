@@ -1,4 +1,5 @@
 import 'package:alzymer/scene/scene1.dart';
+import 'package:alzymer/scene/scene2winter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -58,6 +59,12 @@ class LevelButton extends StatelessWidget {
             MaterialPageRoute(builder: (context) => Scene1()),
           );
         }
+        if (level == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Scene2winter()),
+          );
+        }
       },
       child: Stack(
         alignment: Alignment.center,
@@ -87,7 +94,7 @@ class LevelButton extends StatelessWidget {
             ),
           ),
           
-          if (level != 1)
+          if (level > 2)
             Positioned(
               child: Icon(
                 Icons.lock,

@@ -35,12 +35,12 @@ class SpeechBubble extends StatelessWidget {
   }
 }
 
-class Scene1 extends StatefulWidget {
+class Scene2winter extends StatefulWidget {
   @override
-  _Scene1State createState() => _Scene1State();
+  _Scene2winterState createState() => _Scene2winterState();
 }
 
-class _Scene1State extends State<Scene1> {
+class _Scene2winterState extends State<Scene2winter> {
   bool showSpeechBubble = false;
   bool showInputPopup = false;
   bool showStartButton = true;
@@ -93,7 +93,7 @@ class _Scene1State extends State<Scene1> {
               children: [
                 // Background image
                 Image.asset(
-                  'assets/bg1.jpg',
+                  'assets/winter.jpg',
                   fit: BoxFit.cover,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
@@ -101,7 +101,7 @@ class _Scene1State extends State<Scene1> {
                 // First little image
                 Positioned(
                   top: 50.0,
-                  left: -60.0,
+                  left: -130.0,
                   child: Image.asset(
                     'assets/old1.png',
                     width: 500.0,
@@ -129,15 +129,15 @@ class _Scene1State extends State<Scene1> {
                         child: SpeechBubble(
                           text: userAnswer.isNotEmpty
                               ? ' Thank You'
-                              : "Hello Grandpa, what is today's date?",
+                              : "Hey Grandpa, do you know what season it is right now?",
                         ),
                       ),
                     ],
                   ),
                 ),
                 Positioned(
-                  top: 75.0,
-                  left: 250.0,
+                  top: 80.0,
+                  left: 150.0,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:alzymer/ScoreManager.dart'; // Import ScoreManager file
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -22,6 +24,7 @@ class SpeechBubble extends StatelessWidget {
           ),
         ],
       ),
+      constraints: BoxConstraints(maxWidth: 300), // Constrain the width of the SpeechBubble
       child: Wrap(
         children: [
           Text(
@@ -42,11 +45,54 @@ class Scene1 extends StatefulWidget {
 
 class _Scene1State extends State<Scene1> {
   bool showSpeechBubble = false;
-  bool showInputPopup = false;
   bool showStartButton = true;
-  bool showAnswerButton = false;
+  bool showAnswerButton = false; // Set to false initially to hide the "Answer the Question" button
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
+
+  // Function to check if the user's input matches the current date
+  bool isAnswerCorrect(String input) {
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('dd/MM/yyyy').format(now);
+    return input == formattedDate;
+  }
+
+  // Function to handle submitting the user's answer
+  void submitAnswer() {
+    // Check if the answer is correct
+    bool correctAnswer = isAnswerCorrect(userAnswer);
+
+    // Construct response messages
+    String response;
+    if (correctAnswer) {
+      response = "Correct answer!";
+      ScoreManager.updateUserScore(); // Update the score using ScoreManager
+    } else {
+      response = "Wrong answer, Grandpa.";
+    }
+
+    // Construct Grandpa's response with today's date or user's input
+    String grandpaResponse = correctAnswer
+        ? "Today's date is ${DateFormat('dd/MM/yyyy').format(DateTime.now())}"
+        : "Today's date is $userAnswer";
+
+    // Show the responses
+    setState(() {
+      showSpeechBubble = true;
+      userAnswer = grandpaResponse; // Show Grandpa's response with today's date or user's input
+    });
+
+    Future.delayed(Duration(seconds: 2), () {
+      // Delay for a few seconds before showing child's response
+      setState(() {
+        userAnswer = response; // Show the child's response
+        if (!correctAnswer) {
+          // If the answer is wrong, show the "Answer the Question" button again
+          showAnswerButton = true;
+        }
+      });
+    });
+  }
 
   // Input Dialog Function
   void _showInputDialog() {
@@ -57,17 +103,17 @@ class _Scene1State extends State<Scene1> {
           title: Text('Input'),
           content: TextField(
             controller: answerController,
-            decoration: InputDecoration(hintText: 'Enter your answer'),
+            decoration: InputDecoration(hintText: 'Enter day/month/year'),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Close the dialog
                 setState(() {
-                  showInputPopup = false;
                   userAnswer = answerController.text;
                 });
                 // Process the input and update the UI accordingly
+                submitAnswer(); // Check if the answer is correct
               },
               child: Text('Submit'),
             ),
@@ -127,9 +173,7 @@ class _Scene1State extends State<Scene1> {
                       Visibility(
                         visible: showSpeechBubble,
                         child: SpeechBubble(
-                          text: userAnswer.isNotEmpty
-                              ? ' Thank You'
-                              : "Hello Grandpa, what is today's date?",
+                          text: userAnswer,
                         ),
                       ),
                     ],
@@ -138,49 +182,38 @@ class _Scene1State extends State<Scene1> {
                 Positioned(
                   top: 75.0,
                   left: 250.0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row( // Wrap the content in a Row
                     children: [
                       Visibility(
-                        visible: userAnswer.isNotEmpty,
-                        child: SpeechBubble(
-                          text: userAnswer,
+                        visible: showStartButton,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              showSpeechBubble = true;
+                              showStartButton = false;
+                              // Change to true to show the "Answer the Question" button
+                              showAnswerButton = true;
+                              // Child initiates conversation
+                              userAnswer = "Hello Grandpa, what is today's date?";
+                            });
+                          },
+                          child: Text('Start'),
                         ),
                       ),
+                      // Answer the Question Button
+                      if (showAnswerButton)
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              showAnswerButton = false;
+                            });
+                            _showInputDialog(); // Call the function to show the dialog
+                          },
+                          child: Text('Answer the Question'),
+                        ),
                     ],
                   ),
                 ),
-                // Start Button
-                if (showStartButton)
-                  Positioned(
-                    bottom: 20.0,
-                    left: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          showSpeechBubble = true;
-                          showStartButton = false;
-                          showAnswerButton = true;
-                        });
-                      },
-                      child: Text('Start'),
-                    ),
-                  ),
-                // Answer the Question Button
-                if (showAnswerButton)
-                  Positioned(
-                    bottom: 20.0,
-                    left: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          showInputPopup = true;
-                        });
-                        _showInputDialog(); // Call the function to show the dialog
-                      },
-                      child: Text('Answer the Question'),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -189,4 +222,3 @@ class _Scene1State extends State<Scene1> {
     );
   }
 }
-

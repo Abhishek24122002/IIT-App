@@ -1,33 +1,38 @@
-import 'package:alzymer/login_page.dart';
-import 'package:alzymer/scene/scene1.dart';
 import 'package:flutter/material.dart';
-// import other pages as needed
+import 'package:firebase_auth/firebase_auth.dart';
+import 'forgot_password_page.dart';
+import 'home_page.dart';
+import 'login_page.dart';
+import 'level_selection.dart';
+import 'registration_page.dart';
+import 'scene/one.dart';
+import 'scene/two.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: NavigationPage(),
-    );
-  }
-}
-
-class NavigationPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/login',
-      routes: {
-        '/': (context) => Scene1(),
-        // Add routes for other pages here
-        '/login': (context) => LoginPage(), // Dummy login page route
-      },
-    );
+class Navigation {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case '/':
+        return MaterialPageRoute(builder: (_) {
+          return FirebaseAuth.instance.currentUser != null
+              ? HomePage(user: FirebaseAuth.instance.currentUser!)
+              : LoginPage();
+        });
+      case '/login':
+        return MaterialPageRoute(builder: (_) => LoginPage());
+      case '/home':
+        return MaterialPageRoute(builder: (_) => HomePage(user: FirebaseAuth.instance.currentUser!));
+      case '/forget_password':
+        return MaterialPageRoute(builder: (_) => ForgotPasswordPage());
+      case '/level_selection':
+        return MaterialPageRoute(builder: (_) => LevelSelectionScreen(userScore: 0)); // Change userScore as needed
+      case '/registration':
+        return MaterialPageRoute(builder: (_) => RegistrationPage());
+      case '/one':
+        return MaterialPageRoute(builder: (_) => one());
+      case '/two':
+        return MaterialPageRoute(builder: (_) => two());
+      default:
+        return MaterialPageRoute(builder: (_) => LoginPage());
+    }
   }
 }

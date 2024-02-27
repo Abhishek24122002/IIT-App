@@ -1,24 +1,14 @@
-import 'package:alzymer/scene/scene1.dart';
-import 'package:alzymer/scene/scene2winter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LevelSelectionScreen(),
-    );
-  }
-}
+import 'scene/one.dart';
+import 'scene/two.dart';
 
 class LevelSelectionScreen extends StatelessWidget {
   final int totalLevels = 20;
   final int levelsPerRow = 4;
+  final int userScore;
+
+  LevelSelectionScreen({required this.userScore});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +25,8 @@ class LevelSelectionScreen extends StatelessWidget {
           ),
           itemCount: totalLevels,
           itemBuilder: (context, index) {
-            return LevelButton(index + 1, index < totalLevels - 1);
+            bool isUnlocked = index <= userScore;
+            return LevelButton(index + 1, isUnlocked);
           },
         ),
       ),
@@ -45,25 +36,30 @@ class LevelSelectionScreen extends StatelessWidget {
 
 class LevelButton extends StatelessWidget {
   final int level;
-  final bool hasNextLevel;
+  final bool isUnlocked;
 
-  LevelButton(this.level, this.hasNextLevel);
+  LevelButton(this.level, this.isUnlocked);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        if (level == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Scene1()),
-          );
-        }
-        if (level == 2) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Scene2winter()),
-          );
+        if (isUnlocked) {
+          // Navigate to different scenes based on the selected level
+          // Example: Level 1 goes to 'one()' and Level 2 goes to 'two()'
+          // You can customize this based on your scene structure
+          // Add more conditions for other levels
+          if (level == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => one()),
+            );
+          } else if (level == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => two()),
+            );
+          }
         }
       },
       child: Stack(
@@ -74,7 +70,7 @@ class LevelButton extends StatelessWidget {
             height: 70.0,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.blue,
+              color: isUnlocked ? Colors.blue : Colors.grey,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black26,
@@ -93,8 +89,7 @@ class LevelButton extends StatelessWidget {
               ),
             ),
           ),
-          
-          if (level > 2)
+          if (!isUnlocked)
             Positioned(
               child: Icon(
                 Icons.lock,
@@ -102,8 +97,10 @@ class LevelButton extends StatelessWidget {
                 size: 30.0,
               ),
             ),
+            
         ],
       ),
     );
   }
 }
+

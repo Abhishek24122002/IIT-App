@@ -1,3 +1,4 @@
+// ScoreManager.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -7,7 +8,7 @@ class ScoreManager {
     if (user != null) {
       final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
       final userData = await userDoc.get();
-      
+
       // Check if the document exists
       if (userData.exists) {
         // Check if the 'score' field exists

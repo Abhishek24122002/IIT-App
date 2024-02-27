@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
-import 'package:alzymer/ScoreManager.dart'; // Import ScoreManager file
+import 'package:intl/intl.dart';
+import 'package:alzymer/ScoreManager.dart';
+
+import 'two.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
 
   SpeechBubble({required this.text});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,9 @@ class SpeechBubble extends StatelessWidget {
           ),
         ],
       ),
-      constraints: BoxConstraints(maxWidth: 300), // Constrain the width of the SpeechBubble
+      constraints: BoxConstraints(
+        maxWidth: 300,
+      ),
       child: Wrap(
         children: [
           Text(
@@ -38,63 +43,63 @@ class SpeechBubble extends StatelessWidget {
   }
 }
 
-class Scene1 extends StatefulWidget {
+class one extends StatefulWidget {
   @override
-  _Scene1State createState() => _Scene1State();
+  _oneState createState() => _oneState();
 }
 
-class _Scene1State extends State<Scene1> {
-  bool showSpeechBubble = false;
+class _oneState extends State<one> {
   bool showStartButton = true;
-  bool showAnswerButton = false; // Set to false initially to hide the "Answer the Question" button
+  bool showAnswerButton = false;
+  bool showSpeechBubble = false;
+  bool showSpeechBubble2 = false;
+  bool nextLevelButton = false;
+  int level1Attempts = 0;
+  
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
 
-  // Function to check if the user's input matches the current date
+  // List of level classes
+  List<Widget> levels = [one(), two()]; // Add more levels as needed
+  int currentLevelIndex = 0;
+
   bool isAnswerCorrect(String input) {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('dd/MM/yyyy').format(now);
     return input == formattedDate;
   }
 
-  // Function to handle submitting the user's answer
   void submitAnswer() {
-    // Check if the answer is correct
+    level1Attempts++;
     bool correctAnswer = isAnswerCorrect(userAnswer);
 
-    // Construct response messages
-    String response;
     if (correctAnswer) {
-      response = "Correct answer!";
-      ScoreManager.updateUserScore(); // Update the score using ScoreManager
-    } else {
-      response = "Wrong answer, Grandpa.";
+      setState(() {
+        showAnswerButton = false;
+        nextLevelButton = true;
+      });
+      ScoreManager.updateUserScore();
     }
 
-    // Construct Grandpa's response with today's date or user's input
     String grandpaResponse = correctAnswer
         ? "Today's date is ${DateFormat('dd/MM/yyyy').format(DateTime.now())}"
         : "Today's date is $userAnswer";
 
-    // Show the responses
     setState(() {
       showSpeechBubble = true;
-      userAnswer = grandpaResponse; // Show Grandpa's response with today's date or user's input
+      userAnswer = grandpaResponse;
     });
 
     Future.delayed(Duration(seconds: 2), () {
-      // Delay for a few seconds before showing child's response
       setState(() {
-        userAnswer = response; // Show the child's response
+        
         if (!correctAnswer) {
-          // If the answer is wrong, show the "Answer the Question" button again
           showAnswerButton = true;
         }
       });
     });
   }
 
-  // Input Dialog Function
   void _showInputDialog() {
     showDialog(
       context: context,
@@ -108,12 +113,11 @@ class _Scene1State extends State<Scene1> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
                 setState(() {
                   userAnswer = answerController.text;
                 });
-                // Process the input and update the UI accordingly
-                submitAnswer(); // Check if the answer is correct
+                submitAnswer();
               },
               child: Text('Submit'),
             ),
@@ -123,38 +127,43 @@ class _Scene1State extends State<Scene1> {
     );
   }
 
+  void navigateToNextLevel() {
+    if (currentLevelIndex < levels.length - 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Close the keyboard when tapping outside the TextField
         FocusScope.of(context).requestFocus(new FocusNode());
       },
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          resizeToAvoidBottomInset: true, // Set to true to resize the body when the keyboard appears
+          resizeToAvoidBottomInset: true,
           body: SingleChildScrollView(
             child: Stack(
               children: [
-                // Background image
                 Image.asset(
                   'assets/bg1.jpg',
                   fit: BoxFit.cover,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                 ),
-                // First little image
                 Positioned(
                   top: 50.0,
-                  left: -60.0,
+                  left: -130.0,
                   child: Image.asset(
                     'assets/old1.png',
                     width: 500.0,
                     height: 500.0,
                   ),
                 ),
-                // Second little image and SpeechBubble
                 Positioned(
                   bottom: 20.0,
                   right: 20.0,
@@ -171,7 +180,7 @@ class _Scene1State extends State<Scene1> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Visibility(
-                        visible: showSpeechBubble,
+                        visible: showSpeechBubble2,
                         child: SpeechBubble(
                           text: userAnswer,
                         ),
@@ -180,9 +189,41 @@ class _Scene1State extends State<Scene1> {
                   ),
                 ),
                 Positioned(
-                  top: 75.0,
-                  left: 250.0,
-                  child: Row( // Wrap the content in a Row
+                  top: 150.0,
+                  right: 200,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                        visible: showSpeechBubble,
+                        child: SpeechBubble(
+                          text: userAnswer.isNotEmpty
+                              ? ' Thank You'
+                              : "Hey Grandpa, do you know what season it is right now?",
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 80.0,
+                  left: 150.0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                        visible: userAnswer.isNotEmpty,
+                        child: SpeechBubble(
+                          text: userAnswer,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  bottom: 20.0,
+                  left: 30.0,
+                  child: Row(
                     children: [
                       Visibility(
                         visible: showStartButton,
@@ -191,29 +232,35 @@ class _Scene1State extends State<Scene1> {
                             setState(() {
                               showSpeechBubble = true;
                               showStartButton = false;
-                              // Change to true to show the "Answer the Question" button
                               showAnswerButton = true;
-                              // Child initiates conversation
-                              userAnswer = "Hello Grandpa, what is today's date?";
+                              // userAnswer =
+                              //     "Hello Grandpa, what is today's date?";
                             });
                           },
                           child: Text('Start'),
                         ),
                       ),
-                      // Answer the Question Button
                       if (showAnswerButton)
                         ElevatedButton(
                           onPressed: () {
-                            setState(() {
-                              showAnswerButton = false;
-                            });
-                            _showInputDialog(); // Call the function to show the dialog
+                            _showInputDialog();
                           },
                           child: Text('Answer the Question'),
                         ),
                     ],
                   ),
                 ),
+                if (nextLevelButton)
+                  Positioned(
+                    bottom: 20.0,
+                    right: 30.0,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        navigateToNextLevel();
+                      },
+                      child: Text('Next Level'),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -222,3 +269,4 @@ class _Scene1State extends State<Scene1> {
     );
   }
 }
+

@@ -35,12 +35,12 @@ class SpeechBubble extends StatelessWidget {
   }
 }
 
-class Scene2winter extends StatefulWidget {
+class two extends StatefulWidget {
   @override
-  _Scene2winterState createState() => _Scene2winterState();
+  _twoState createState() => _twoState();
 }
 
-class _Scene2winterState extends State<Scene2winter> {
+class _twoState extends State<two> {
   bool showSpeechBubble = false;
   bool showInputPopup = false;
   bool showStartButton = true;

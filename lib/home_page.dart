@@ -41,75 +41,89 @@ class HomePage extends StatelessWidget {
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           String photoURL = userData['photoURL'] ?? '';
           int userScore = userData['score'] ?? 0;
+          int level1Attempts = userData['level1Attempts'] ?? 0;
 
-          return Stack(
-            children: [
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(width: 2, color: Colors.blue),
-                      ),
-                      child: CircleAvatar(
-                        radius: 70,
-                        backgroundColor: Colors.transparent,
-                        backgroundImage: photoURL.isNotEmpty
-                            ? NetworkImage(photoURL)
-                            : AssetImage('assets/old_male_icon.jpg')
-                                as ImageProvider,
-                      ),
+          return SingleChildScrollView(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(width: 2, color: Colors.blue),
                     ),
-                    SizedBox(height: 20),
-                    Text(
-                      'Welcome, ${userData['name'] ?? 'User'}',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    child: CircleAvatar(
+                      radius: 70,
+                      backgroundColor: Colors.transparent,
+                      backgroundImage: photoURL.isNotEmpty
+                          ? NetworkImage(photoURL)
+                          : AssetImage('assets/old_male_icon.jpg')
+                              as ImageProvider,
                     ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                LevelSelectionScreen(userScore: userScore),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        "Let's Play",
-                        style: TextStyle(fontSize: 18),
-                      ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Welcome, ${userData['name'] ?? 'User'}',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              LevelSelectionScreen(userScore: userScore),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Let's Play",
+                      style: TextStyle(fontSize: 18),
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Attempts',
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Column(
+                    children: [
+                      // Dynamically create levels and attempts
+                      for (int level = 1; level <= userScore; level++)
+                        Row(
+                          children: [
+                            SizedBox(width: 20),
+                            Text(
+                              'Level $level: ',
+                              style: TextStyle(
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              '${userData['level${level}Attempts'] ?? 0}',
+                              style: TextStyle(
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
+                                color: (userData['level${level}Attempts'] ?? 0) <= 3
+                                    ? Colors.amber
+                                    : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ],
               ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: Row(
-                  children: [
-                    Text(
-                      '$userScore',
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amber,
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Image.asset(
-                      'assets/trophy.png',
-                      width: 40,
-                      height: 40,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           );
         },
       ),

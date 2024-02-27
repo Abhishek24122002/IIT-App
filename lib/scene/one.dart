@@ -3,12 +3,14 @@ import 'package:intl/intl.dart';
 import 'package:alzymer/ScoreManager.dart';
 
 import 'two.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
 
   SpeechBubble({required this.text});
-  
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +57,8 @@ class _oneState extends State<one> {
   bool showSpeechBubble2 = false;
   bool nextLevelButton = false;
   int level1Attempts = 0;
-  
+  bool showHintButton = false;
+
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
 
@@ -63,10 +66,47 @@ class _oneState extends State<one> {
   List<Widget> levels = [one(), two()]; // Add more levels as needed
   int currentLevelIndex = 0;
 
+  set hint(String hint) {}
+
   bool isAnswerCorrect(String input) {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('dd/MM/yyyy').format(now);
     return input == formattedDate;
+  }
+
+  // Initialize Firebase
+  @override
+  void initState() {
+    super.initState();
+    Firebase.initializeApp();
+  }
+
+  // Function to get the current user's UID
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  // Function to update data in Firebase
+  void updateFirebaseData() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        DocumentReference documentReference =
+            firestore.collection('users').doc(userUid);
+
+        await documentReference.update({
+          'level1Attempts': level1Attempts,
+        });
+
+        
+      } 
+    } catch (e) {
+      print('Error updating data: $e');
+    }
   }
 
   void submitAnswer() {
@@ -78,6 +118,10 @@ class _oneState extends State<one> {
         showAnswerButton = false;
         nextLevelButton = true;
       });
+
+      // Update Firebase data
+      updateFirebaseData();
+
       ScoreManager.updateUserScore();
     }
 
@@ -92,7 +136,6 @@ class _oneState extends State<one> {
 
     Future.delayed(Duration(seconds: 2), () {
       setState(() {
-        
         if (!correctAnswer) {
           showAnswerButton = true;
         }
@@ -138,6 +181,30 @@ class _oneState extends State<one> {
 
   @override
   Widget build(BuildContext context) {
+    String $hint = 'show Hint';
+   void showHint() {
+  String formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Hint'),
+        content: Text('The current date is $formattedDate'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(new FocusNode());
@@ -199,7 +266,7 @@ class _oneState extends State<one> {
                         child: SpeechBubble(
                           text: userAnswer.isNotEmpty
                               ? ' Thank You'
-                              : "Hey Grandpa, do you know what season it is right now?",
+                              : "Hello Grandpa!! what is Today's Date?",
                         ),
                       ),
                     ],
@@ -245,7 +312,8 @@ class _oneState extends State<one> {
                           onPressed: () {
                             _showInputDialog();
                           },
-                          child: Text('Answer the Question'),
+                          child: Text('Answer the Question '),
+                          // child: Text('$level1Attempts'),
                         ),
                     ],
                   ),
@@ -261,6 +329,16 @@ class _oneState extends State<one> {
                       child: Text('Next Level'),
                     ),
                   ),
+                if (level1Attempts >= 2)
+                  Positioned(
+                      bottom: 20.0,
+                      right: 60.0,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          showHint();
+                        },
+                        child: Text('Show Hint'),
+                      )),
               ],
             ),
           ),
@@ -269,4 +347,3 @@ class _oneState extends State<one> {
     );
   }
 }
-

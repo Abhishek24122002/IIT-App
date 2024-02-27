@@ -57,7 +57,7 @@ class _oneState extends State<one> {
   bool showSpeechBubble2 = false;
   bool nextLevelButton = false;
   int level1Attempts = 0;
-  bool showHintButton = false;
+  bool showHintButton = true;
 
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
@@ -117,6 +117,7 @@ class _oneState extends State<one> {
       setState(() {
         showAnswerButton = false;
         nextLevelButton = true;
+        showHintButton = false;
       });
 
       // Update Firebase data
@@ -329,10 +330,12 @@ class _oneState extends State<one> {
                       child: Text('Next Level'),
                     ),
                   ),
-                if (level1Attempts >= 2)
+                
+                
+                if (level1Attempts >= 2 && showHintButton)
                   Positioned(
                       bottom: 20.0,
-                      right: 60.0,
+                      right: 30.0,
                       child: ElevatedButton(
                         onPressed: () {
                           showHint();

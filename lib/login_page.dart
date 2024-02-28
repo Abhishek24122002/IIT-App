@@ -18,9 +18,15 @@ class LoginApp extends StatelessWidget {
   }
 }
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isObscure = true;
 
   @override
   Widget build(BuildContext context) {
@@ -82,11 +88,23 @@ class LoginPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: TextField(
                         controller: passwordController,
-                        obscureText: true,
+                        obscureText: _isObscure,
                         decoration: InputDecoration(
                           hintText: 'Password',
                           hintStyle: TextStyle(color: Colors.white54),
                           border: InputBorder.none,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isObscure
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isObscure = !_isObscure;
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -99,17 +117,28 @@ class LoginPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () async {
                       try {
-                        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                        UserCredential userCredential =
+                            await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
                           email: emailController.text.trim(),
                           password: passwordController.text.trim(),
                         );
 
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => HomePage(user: userCredential.user)),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  HomePage(user: userCredential.user)),
                         );
                       } catch (e) {
                         print('Login Error: $e');
+                        // Show a snackbar for incorrect credentials
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Incorrect credentials. Please try again.'),
+                          ),
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -122,7 +151,8 @@ class LoginPage extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ForgotPasswordPage()),
+                      MaterialPageRoute(
+                          builder: (context) => ForgotPasswordPage()),
                     );
                   },
                   child: Text(
@@ -137,7 +167,8 @@ class LoginPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegistrationPage()),
+                        MaterialPageRoute(
+                            builder: (context) => RegistrationPage()),
                       );
                     },
                     child: Text('Create New Account'),

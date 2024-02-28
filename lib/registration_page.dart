@@ -17,6 +17,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController passwordController = TextEditingController();
   File? _image;
   String? _imageURL;
+  String? _selectedGender;
+  bool _obscurePassword = true;
 
   Future<void> _getImage() async {
     final pickedFile =
@@ -87,10 +89,50 @@ class _RegistrationPageState extends State<RegistrationPage> {
               SizedBox(height: 20),
               TextField(
                 controller: passwordController,
-                obscureText: true,
+                obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   hintText: 'Password',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Text(
+                    'Gender: ',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(width: 10),
+                  DropdownButton<String>(
+                    value: _selectedGender,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedGender = newValue;
+                      });
+                    },
+                    items: <String>['Male', 'Female']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
               SizedBox(height: 20),
               ElevatedButton(
@@ -113,7 +155,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         .set({
                       'name': nameController.text.trim(),
                       'email': emailController.text.trim(),
-                      'photoURL': _imageURL, // Store Firebase Storage URL in Firestore
+                      'photoURL': _imageURL,
+                      'gender': _selectedGender,
                     });
 
                     Navigator.pushReplacement(

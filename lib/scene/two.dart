@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import '../ScoreManager.dart';
+
 class SpeechBubble extends StatelessWidget {
   final String text;
 
@@ -151,7 +153,7 @@ class _TwoState extends State<Two> {
       });
 
       updateFirebaseData();
-      // ScoreManager.updateUserScore(); // You need to define this function
+      ScoreManager.updateUserScore(); // You need to define this function
     } else {
       showTryAgainDialog();
     }

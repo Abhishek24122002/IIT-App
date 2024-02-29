@@ -39,10 +39,14 @@ class HomePage extends StatelessWidget {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
+
+          var userData = snapshot.data?.data() as Map<String, dynamic>?;
+          if (userData == null) {
+            return Center(child: Text('No user data available'));
+          }
+
           String photoURL = userData['photoURL'] ?? '';
           int userScore = userData['score'] ?? 0;
-          int level1Attempts = userData['level1Attempts'] ?? 0;
 
           return Stack(
             children: [

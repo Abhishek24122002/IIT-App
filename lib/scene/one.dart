@@ -1,3 +1,4 @@
+import 'package:alzymer/ScoreManager.dart';
 import 'package:alzymer/scene/two.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -69,6 +70,7 @@ class _oneState extends State<one> {
   bool showHintButton = true;
   String userAnswer = '';
   String oldManAnswer = '';
+  String? gender;
 
   List<Widget> levels = [one(), two()];
   int currentLevelIndex = 0;
@@ -77,6 +79,42 @@ class _oneState extends State<one> {
   void initState() {
     super.initState();
     Firebase.initializeApp();
+    fetchGender();
+  }
+
+  void fetchGender() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+
+    if (user != null) {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot<Map<String, dynamic>> snapshot =
+          await firestore.collection('users').doc(user.uid).get();
+
+      setState(() {
+        gender = snapshot.get('gender');
+      });
+    }
+  }
+
+  String getSpeechBubbleText() {
+    if (gender == 'Male') {
+      return "Hello Grandpa!! what is Today's Date?";
+    } else if (gender == 'Female') {
+      return "Hello granny !! what is Today's Date?";
+    } else {
+      return "Hello !! what is Today's Date?";
+    }
+  }
+
+  String getSpeechBubbleImage() {
+    if (gender == 'Male') {
+      return 'assets/old1.png';
+    } else if (gender == 'Female') {
+      return 'assets/old1-lady.png';
+    } else {
+      return 'assets/old1.png'; // You can set a default image or handle it accordingly
+    }
   }
 
   bool isAnswerCorrect(String input) {
@@ -122,6 +160,7 @@ class _oneState extends State<one> {
       });
 
       updateFirebaseData();
+      ScoreManager.updateUserScore();
     }
 
     String boyResponse =
@@ -203,116 +242,109 @@ class _oneState extends State<one> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).requestFocus(new FocusNode());
-      },
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          resizeToAvoidBottomInset: true,
-          body: SingleChildScrollView(
-            child: Stack(
-              children: [
-                // Background images
-                Image.asset(
-                  'assets/bg1.jpg',
-                  fit: BoxFit.cover,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                ),
-                Positioned(
-                  top: 50.0,
-                  left: -130.0,
-                  child: Image.asset(
-                    'assets/old1.png',
-                    width: 500.0,
-                    height: 500.0,
-                  ),
-                ),
-                Positioned(
-                  bottom: 20.0,
-                  right: 20.0,
-                  child: Image.asset(
-                    'assets/boy1.png',
-                    width: 200.0,
-                    height: 300.0,
-                  ),
-                ),
-
-                // Speech bubbles
-                SpeechBubble(
-                  text: oldManAnswer,
-                  isOldMan: true,
-                ),
-                Visibility(
-                  visible: !showStartButton && userAnswer.isEmpty,
-                  child: SpeechBubble(
-                    text: "Hello Grandpa!! what is Today's Date?",
-                    isOldMan: false,
-                  ),
-                ),
-                Visibility(
-                  visible: !showStartButton && userAnswer.isNotEmpty,
-                  child: SpeechBubble(
-                    text: userAnswer,
-                    isOldMan: false,
-                  ),
-                ),
-
-                // Buttons
-                Positioned(
-                  bottom: 20.0,
-                  left: 30.0,
-                  child: Row(
-                    children: [
-                      Visibility(
-                        visible: showStartButton,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              showStartButton = false;
-                              showAnswerButton = true;
-                            });
-                          },
-                          child: Text('Start'),
-                        ),
-                      ),
-                      if (showAnswerButton)
-                        ElevatedButton(
-                          onPressed: () {
-                            _showInputDialog();
-                          },
-                          child: Text('Answer the Question'),
-                        ),
-                    ],
-                  ),
-                ),
-                if (nextLevelButton)
-                  Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        navigateToNextLevel();
-                      },
-                      child: Text('Next Level'),
-                    ),
-                  ),
-                if (level1Attempts >= 2 && showHintButton)
-                  Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showHint();
-                      },
-                      child: Text('Show Hint'),
-                    ),
-                  ),
-              ],
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            // Background images
+            Image.asset(
+              'assets/bg1.jpg',
+              fit: BoxFit.cover,
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
             ),
-          ),
+            Positioned(
+              top: 50.0,
+              left: -130.0,
+              child: Image.asset(
+                getSpeechBubbleImage(),
+                width: 500.0,
+                height: 500.0,
+              ),
+            ),
+            Positioned(
+              bottom: 20.0,
+              right: 20.0,
+              child: Image.asset(
+                'assets/boy1.png',
+                width: 200.0,
+                height: 300.0,
+              ),
+            ),
+
+            // Speech bubbles
+            SpeechBubble(
+              text: oldManAnswer.isEmpty ? getSpeechBubbleText() : oldManAnswer,
+              isOldMan: gender ==
+                  'male', // Assuming male image is considered 'old man'
+            ),
+            Visibility(
+              visible: !showStartButton && userAnswer.isEmpty,
+              child: SpeechBubble(
+                text: getSpeechBubbleText(),
+                isOldMan: false,
+              ),
+            ),
+            Visibility(
+              visible: !showStartButton && userAnswer.isNotEmpty,
+              child: SpeechBubble(
+                text: userAnswer,
+                isOldMan: false,
+              ),
+            ),
+
+            // Buttons
+            Positioned(
+              bottom: 20.0,
+              left: 30.0,
+              child: Row(
+                children: [
+                  Visibility(
+                    visible: showStartButton,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          showStartButton = false;
+                          showAnswerButton = true;
+                        });
+                      },
+                      child: Text('Start'),
+                    ),
+                  ),
+                  if (showAnswerButton)
+                    ElevatedButton(
+                      onPressed: () {
+                        _showInputDialog();
+                      },
+                      child: Text('Answer the Question'),
+                    ),
+                ],
+              ),
+            ),
+            if (nextLevelButton)
+              Positioned(
+                bottom: 20.0,
+                right: 30.0,
+                child: ElevatedButton(
+                  onPressed: () {
+                    navigateToNextLevel();
+                  },
+                  child: Text('Next Level'),
+                ),
+              ),
+            if (level1Attempts >= 2 && showHintButton)
+              Positioned(
+                bottom: 20.0,
+                right: 30.0,
+                child: ElevatedButton(
+                  onPressed: () {
+                    showHint();
+                  },
+                  child: Text('Show Hint'),
+                ),
+              ),
+          ],
         ),
       ),
     );

@@ -164,7 +164,7 @@ class _oneState extends State<one> {
     }
 
     String boyResponse =
-        correctAnswer ? "Correct answer!" : "Wrong answer. Try again.";
+    correctAnswer ? "Correct answer!" : "Wrong answer. Try again.";
     oldManAnswer = correctAnswer ? "Today's date is $userAnswer" : "";
 
     setState(() {

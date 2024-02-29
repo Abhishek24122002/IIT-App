@@ -28,9 +28,9 @@ class Navigation {
       case '/registration':
         return MaterialPageRoute(builder: (_) => RegistrationPage());
       case '/one':
-        return MaterialPageRoute(builder: (_) => one());
+        return MaterialPageRoute(builder: (_) => One());
       case '/two':
-        return MaterialPageRoute(builder: (_) => two());
+        return MaterialPageRoute(builder: (_) => Two());
       default:
         return MaterialPageRoute(builder: (_) => LoginPage());
     }

@@ -75,6 +75,8 @@ flutter:
     - assets/old1.png
     - assets/logo.png
     - assets/winter.jpg
+    - assets/summer.jpg
+    - assets/rainy.jpg
     - assets/trophy.png
     - assets/default_image.jpg
     - assets/old_male_icon.jpg

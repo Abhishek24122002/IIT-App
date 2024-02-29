@@ -45,12 +45,12 @@ class SpeechBubble extends StatelessWidget {
   }
 }
 
-class one extends StatefulWidget {
+class One extends StatefulWidget {
   @override
-  _oneState createState() => _oneState();
+  _OneState createState() => _OneState();
 }
 
-class _oneState extends State<one> {
+class _OneState extends State<One> {
   bool showStartButton = true;
   bool showAnswerButton = false;
   bool showSpeechBubble = false;
@@ -63,7 +63,7 @@ class _oneState extends State<one> {
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
 
-  List<Widget> levels = [one(), two()];
+  List<Widget> levels = [One(), Two()];
   int currentLevelIndex = 0;
 
   bool isAnswerCorrect(String input) {

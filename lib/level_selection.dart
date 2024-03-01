@@ -52,12 +52,12 @@ class LevelButton extends StatelessWidget {
           if (level == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => one()),
+              MaterialPageRoute(builder: (context) => One()),
             );
           } else if (level == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => two()),
+              MaterialPageRoute(builder: (context) => Two()),
             );
           }
         }

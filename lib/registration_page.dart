@@ -19,6 +19,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String? _imageURL;
   String? _selectedGender;
   bool _obscurePassword = true;
+  bool _passwordValidated = true; // Track password validation
 
   Future<void> _getImage() async {
     final pickedFile =
@@ -49,6 +50,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
       print('Upload Image Error: $e');
       return '';
     }
+  }
+
+  // Password validation function
+  bool _isPasswordValid(String password) {
+    String pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$])[A-Za-z\d@$]{8,15}$';
+    RegExp regex = RegExp(pattern);
+    return regex.hasMatch(password);
   }
 
   @override
@@ -107,6 +115,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 ),
               ),
               SizedBox(height: 20),
+              // Red-bordered box for error message
+              if (!_passwordValidated)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red), // Red border
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  padding: EdgeInsets.all(8.0),
+                  margin: EdgeInsets.only(bottom: 20), // Added margin
+                  child: Text(
+                    'Password must be 8-15 characters long and contain at least 1 uppercase letter, 1 number, and 1 special character (@ or \$).',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
               Row(
                 children: [
                   Text(
@@ -137,12 +159,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
+                  String password = passwordController.text.trim();
+                  // Check password validation
+                  if (!_isPasswordValid(password)) {
+                    setState(() {
+                      _passwordValidated = false;
+                    });
+                    return; // Stop registration process if password is invalid
+                  }
+
                   try {
                     UserCredential userCredential =
                         await FirebaseAuth.instance
                             .createUserWithEmailAndPassword(
                       email: emailController.text.trim(),
-                      password: passwordController.text.trim(),
+                      password: password,
                     );
 
                     String photoURL =

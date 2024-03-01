@@ -1,3 +1,4 @@
+import 'package:alzymer/scene/three.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:alzymer/ScoreManager.dart';
@@ -63,7 +64,7 @@ class _OneState extends State<One> {
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
 
-  List<Widget> levels = [One(), Two()];
+  List<Widget> levels = [One(), Two(),Three()];
   int currentLevelIndex = 0;
 
   bool isAnswerCorrect(String input) {
@@ -77,6 +78,7 @@ class _OneState extends State<One> {
     super.initState();
     Firebase.initializeApp();
     fetchGender();
+    
   }
 
   void fetchGender() async {
@@ -153,7 +155,7 @@ class _OneState extends State<One> {
       });
 
       updateFirebaseData();
-      ScoreManager.updateUserScore();
+      ScoreManager.updateUserScore(1);
     } else {
       showTryAgainDialog();
     }
@@ -311,21 +313,7 @@ class _OneState extends State<One> {
                     height: 300.0,
                   ),
                 ),
-                Positioned(
-                  top: 150.0,
-                  right: 200,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Visibility(
-                        visible: showSpeechBubble2,
-                        child: SpeechBubble(
-                          text: userAnswer,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+
                 Positioned(
                   top: 150.0,
                   right: 200,

@@ -1,3 +1,4 @@
+import 'package:alzymer/scene/three.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'forgot_password_page.dart';
@@ -31,6 +32,8 @@ class Navigation {
         return MaterialPageRoute(builder: (_) => One());
       case '/two':
         return MaterialPageRoute(builder: (_) => Two());
+      case '/three':
+      return MaterialPageRoute(builder: (_) => Three());
       default:
         return MaterialPageRoute(builder: (_) => LoginPage());
     }

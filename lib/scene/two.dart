@@ -1,11 +1,13 @@
 import 'dart:math';
-
+import 'package:alzymer/ScoreManager.dart';
+import 'package:alzymer/scene/one.dart';
+import 'package:alzymer/scene/three.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-import '../ScoreManager.dart';
+
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -62,8 +64,8 @@ class _TwoState extends State<Two> {
   String userAnswer = '';
   String weather = '';
   TextEditingController answerController = TextEditingController();
-  List<Widget> levels = [Two()];
-  int currentLevelIndex = 0;
+  List<Widget> levels = [One(),Two(),Three()];
+  int currentLevelIndex = 1;
   String sceneImage = 'assets/bg1.jpg';
 
   @override
@@ -153,7 +155,7 @@ class _TwoState extends State<Two> {
       });
 
       updateFirebaseData();
-      ScoreManager.updateUserScore(); // You need to define this function
+      ScoreManager.updateUserScore(2); // You need to define this function
     } else {
       showTryAgainDialog();
     }

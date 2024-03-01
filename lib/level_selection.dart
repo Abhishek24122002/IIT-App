@@ -1,3 +1,4 @@
+import 'package:alzymer/scene/three.dart';
 import 'package:flutter/material.dart';
 
 import 'scene/one.dart';
@@ -58,6 +59,11 @@ class LevelButton extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => Two()),
+            );
+          } else if (level == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Three()),
             );
           }
         }

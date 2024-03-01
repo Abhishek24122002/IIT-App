@@ -1,12 +1,12 @@
 import 'package:alzymer/scene/three.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:alzymer/ScoreManager.dart';
 import 'two.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -64,7 +64,7 @@ class _OneState extends State<One> {
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
 
-  List<Widget> levels = [One(), Two(),Three()];
+  List<Widget> levels = [One(), Two(), Three()];
   int currentLevelIndex = 0;
 
   bool isAnswerCorrect(String input) {
@@ -78,7 +78,11 @@ class _OneState extends State<One> {
     super.initState();
     Firebase.initializeApp();
     fetchGender();
-    
+    // Set landscape orientation when entering this page
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
   }
 
   void fetchGender() async {
@@ -207,6 +211,10 @@ class _OneState extends State<One> {
 
   void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
@@ -313,7 +321,6 @@ class _OneState extends State<One> {
                     height: 300.0,
                   ),
                 ),
-
                 Positioned(
                   top: 150.0,
                   right: 200,
@@ -402,5 +409,17 @@ class _OneState extends State<One> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Revert to original orientation when leaving this page
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
   }
 }

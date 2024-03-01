@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-
-
+import 'package:flutter/services.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -64,7 +63,7 @@ class _TwoState extends State<Two> {
   String userAnswer = '';
   String weather = '';
   TextEditingController answerController = TextEditingController();
-  List<Widget> levels = [One(),Two(),Three()];
+  List<Widget> levels = [One(), Two(), Three()];
   int currentLevelIndex = 1;
   String sceneImage = 'assets/bg1.jpg';
 
@@ -74,6 +73,12 @@ class _TwoState extends State<Two> {
     Firebase.initializeApp();
     fetchGender();
     setInitialSceneImage();
+
+    // Set landscape orientation when entering this page
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
   }
 
   void fetchGender() async {
@@ -180,6 +185,10 @@ class _TwoState extends State<Two> {
 
   void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
@@ -255,7 +264,8 @@ class _TwoState extends State<Two> {
           title: Text('Input'),
           content: TextField(
             controller: answerController,
-            decoration: InputDecoration(hintText: 'Enter season (winter/rainy/summer)'),
+            decoration:
+                InputDecoration(hintText: 'Enter season (winter/rainy/summer)'),
           ),
           actions: [
             TextButton(
@@ -443,5 +453,17 @@ class _TwoState extends State<Two> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Revert to original orientation when leaving this page
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
   }
 }

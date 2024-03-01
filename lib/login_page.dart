@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _isObscure = true;
+  String _errorMessage = '';
 
   @override
   Widget build(BuildContext context) {
@@ -77,38 +78,51 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 SizedBox(height: 15.0),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(34, 255, 255, 255),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: TextField(
-                        controller: passwordController,
-                        obscureText: _isObscure,
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          hintStyle: TextStyle(color: Colors.white54),
-                          border: InputBorder.none,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isObscure
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(34, 255, 255, 255),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: TextField(
+                            controller: passwordController,
+                            obscureText: _isObscure,
+                            decoration: InputDecoration(
+                              hintText: 'Password',
+                              hintStyle: TextStyle(color: Colors.white54),
+                              border: InputBorder.none,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscure
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscure = !_isObscure;
+                                  });
+                                },
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _isObscure = !_isObscure;
-                              });
-                            },
                           ),
                         ),
                       ),
                     ),
-                  ),
+                    if (_errorMessage.isNotEmpty)
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _errorMessage,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                  ],
                 ),
                 SizedBox(height: 10.0),
                 Container(
@@ -132,13 +146,10 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       } catch (e) {
                         print('Login Error: $e');
-                        // Show a snackbar for incorrect credentials
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                'Incorrect credentials. Please try again.'),
-                          ),
-                        );
+                        setState(() {
+                          _errorMessage =
+                              'Incorrect credentials. Please try again.';
+                        });
                       }
                     },
                     style: ElevatedButton.styleFrom(

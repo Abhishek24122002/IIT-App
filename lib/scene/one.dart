@@ -182,11 +182,12 @@ class _OneState extends State<One> {
     });
   }
 
-  void _showInputDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
+void _showInputDialog() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return SingleChildScrollView(
+        child: AlertDialog(
           title: Text('Input'),
           content: TextField(
             controller: answerController,
@@ -204,10 +205,13 @@ class _OneState extends State<One> {
               child: Text('Submit'),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
+
 
   void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {

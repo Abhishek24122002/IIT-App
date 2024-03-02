@@ -257,15 +257,15 @@ class _TwoState extends State<Two> {
   }
 
   void _showInputDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return SingleChildScrollView(
+        child: AlertDialog(
           title: Text('Input'),
           content: TextField(
             controller: answerController,
-            decoration:
-                InputDecoration(hintText: 'Enter season (winter/rainy/summer)'),
+            decoration: InputDecoration(hintText: 'Enter season (winter/rainy/summer)'),
           ),
           actions: [
             TextButton(
@@ -279,10 +279,12 @@ class _TwoState extends State<Two> {
               child: Text('Submit'),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
 
   void setInitialSceneImage() {
     setRandomWeatherAndBackground();

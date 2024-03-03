@@ -18,6 +18,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   File? _image;
   String? _imageURL;
   String? _selectedGender;
+  DateTime? _selectedDate; // New field for Date of Birth
   bool _obscurePassword = true;
   bool _passwordValidated = true; // Track password validation
 
@@ -88,6 +89,33 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 ),
               ),
               SizedBox(height: 20),
+              // New Date of Birth field
+              TextField(
+                readOnly: true,
+                controller: TextEditingController(
+                  text: _selectedDate != null
+                      ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                      : '',
+                ),
+                onTap: () async {
+                  final DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (pickedDate != null && pickedDate != _selectedDate) {
+                    setState(() {
+                      _selectedDate = pickedDate;
+                    });
+                  }
+                },
+                decoration: InputDecoration(
+                  hintText: 'Date of Birth',
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+              ),
+              SizedBox(height: 20),
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
@@ -143,6 +171,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         _selectedGender = newValue;
                       });
                     },
+                    hint: Text('Select'), // Added hint to show "Select" as default label
                     items: <String>['Male', 'Female']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
@@ -188,6 +217,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       'email': emailController.text.trim(),
                       'photoURL': _imageURL,
                       'gender': _selectedGender,
+                      'dob': _selectedDate != null
+                          ? Timestamp.fromDate(_selectedDate!)
+                          : null, // Store DOB in Firestore as Timestamp
                     });
 
                     Navigator.pushReplacement(

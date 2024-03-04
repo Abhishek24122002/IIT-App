@@ -1,21 +1,21 @@
-import 'package:alzymer/scene/three.dart';
 import 'package:flutter/material.dart';
 
 import 'scene/one.dart';
+import 'scene/three.dart';
 import 'scene/two.dart';
 
 class LevelSelectionScreen extends StatelessWidget {
-  final int totalLevels = 20;
-  final int levelsPerRow = 4;
-  final int userScore;
+  final int totalLevels = 5; // Assuming each module has 5 levels
+  final int levelsPerRow = 2;
+  final int module;
 
-  LevelSelectionScreen({required this.userScore});
+  LevelSelectionScreen({required this.module, required int userScore});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Level Selection'),
+        title: Text('Level Selection - Module $module'),
       ),
       body: Center(
         child: GridView.builder(
@@ -26,8 +26,9 @@ class LevelSelectionScreen extends StatelessWidget {
           ),
           itemCount: totalLevels,
           itemBuilder: (context, index) {
-            bool isUnlocked = index <= userScore;
-            return LevelButton(index + 1, isUnlocked);
+            int level = index + 1;
+            bool isUnlocked = true; //logic missing
+            return LevelButton(module, level, isUnlocked);
           },
         ),
       ),
@@ -36,10 +37,11 @@ class LevelSelectionScreen extends StatelessWidget {
 }
 
 class LevelButton extends StatelessWidget {
+  final int module;
   final int level;
   final bool isUnlocked;
 
-  LevelButton(this.level, this.isUnlocked);
+  LevelButton(this.module, this.level, this.isUnlocked);
 
   @override
   Widget build(BuildContext context) {

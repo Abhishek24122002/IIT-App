@@ -5,6 +5,7 @@ import 'forgot_password_page.dart';
 import 'home_page.dart';
 import 'login_page.dart';
 import 'level_selection.dart';
+import 'module_page.dart';
 import 'registration_page.dart';
 import 'scene/one.dart';
 import 'scene/two.dart';
@@ -25,7 +26,9 @@ class Navigation {
       case '/forget_password':
         return MaterialPageRoute(builder: (_) => ForgotPasswordPage());
       case '/level_selection':
-        return MaterialPageRoute(builder: (_) => LevelSelectionScreen(userScore: 0)); // Change userScore as needed
+        return MaterialPageRoute(builder: (_) => LevelSelectionScreen(userScore: 0, module: 0,)); // module working on logic
+      case '/module_selection':
+  return MaterialPageRoute(builder: (_) => ModuleSelectionScreen());
       case '/registration':
         return MaterialPageRoute(builder: (_) => RegistrationPage());
       case '/one':

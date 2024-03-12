@@ -18,7 +18,7 @@ class M2LevelSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Level Selection - Module $module'),
+        title: Text('Task Selection - Module $module'),
       ),
       body: Center(
         child: GridView.builder(

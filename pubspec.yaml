@@ -72,12 +72,16 @@ flutter:
   assets:
     - assets/bg1.jpg
     - assets/boy1.png
+    - assets/boy2.png
     - assets/old1.png
     - assets/logo.png
     - assets/winter.jpg
     - assets/summer.jpg
     - assets/rainy.jpg
     - assets/trophy.png
+    - assets/clock.png
+    - assets/clock10.png
+    - assets/table.png
     - assets/default_image.jpg
     - assets/old_male_icon.jpg
     - assets/old1-lady.png

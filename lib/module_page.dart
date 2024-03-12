@@ -1,7 +1,10 @@
-// module_selection.dart
 import 'package:flutter/material.dart';
-
 import 'level_selection.dart';
+import 'scene/M1/m1LevelSelection.dart';
+import 'scene/M2/m2LevelSelection.dart'; 
+import 'scene/M3/m3LevelSelection.dart'; 
+import 'scene/M4/m4LevelSelection.dart'; 
+import 'scene/M5/m5LevelSelection.dart'; 
 
 class ModuleSelectionScreen extends StatelessWidget {
   @override
@@ -34,22 +37,60 @@ class ModuleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     // Custom names for the modules
     List<String> moduleNames = [
-      'Temporal Understanding',
-      'Memory',
-      'Problem-Solving',
-      'Perception',
-      'Module 5',
-      
+      'Module1',
+      'Module2',
+      'Module3',
+      'Module4',
+      'Module5',
     ];
 
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => LevelSelectionScreen(module: module, userScore: 0,),
-          ),
-        );
+        // Navigate to respective level selection screens based on module number
+        if (module == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => M1LevelSelectionScreen(module: module, userScore: 0),
+            ),
+          );
+        } else if (module == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => M2LevelSelectionScreen(module: module, userScore: 0),
+            ),
+          );
+        } else if (module == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => M3LevelSelectionScreen(module: module, userScore: 0),
+            ),
+          );
+        } else if (module == 4) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => M4LevelSelectionScreen(module: module, userScore: 0),
+            ),
+          );
+        } else if (module == 5) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => M5LevelSelectionScreen(module: module, userScore: 0),
+            ),
+          );
+        } else {
+          // For other modules, navigate to LevelSelectionScreen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LevelSelectionScreen(module: module, userScore: 0),
+            ),
+          );
+        }
       },
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),

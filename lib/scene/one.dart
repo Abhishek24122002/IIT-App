@@ -396,7 +396,7 @@ void _showInputDialog() {
                       child: Text('Next Level'),
                     ),
                   ),
-                if (level1Attempts >= 2 && showHintButton)
+                if (level1Attempts >= 1 && showHintButton)
                   Positioned(
                     bottom: 20.0,
                     right: 30.0,

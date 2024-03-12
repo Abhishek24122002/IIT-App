@@ -36,9 +36,9 @@ class ModuleButton extends StatelessWidget {
     List<String> moduleNames = [
       'Temporal Understanding',
       'Memory',
-      'Decision-Making',
       'Problem-Solving',
       'Perception',
+      'Module 5',
       
     ];
 

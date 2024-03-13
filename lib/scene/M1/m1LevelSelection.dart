@@ -8,7 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class M1LevelSelectionScreen extends StatelessWidget {
-  final int totalLevels = 5; // Assuming each module has 5 levels
+  final int totalLevels = 5;
   final int levelsPerRow = 2;
   final int module;
   late Stream<DocumentSnapshot> userDataStream;
@@ -20,6 +20,8 @@ class M1LevelSelectionScreen extends StatelessWidget {
     userDataStream = FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
+        .collection('attempt')
+        .doc('M1')
         .snapshots();
   }
 
@@ -33,12 +35,17 @@ class M1LevelSelectionScreen extends StatelessWidget {
         child: StreamBuilder<DocumentSnapshot>(
           stream: userDataStream,
           builder: (context, snapshot) {
-            if (!snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
             }
-            int M1L1Point = snapshot.data!['M1L1Point'] ?? 0;
-            int M1L1Attempts = (snapshot.data!.data() as Map<String, dynamic>?)?['attempt']?['M1']?['M1L1Attempts'] ?? 0; // Fetching M1L1Attempts
-             print('M1L1Attempts: $M1L1Attempts');
+            if (!snapshot.hasData || !snapshot.data!.exists) {
+              return Text('Document does not exist');
+            }
+            final data = snapshot.data!.data() as Map<String, dynamic>?;
+
+            int M1L1Point = data?['M1L1Point'] ?? 0;
+            int M1L1Attempts = data?['M1L1Attempts'] ?? 0;
+            print('M1L1Attempts: $M1L1Attempts');
 
             return Stack(
               alignment: Alignment.topLeft,
@@ -85,7 +92,7 @@ class M1LevelSelectionScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        'Attempts: $M1L1Attempts', // Displaying M1L1Attempts
+                        'Attempts: $M1L1Attempts',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -192,4 +199,12 @@ class LevelButton extends StatelessWidget {
       ),
     );
   }
+}
+
+
+
+void main() {
+  runApp(MaterialApp(
+    home: M1LevelSelectionScreen(module: 1),
+  ));
 }

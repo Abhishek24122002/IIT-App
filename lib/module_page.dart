@@ -1,12 +1,42 @@
+import 'package:alzymer/scene/M2/m2LevelSelection.dart';
+import 'package:alzymer/scene/M3/m3LevelSelection.dart';
+import 'package:alzymer/scene/M4/m4LevelSelection.dart';
+import 'package:alzymer/scene/M5/m5LevelSelection.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'level_selection.dart';
 import 'scene/M1/m1LevelSelection.dart';
-import 'scene/M2/m2LevelSelection.dart'; 
-import 'scene/M3/m3LevelSelection.dart'; 
-import 'scene/M4/m4LevelSelection.dart'; 
-import 'scene/M5/m5LevelSelection.dart'; 
 
-class ModuleSelectionScreen extends StatelessWidget {
+class ModuleSelectionScreen extends StatefulWidget {
+  @override
+  _ModuleSelectionScreenState createState() => _ModuleSelectionScreenState();
+}
+
+class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
+   late int m1Trophy;
+
+  @override
+  void initState() {
+    super.initState();
+    m1Trophy = 0;
+    fetchTrophy();
+  }
+
+  void fetchTrophy() async {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    User? user = _auth.currentUser;
+    final DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('score')
+        .doc('M1')
+        .get();
+    setState(() {
+      m1Trophy = snapshot.data()!['M1Trophy'];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +49,21 @@ class ModuleSelectionScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
               5, // Number of modules
-              (index) => ModuleButton(index + 1),
+              (index) {
+                if (index == 0) {
+                  // For Module1, display M1Trophy value
+                  return ModuleButton(
+                    module: index + 1,
+                    m1Trophy: m1Trophy,
+                  );
+                } else {
+                  return ModuleButton(
+                    module: index + 1,
+                    // For other modules, set trophy value to 0 or any default value
+                    m1Trophy: 0,
+                  );
+                }
+              },
             ),
           ),
         ),
@@ -30,20 +74,20 @@ class ModuleSelectionScreen extends StatelessWidget {
 
 class ModuleButton extends StatelessWidget {
   final int module;
+  final int m1Trophy;
 
-  ModuleButton(this.module);
+  ModuleButton({required this.module, required this.m1Trophy});
+
+  List<String> moduleNames = [
+    'Module 1',
+    'Module 2',
+    'Module 3',
+    'Module 4',
+    'Module 5',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // Custom names for the modules
-    List<String> moduleNames = [
-      'Module1',
-      'Module2',
-      'Module3',
-      'Module4',
-      'Module5',
-    ];
-
     return InkWell(
       onTap: () {
         // Navigate to respective level selection screens based on module number
@@ -51,7 +95,7 @@ class ModuleButton extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => M1LevelSelectionScreen(module: module,),
+              builder: (context) => M1LevelSelectionScreen(module: module, userScore: 0,),
             ),
           );
         } else if (module == 2) {
@@ -139,10 +183,32 @@ class ModuleButton extends StatelessWidget {
                   ),
                 ),
               ),
+              
+              if (module == 1 && m1Trophy == 1) // Only show trophy for Module1
+                Positioned(
+                  top: 20,
+                  right: 5,
+                  child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/trophy.png',
+                      width: 60,
+                      height: 60,
+                    ),
+                    SizedBox(width: 10),
+                  ],
+                ),
+                ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: ModuleSelectionScreen(),
+  ));
 }

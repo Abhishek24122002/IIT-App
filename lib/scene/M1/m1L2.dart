@@ -68,6 +68,8 @@ class _M1L2State extends State<M1L2> {
  List<Widget> levels = [M1L1(), M1L2(), M1L3(),M1L4(), M1L5()];
   int currentLevelIndex = 1;
   String sceneImage = 'assets/bg1.jpg';
+  int M1L2Attempts = 0;
+  int M1L2Point = 0;
 
   @override
   void initState() {
@@ -108,23 +110,33 @@ class _M1L2State extends State<M1L2> {
     return user?.uid ?? '';
   }
 
-  void updateFirebaseData() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
+  void updateFirebaseDataM1L2() async {
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
 
-      if (userUid.isNotEmpty) {
-        DocumentReference documentReference =
-            firestore.collection('users').doc(userUid);
+    if (userUid.isNotEmpty) {
+      // Reference to the user's document
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
 
-        await documentReference.update({
-          'level2Attempts': level2Attempts,
-        });
-      }
-    } catch (e) {
-      print('Error updating data: $e');
+      // Reference to the 'score' document with document ID 'M1'
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M1');
+
+      DocumentReference attemptDocRef = userDocRef.collection('attempt').doc('M1');
+
+      // Update the fields in the 'score' document
+      await scoreDocRef.update({
+        'M1L2Point': M1L2Point,
+      });
+      await attemptDocRef.update({
+        'M1L2Attempts': M1L2Attempts,
+      });
     }
+  } catch (e) {
+    print('Error updating data: $e');
   }
+}
+
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
@@ -147,7 +159,7 @@ class _M1L2State extends State<M1L2> {
   }
 
   void submitAnswer() {
-    level2Attempts++;
+    M1L2Attempts++;
 
     bool correctAnswer = isAnswerCorrect(userAnswer, weather);
 
@@ -159,9 +171,10 @@ class _M1L2State extends State<M1L2> {
         showHintButton = false;
         showSpeechBubble = false;
         showSpeechBubble2 = false;
+        M1L2Point = 1;
       });
 
-      updateFirebaseData();
+      updateFirebaseDataM1L2();
       ScoreManager.updateUserScore(2); // You need to define this function
     } else {
       showTryAgainDialog();

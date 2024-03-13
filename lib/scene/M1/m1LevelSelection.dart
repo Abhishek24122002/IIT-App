@@ -11,11 +11,13 @@ class M1LevelSelectionScreen extends StatelessWidget {
   final int totalLevels = 5;
   final int levelsPerRow = 2;
   final int module;
+  int m1Trophy = 0;
   late Stream<DocumentSnapshot> userDataStream;
 
-  M1LevelSelectionScreen({required this.module}) {
+  M1LevelSelectionScreen({required this.module, required int userScore}) {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     User? user = _auth.currentUser;
+    
 
     userDataStream = FirebaseFirestore.instance
         .collection('users')
@@ -24,6 +26,34 @@ class M1LevelSelectionScreen extends StatelessWidget {
         .collection('score')
         .doc('M1')
         .snapshots();
+  }
+  String getCurrentUserUid() {
+      FirebaseAuth auth = FirebaseAuth.instance;
+      User? user = auth.currentUser;
+      return user?.uid ?? '';
+    }
+  void updateFirebaseData() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+
+        // Reference to the 'score' document with document ID 'M1'
+        DocumentReference M1TrophyDocRef = userDocRef.collection('score').doc('M1');
+
+        // Update the fields in the 'score' document
+        
+        await M1TrophyDocRef.update({
+          'M1Trophy': m1Trophy,
+        });
+        
+      }
+    } catch (e) {
+      print('Error updating data: $e');
+    }
   }
 
   @override
@@ -45,9 +75,16 @@ class M1LevelSelectionScreen extends StatelessWidget {
             final data = snapshot.data!.data() as Map<String, dynamic>?;
 
             int M1L1Point = data?['M1L1Point'] ?? 0;
-            int M1L1Attempts = data?['M1L1Attempts'] ?? 0;
-            print('M1L1Attempts: $M1L1Attempts');
+            int M1L2Point = data?['M1L2Point'] ?? 0;
 
+            // int M1L1Attempts = data?['M1L1Attempts'] ?? 0;
+            // int M1L2Attempts = data?['M1L2Attempts'] ?? 0;
+
+            int TotalPoints = M1L1Point + M1L2Point;
+            if (TotalPoints == 5){
+              m1Trophy = 1;
+              updateFirebaseData();
+            }
             return Stack(
               alignment: Alignment.topLeft,
               children: [
@@ -60,7 +97,8 @@ class M1LevelSelectionScreen extends StatelessWidget {
                   itemCount: totalLevels,
                   itemBuilder: (context, index) {
                     int level = index + 1;
-                    bool isUnlocked = true; //logic missing
+                    bool isUnlocked = isLevelUnlocked(level,
+                        TotalPoints); // totalPoints is assumed to be accessible here
                     return LevelButton(module, level, isUnlocked);
                   },
                 ),
@@ -70,7 +108,7 @@ class M1LevelSelectionScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        '$M1L1Point',
+                        '$TotalPoints',
                         style: TextStyle(
                           fontSize: 27,
                           fontWeight: FontWeight.bold,
@@ -87,23 +125,23 @@ class M1LevelSelectionScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Positioned(
-                  top: 5,
-                  left: 16,
-                  child: Row(
-                    children: [
-                      Text(
-                        'Attempts: $M1L1Attempts',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                    ],
-                  ),
-                ),
+                // Positioned(
+                //   top: 5,
+                //   left: 16,
+                //   child: Row(
+                //     children: [
+                //       Text(
+                //         'Attempts: $M1L1Attempts',
+                //         style: TextStyle(
+                //           fontSize: 18,
+                //           fontWeight: FontWeight.bold,
+                //           color: Colors.green,
+                //         ),
+                //       ),
+                //       SizedBox(width: 10),
+                //     ],
+                //   ),
+                // ),
               ],
             );
           },
@@ -112,6 +150,19 @@ class M1LevelSelectionScreen extends StatelessWidget {
     );
   }
 }
+
+bool isLevelUnlocked(int level, totalPoints) {
+  // Level 1 is always unlocked
+  if (level == 1) {
+    return true;
+  }
+  // For levels greater than 1, check if the total points meet the unlocking condition
+  else {
+    return totalPoints >= level - 1;
+  }
+}
+
+
 
 class LevelButton extends StatelessWidget {
   final int module;
@@ -202,10 +253,8 @@ class LevelButton extends StatelessWidget {
   }
 }
 
-
-
 void main() {
   runApp(MaterialApp(
-    home: M1LevelSelectionScreen(module: 1),
+    home: M1LevelSelectionScreen(module: 1, userScore: 0,),
   ));
 }

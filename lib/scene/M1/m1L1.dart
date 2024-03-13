@@ -60,9 +60,10 @@ class _M1L1State extends State<M1L1> {
   bool showSpeechBubble = false;
   bool showSpeechBubble2 = false;
   bool nextLevelButton = false;
-  int level1Attempts = 0;
+  int M1L1Attempts = 0;
   bool showHintButton = true;
   String? gender;
+  int M1L1Point = 0;
 
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
@@ -110,22 +111,32 @@ class _M1L1State extends State<M1L1> {
   }
 
   void updateFirebaseData() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
 
-      if (userUid.isNotEmpty) {
-        DocumentReference documentReference =
-            firestore.collection('users').doc(userUid);
+    if (userUid.isNotEmpty) {
+      // Reference to the user's document
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
 
-        await documentReference.update({
-          'level1Attempts': level1Attempts,
-        });
-      }
-    } catch (e) {
-      print('Error updating data: $e');
+      // Reference to the 'score' document with document ID 'M1'
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M1');
+
+      DocumentReference attemptDocRef = userDocRef.collection('attempt').doc('M1');
+
+      // Update the fields in the 'score' document
+      await scoreDocRef.set({
+        'M1L1Point': M1L1Point,
+      });
+      await attemptDocRef.set({
+        'M1L1Attempts': M1L1Attempts,
+      });
     }
+  } catch (e) {
+    print('Error updating data: $e');
   }
+}
+
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
@@ -148,7 +159,7 @@ class _M1L1State extends State<M1L1> {
   }
 
   void submitAnswer() {
-    level1Attempts++;
+    M1L1Attempts++;
     bool correctAnswer = isAnswerCorrect(userAnswer);
 
     if (correctAnswer) {
@@ -159,6 +170,7 @@ class _M1L1State extends State<M1L1> {
         showHintButton = false;
         showSpeechBubble = false;
         showSpeechBubble2 = false;
+        M1L1Point = 1;
       });
 
       updateFirebaseData();
@@ -399,7 +411,7 @@ void _showInputDialog() {
                       child: Text('Next Level'),
                     ),
                   ),
-                if (level1Attempts >= 1 && showHintButton)
+                if (M1L1Attempts >= 1 && showHintButton)
                   Positioned(
                     bottom: 20.0,
                     right: 30.0,

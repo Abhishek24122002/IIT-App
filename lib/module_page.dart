@@ -51,7 +51,7 @@ class ModuleButton extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => M1LevelSelectionScreen(module: module, userScore: 0),
+              builder: (context) => M1LevelSelectionScreen(module: module,),
             ),
           );
         } else if (module == 2) {

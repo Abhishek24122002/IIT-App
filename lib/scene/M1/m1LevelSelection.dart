@@ -1,18 +1,27 @@
-import 'package:alzymer/scene/M1/M1L1.dart';
-import 'package:alzymer/scene/M1/M1L2.dart';
-import 'package:alzymer/scene/M1/M1L3.dart';
-import 'package:alzymer/scene/M1/M1L4.dart';
-import 'package:alzymer/scene/M1/M1L5.dart';
+import 'package:alzymer/scene/M1/m1L1.dart';
+import 'package:alzymer/scene/M1/m1L2.dart';
+import 'package:alzymer/scene/M1/m1L3.dart';
+import 'package:alzymer/scene/M1/m1L4.dart';
+import 'package:alzymer/scene/M1/m1L5.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-
 
 class M1LevelSelectionScreen extends StatelessWidget {
   final int totalLevels = 5; // Assuming each module has 5 levels
   final int levelsPerRow = 2;
   final int module;
+  late Stream<DocumentSnapshot> userDataStream;
 
-  M1LevelSelectionScreen({required this.module, required int userScore});
+  M1LevelSelectionScreen({required this.module}) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    User? user = _auth.currentUser;
+
+    userDataStream = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +30,74 @@ class M1LevelSelectionScreen extends StatelessWidget {
         title: Text('Task Selection - Module $module'),
       ),
       body: Center(
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: levelsPerRow,
-            mainAxisSpacing: 16.0,
-            crossAxisSpacing: 16.0,
-          ),
-          itemCount: totalLevels,
-          itemBuilder: (context, index) {
-            int level = index + 1;
-            bool isUnlocked = true; //logic missing
-            return LevelButton(module, level, isUnlocked);
+        child: StreamBuilder<DocumentSnapshot>(
+          stream: userDataStream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return CircularProgressIndicator();
+            }
+            int M1L1Point = snapshot.data!['M1L1Point'] ?? 0;
+            int M1L1Attempts = (snapshot.data!.data() as Map<String, dynamic>?)?['attempt']?['M1']?['M1L1Attempts'] ?? 0; // Fetching M1L1Attempts
+             print('M1L1Attempts: $M1L1Attempts');
+
+            return Stack(
+              alignment: Alignment.topLeft,
+              children: [
+                GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: levelsPerRow,
+                    mainAxisSpacing: 16.0,
+                    crossAxisSpacing: 16.0,
+                  ),
+                  itemCount: totalLevels,
+                  itemBuilder: (context, index) {
+                    int level = index + 1;
+                    bool isUnlocked = true; //logic missing
+                    return LevelButton(module, level, isUnlocked);
+                  },
+                ),
+                Positioned(
+                  top: 5,
+                  right: 16,
+                  child: Row(
+                    children: [
+                      Text(
+                        '$M1L1Point',
+                        style: TextStyle(
+                          fontSize: 27,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Image.asset(
+                        'assets/star.png',
+                        width: 40,
+                        height: 40,
+                      ),
+                      SizedBox(width: 10),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 5,
+                  left: 16,
+                  child: Row(
+                    children: [
+                      Text(
+                        'Attempts: $M1L1Attempts', // Displaying M1L1Attempts
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                    ],
+                  ),
+                ),
+              ],
+            );
           },
         ),
       ),
@@ -51,33 +117,39 @@ class LevelButton extends StatelessWidget {
     return InkWell(
       onTap: () {
         if (isUnlocked) {
-         
-          if (level == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => M1L1()),
-            );
-          } else if (level == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => M1L2()),
-            );
-          } else if (level == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => M1L3()),
-            );
-          }else if (level == 4) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => M1L4()),
-            );
-          }
-          else if (level == 5) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => M1L5()),
-            );
+          switch (level) {
+            case 1:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => M1L1()),
+              );
+              break;
+            case 2:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => M1L2()),
+              );
+              break;
+            case 3:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => M1L3()),
+              );
+              break;
+            case 4:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => M1L4()),
+              );
+              break;
+            case 5:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => M1L5()),
+              );
+              break;
+            default:
+              break;
           }
         }
       },
@@ -116,10 +188,8 @@ class LevelButton extends StatelessWidget {
                 size: 30.0,
               ),
             ),
-            
         ],
       ),
     );
   }
 }
-

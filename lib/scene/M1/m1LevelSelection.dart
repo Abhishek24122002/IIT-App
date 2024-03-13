@@ -20,7 +20,8 @@ class M1LevelSelectionScreen extends StatelessWidget {
     userDataStream = FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
-        .collection('attempt')
+        // .collection('attempt') //to access attempt collection only 1 is working now need to access both in future
+        .collection('score')
         .doc('M1')
         .snapshots();
   }

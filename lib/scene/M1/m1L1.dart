@@ -143,7 +143,7 @@
       if (gender == 'Male') {
         return "Hello Grandpa!! what is Today's Date?";
       } else if (gender == 'Female') {
-        return "Hello granny !! what is Today's Date?";
+        return "Hello grandma !! what is Today's Date?";
       } else {
         return "Hello !! what is Today's Date?";
       }

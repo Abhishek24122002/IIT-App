@@ -65,6 +65,7 @@ class _M1L3State extends State<M1L3> {
   bool showHintButton = true;
   String? gender;
   bool showtable = false;
+  bool showBoyImage = true;
 
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
@@ -131,11 +132,11 @@ class _M1L3State extends State<M1L3> {
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
-      return "Hey Grandpa, I have to go to school now. Can you pick me up at 3:00?";
+      return "Hey Grandpa ,I have to go school now, It will' finish by 3:00 today.";
     } else if (gender == 'Female') {
-      return "Hey Grandma, I have to go to school now. Can you pick me up at 3:00?";
+      return "Hey Grandma ,I have to go school now, It will' finish by 3:00 today.";
     } else {
-      return "Hey, I have to go to school now. Can you pick me up at 3:00?";
+      return "Hey, I have to go to school now. It will' finish by 3:00 today.";
     }
   }
 
@@ -252,7 +253,6 @@ class _M1L3State extends State<M1L3> {
   }
 
   void showinstruction() {
-    
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -353,10 +353,14 @@ class _M1L3State extends State<M1L3> {
                 Positioned(
                   bottom: 20.0,
                   right: 20.0,
-                  child: Image.asset(
-                    'assets/boy2.png',
-                    width: 200.0,
-                    height: 300.0,
+                  child: Visibility(
+                    // Wrap boy2 image in a Visibility widget
+                    visible: showBoyImage, // Control visibility based on showBoyImage variable
+                    child: Image.asset(
+                      'assets/boy2.png',
+                      width: 200.0,
+                      height: 300.0,
+                    ),
                   ),
                 ),
 
@@ -423,6 +427,8 @@ class _M1L3State extends State<M1L3> {
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
+                              showSpeechBubble = false;
+                              showBoyImage = false;
                               showinstruction();
                             });
                           },

@@ -56,16 +56,39 @@ class M1L3 extends StatefulWidget {
 
 class _M1L3State extends State<M1L3> {
   bool showStartButton = true;
-
-  bool showAnswerButton = false;
+  bool showselectfruit = false;
   bool showSpeechBubble = false;
-  bool showSpeechBubble2 = false;
   bool nextLevelButton = false;
-  int level1Attempts = 0;
-  bool showHintButton = true;
+  // int level1Attempts = 0;
   String? gender;
   bool showtable = false;
   bool showBoyImage = true;
+  bool showfruit = false;
+  
+  
+
+  List<String> fruits = [
+    'Apple',
+    'Banana',
+    'Orange',
+    'Grapes',
+    'Strawberry',
+    'Watermelon',
+    'Pineapple',
+    'Mango',
+    'Kiwi',
+    'Peach'
+  ];
+
+  List<String> getRandomFruits(List<String> fruits) {
+    // Shuffle the original fruits list
+    List<String> shuffledFruits = List.from(fruits)..shuffle();
+
+    // Take the first 5 fruits from the shuffled list
+    List<String> randomFruits = shuffledFruits.take(5).toList();
+
+    return randomFruits;
+  }
 
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
@@ -73,17 +96,18 @@ class _M1L3State extends State<M1L3> {
   List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
   int currentLevelIndex = 2;
 
-  bool isAnswerCorrect(String input) {
-    DateTime now = DateTime.now();
-    String formattedDate = DateFormat('dd/MM/yyyy').format(now);
-    return input == formattedDate;
-  }
+  // bool isAnswerCorrect(String input) {
+  //   DateTime now = DateTime.now();
+  //   String formattedDate = DateFormat('dd/MM/yyyy').format(now);
+  //   return input == formattedDate;
+  // }
 
   @override
   void initState() {
     super.initState();
     Firebase.initializeApp();
     fetchGender();
+
     // Set landscape orientation when entering this page
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
@@ -112,23 +136,23 @@ class _M1L3State extends State<M1L3> {
     return user?.uid ?? '';
   }
 
-  void updateFirebaseData() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
+  // void updateFirebaseData() async {
+  //   try {
+  //     FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //     String userUid = getCurrentUserUid();
 
-      if (userUid.isNotEmpty) {
-        DocumentReference documentReference =
-            firestore.collection('users').doc(userUid);
+  //     if (userUid.isNotEmpty) {
+  //       DocumentReference documentReference =
+  //           firestore.collection('users').doc(userUid);
 
-        await documentReference.update({
-          'level3Attempts': level1Attempts,
-        });
-      }
-    } catch (e) {
-      print('Error updating data: $e');
-    }
-  }
+  //       await documentReference.update({
+  //         'level3Attempts': level1Attempts,
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error updating data: $e');
+  //   }
+  // }
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
@@ -150,73 +174,6 @@ class _M1L3State extends State<M1L3> {
     }
   }
 
-  void submitAnswer() {
-    level1Attempts++;
-    bool correctAnswer = isAnswerCorrect(userAnswer);
-
-    if (correctAnswer) {
-      showCelebrationDialog();
-      setState(() {
-        showAnswerButton = false;
-        nextLevelButton = true;
-        showHintButton = false;
-        showSpeechBubble = false;
-        showSpeechBubble2 = false;
-      });
-
-      updateFirebaseData();
-      ScoreManager.updateUserScore(1);
-    } else {
-      showTryAgainDialog();
-    }
-
-    String grandpaResponse = correctAnswer
-        ? "Today's date is ${DateFormat('dd/MM/yyyy').format(DateTime.now())}"
-        : "Today's date is $userAnswer";
-
-    setState(() {
-      showSpeechBubble = true;
-      userAnswer = grandpaResponse;
-    });
-
-    Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        if (!correctAnswer) {
-          showAnswerButton = true;
-        }
-      });
-    });
-  }
-
-  void _showInputDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SingleChildScrollView(
-          child: AlertDialog(
-            title: Text('Input'),
-            content: TextField(
-              controller: answerController,
-              decoration: InputDecoration(hintText: 'Enter day/month/year'),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() {
-                    userAnswer = answerController.text;
-                  });
-                  submitAnswer();
-                },
-                child: Text('Submit'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {
       SystemChrome.setPreferredOrientations([
@@ -230,29 +187,21 @@ class _M1L3State extends State<M1L3> {
     }
   }
 
-  void showHint() {
-    String formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Hint'),
-          content: Text('The current date is $formattedDate'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+  void showFruitButtons(List<String> randomFruits) {
+    setState(() {
+      // Reset selected fruit
+      showselectfruit = false; // Hide the "Sure" button
+      showSpeechBubble = false;
+      showBoyImage = false;
+      showtable = true;
+      showfruit = true;
+      fruits = randomFruits;
+    });
   }
 
   void showinstruction() {
+    List<String> randomFruits = getRandomFruits(fruits);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -263,7 +212,6 @@ class _M1L3State extends State<M1L3> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                showtable = true;
               },
               child: Text('OK'),
             ),
@@ -293,25 +241,25 @@ class _M1L3State extends State<M1L3> {
     );
   }
 
-  void showTryAgainDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Oops!'),
-          content: Text('Please try again.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void showTryAgainDialog() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('Oops!'),
+  //         content: Text('Please try again.'),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.pop(context);
+  //             },
+  //             child: Text('OK'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -355,7 +303,8 @@ class _M1L3State extends State<M1L3> {
                   right: 20.0,
                   child: Visibility(
                     // Wrap boy2 image in a Visibility widget
-                    visible: showBoyImage, // Control visibility based on showBoyImage variable
+                    visible:
+                        showBoyImage, // Control visibility based on showBoyImage variable
                     child: Image.asset(
                       'assets/boy2.png',
                       width: 200.0,
@@ -363,16 +312,35 @@ class _M1L3State extends State<M1L3> {
                     ),
                   ),
                 ),
+                Positioned(
+                  top: 100,
+                  right: 20,
+                  child: Visibility(
+                    // Wrap table image in a Visibility widget
+                    visible:
+                        showtable, // Control visibility based on showBoyImage variable
+                    child: Image.asset(
+                      'assets/table2.png',
+                      width: 300.0,
+                      height: 300.0,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 70.0,
+                  right: 110.0,
+                  child: Visibility(
+                    // Wrap boy2 image in a Visibility widget
+                    visible:
+                        showfruit, // Control visibility based on showBoyImage variable
+                    child: Image.asset(
+                      'assets/fruit.png',
+                      width: 120.0,
+                      height: 120.0,
+                    ),
+                  ),
+                ),
 
-                // Positioned(
-                //   bottom: 10.0,
-                //   right: 20.0,
-                //   child: Image.asset(
-                //     'assets/table.png',
-                //     width: 400.0,
-                //     height: 200.0,
-                //   ),
-                // ),
                 Positioned(
                   top: 150.0,
                   right: 200,
@@ -390,21 +358,7 @@ class _M1L3State extends State<M1L3> {
                     ],
                   ),
                 ),
-                Positioned(
-                  top: 80.0,
-                  left: 150.0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Visibility(
-                        visible: userAnswer.isNotEmpty,
-                        child: SpeechBubble(
-                          text: userAnswer,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+
                 Positioned(
                   bottom: 20.0,
                   left: 30.0,
@@ -417,18 +371,21 @@ class _M1L3State extends State<M1L3> {
                             setState(() {
                               showSpeechBubble = true;
                               showStartButton = false;
-                              showAnswerButton = true;
+                              showselectfruit = true;
                             });
                           },
                           child: Text('Start'),
                         ),
                       ),
-                      if (showAnswerButton)
+                      if (showselectfruit)
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
                               showSpeechBubble = false;
                               showBoyImage = false;
+                              showtable = true;
+                              showfruit = true;
+
                               showinstruction();
                             });
                           },
@@ -448,17 +405,17 @@ class _M1L3State extends State<M1L3> {
                       child: Text('Next Level'),
                     ),
                   ),
-                if (level1Attempts >= 1 && showHintButton)
-                  Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showHint();
-                      },
-                      child: Text('Show Hint'),
-                    ),
-                  ),
+                // if (level1Attempts >= 1 && showHintButton)
+                //   Positioned(
+                //     bottom: 20.0,
+                //     right: 30.0,
+                //     child: ElevatedButton(
+                //       onPressed: () {
+                //         // showHint();
+                //       },
+                //       child: Text('Show Hint'),
+                //     ),
+                //   ),
               ],
             ),
           ),

@@ -17,7 +17,6 @@ class M1LevelSelectionScreen extends StatelessWidget {
   M1LevelSelectionScreen({required this.module, required int userScore}) {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     User? user = _auth.currentUser;
-    
 
     userDataStream = FirebaseFirestore.instance
         .collection('users')
@@ -28,10 +27,11 @@ class M1LevelSelectionScreen extends StatelessWidget {
         .snapshots();
   }
   String getCurrentUserUid() {
-      FirebaseAuth auth = FirebaseAuth.instance;
-      User? user = auth.currentUser;
-      return user?.uid ?? '';
-    }
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
   void updateFirebaseData() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -39,17 +39,19 @@ class M1LevelSelectionScreen extends StatelessWidget {
 
       if (userUid.isNotEmpty) {
         // Reference to the user's document
-        DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
         // Reference to the 'score' document with document ID 'M1'
-        DocumentReference M1TrophyDocRef = userDocRef.collection('score').doc('M1');
+        DocumentReference M1TrophyDocRef =
+            userDocRef.collection('score').doc('M1');
 
         // Update the fields in the 'score' document
-        
+
         await M1TrophyDocRef.update({
           'M1Trophy': m1Trophy,
+          'userAnswer': [],
         });
-        
       }
     } catch (e) {
       print('Error updating data: $e');
@@ -76,12 +78,16 @@ class M1LevelSelectionScreen extends StatelessWidget {
 
             int M1L1Point = data?['M1L1Point'] ?? 0;
             int M1L2Point = data?['M1L2Point'] ?? 0;
+            int M1L3Point = data?['M1L3Point'] ?? 0;
+            int M1L4Point = data?['M1L4Point'] ?? 0;
+            int M1L5Point = data?['M1L5Point'] ?? 0;
 
             // int M1L1Attempts = data?['M1L1Attempts'] ?? 0;
             // int M1L2Attempts = data?['M1L2Attempts'] ?? 0;
 
-            int TotalPoints = M1L1Point + M1L2Point;
-            if (TotalPoints == 5){
+            int TotalPoints =
+                M1L1Point + M1L2Point + M1L3Point + M1L4Point + M1L5Point;
+            if (TotalPoints == 5) {
               m1Trophy = 1;
               updateFirebaseData();
             }
@@ -161,8 +167,6 @@ bool isLevelUnlocked(int level, totalPoints) {
     return totalPoints >= level - 1;
   }
 }
-
-
 
 class LevelButton extends StatelessWidget {
   final int module;
@@ -255,6 +259,9 @@ class LevelButton extends StatelessWidget {
 
 void main() {
   runApp(MaterialApp(
-    home: M1LevelSelectionScreen(module: 1, userScore: 0,),
+    home: M1LevelSelectionScreen(
+      module: 1,
+      userScore: 0,
+    ),
   ));
 }

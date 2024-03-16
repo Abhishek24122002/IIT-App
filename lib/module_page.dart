@@ -14,7 +14,7 @@ class ModuleSelectionScreen extends StatefulWidget {
 }
 
 class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
-   late int m1Trophy;
+  late int m1Trophy;
 
   @override
   void initState() {
@@ -26,15 +26,25 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
   void fetchTrophy() async {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     User? user = _auth.currentUser;
-    final DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+    final DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
+        .instance
         .collection('users')
         .doc(user!.uid)
         .collection('score')
-        .doc('M1')
-        .get();
-    setState(() {
-      m1Trophy = snapshot.data()!['M1Trophy'];
-    });
+        .doc('M1');
+
+    final DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
+    if (snapshot.exists) {
+      setState(() {
+        m1Trophy = snapshot.data()!['M1Trophy'];
+      });
+    } else {
+      // If document doesn't exist, create one with initial data
+      await docRef.set({'M1Trophy': 0});
+      setState(() {
+        m1Trophy = 0;
+      });
+    }
   }
 
   @override
@@ -95,35 +105,42 @@ class ModuleButton extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => M1LevelSelectionScreen(module: module, userScore: 0,),
+              builder: (context) => M1LevelSelectionScreen(
+                module: module,
+                userScore: 0,
+              ),
             ),
           );
         } else if (module == 2) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => M2LevelSelectionScreen(module: module, userScore: 0),
+              builder: (context) =>
+                  M2LevelSelectionScreen(module: module, userScore: 0),
             ),
           );
         } else if (module == 3) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => M3LevelSelectionScreen(module: module, userScore: 0),
+              builder: (context) =>
+                  M3LevelSelectionScreen(module: module, userScore: 0),
             ),
           );
         } else if (module == 4) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => M4LevelSelectionScreen(module: module, userScore: 0),
+              builder: (context) =>
+                  M4LevelSelectionScreen(module: module, userScore: 0),
             ),
           );
         } else if (module == 5) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => M5LevelSelectionScreen(module: module, userScore: 0),
+              builder: (context) =>
+                  M5LevelSelectionScreen(module: module, userScore: 0),
             ),
           );
         } else {
@@ -131,7 +148,8 @@ class ModuleButton extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => LevelSelectionScreen(module: module, userScore: 0),
+              builder: (context) =>
+                  LevelSelectionScreen(module: module, userScore: 0),
             ),
           );
         }
@@ -183,21 +201,20 @@ class ModuleButton extends StatelessWidget {
                   ),
                 ),
               ),
-              
               if (module == 1 && m1Trophy == 1) // Only show trophy for Module1
                 Positioned(
                   top: 20,
                   right: 5,
                   child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/trophy.png',
-                      width: 60,
-                      height: 60,
-                    ),
-                    SizedBox(width: 10),
-                  ],
-                ),
+                    children: [
+                      Image.asset(
+                        'assets/trophy.png',
+                        width: 60,
+                        height: 60,
+                      ),
+                      SizedBox(width: 10),
+                    ],
+                  ),
                 ),
             ],
           ),

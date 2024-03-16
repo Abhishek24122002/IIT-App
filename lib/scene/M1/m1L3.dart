@@ -1,12 +1,11 @@
-import 'package:alzymer/scene/M1/M1L1.dart';
-import 'package:alzymer/scene/M1/M1L2.dart';
-import 'package:alzymer/scene/M1/M1L4.dart';
-import 'package:alzymer/scene/M1/M1L5.dart';
+import 'dart:math';
+
+import 'package:alzymer/scene/M1/m1L1.dart';
+import 'package:alzymer/scene/M1/m1L2.dart';
+import 'package:alzymer/scene/M1/m1L4.dart';
+import 'package:alzymer/scene/M1/m1L5.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-import 'package:alzymer/ScoreManager.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -56,17 +55,13 @@ class M1L3 extends StatefulWidget {
 
 class _M1L3State extends State<M1L3> {
   bool showStartButton = true;
-  bool showselectfruit = false;
+  bool showSelectFruitButton = false;
   bool showSpeechBubble = false;
-  bool nextLevelButton = false;
-  // int level1Attempts = 0;
   String? gender;
-  bool showtable = false;
+  bool showTable = false;
   bool showBoyImage = true;
-  bool showfruit = false;
-  
-  
-
+  bool showfruitbasket = false;
+  bool showFruit = false;
   List<String> fruits = [
     'Apple',
     'Banana',
@@ -79,36 +74,22 @@ class _M1L3State extends State<M1L3> {
     'Kiwi',
     'Peach'
   ];
-
-  List<String> getRandomFruits(List<String> fruits) {
-    // Shuffle the original fruits list
-    List<String> shuffledFruits = List.from(fruits)..shuffle();
-
-    // Take the first 5 fruits from the shuffled list
-    List<String> randomFruits = shuffledFruits.take(5).toList();
-
-    return randomFruits;
-  }
-
+  List<String> selectedFruits = [];
+  List<String> displayedFruits = [];
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
-
   List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
   int currentLevelIndex = 2;
-
-  // bool isAnswerCorrect(String input) {
-  //   DateTime now = DateTime.now();
-  //   String formattedDate = DateFormat('dd/MM/yyyy').format(now);
-  //   return input == formattedDate;
-  // }
+  bool fruitSelected = false;
+  bool showSureButton = true;
+  int M1L3Attempts = 0;
+  int M1L3Point = 0; // Added to control the visibility of the "Sure" button
 
   @override
   void initState() {
     super.initState();
     Firebase.initializeApp();
     fetchGender();
-
-    // Set landscape orientation when entering this page
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
@@ -118,12 +99,10 @@ class _M1L3State extends State<M1L3> {
   void fetchGender() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
-
     if (user != null) {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       DocumentSnapshot<Map<String, dynamic>> snapshot =
           await firestore.collection('users').doc(user.uid).get();
-
       setState(() {
         gender = snapshot.get('gender');
       });
@@ -136,31 +115,67 @@ class _M1L3State extends State<M1L3> {
     return user?.uid ?? '';
   }
 
-  // void updateFirebaseData() async {
-  //   try {
-  //     FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //     String userUid = getCurrentUserUid();
+  void updateFirebaseDataM1L3() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
 
-  //     if (userUid.isNotEmpty) {
-  //       DocumentReference documentReference =
-  //           firestore.collection('users').doc(userUid);
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
-  //       await documentReference.update({
-  //         'level3Attempts': level1Attempts,
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print('Error updating data: $e');
-  //   }
-  // }
+        // Reference to the 'score' document with document ID 'M1'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M1');
+
+        DocumentReference attemptDocRef =
+            userDocRef.collection('attempt').doc('M1');
+
+        // Update the fields in the 'score' document
+        await scoreDocRef.update({
+          'M1L3Point': M1L3Point,
+        });
+        await attemptDocRef.update({
+          'M1L3Attempts': M1L3Attempts,
+        });
+      }
+    } catch (e) {
+      print('Error updating data: $e');
+    }
+  }
+
+  void updateFirebaseUserAnswer(String selectedFruit) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
+
+        // Reference to the 'Score-M1' document within the user document
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M1');
+
+        // Update the 'userAnswer' field in the 'Score-M1' document
+        await scoreDocRef.update({
+          'userAnswer': selectedFruit,
+        });
+      }
+    } catch (e) {
+      print('Error updating user answer in Firestore: $e');
+    }
+  }
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
-      return "Hey Grandpa ,I have to go school now, It will' finish by 3:00 today.";
+      return "Hey Grandpa, I have to go to school now. It will finish by 3:00 today.";
     } else if (gender == 'Female') {
-      return "Hey Grandma ,I have to go school now, It will' finish by 3:00 today.";
+      return "Hey Grandma, I have to go to school now. It will finish by 3:00 today.";
     } else {
-      return "Hey, I have to go to school now. It will' finish by 3:00 today.";
+      return "Hey, I have to go to school now. It will finish by 3:00 today.";
     }
   }
 
@@ -187,27 +202,36 @@ class _M1L3State extends State<M1L3> {
     }
   }
 
-  void showFruitButtons(List<String> randomFruits) {
-    setState(() {
-      // Reset selected fruit
-      showselectfruit = false; // Hide the "Sure" button
-      showSpeechBubble = false;
-      showBoyImage = false;
-      showtable = true;
-      showfruit = true;
-      fruits = randomFruits;
-    });
-  }
-
-  void showinstruction() {
-    List<String> randomFruits = getRandomFruits(fruits);
-
+  void showInstruction() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Instruction'),
-          content: Text('Please Select Fruit From Table'),
+          content: Text('Please select a fruit from the table.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  showSelectFruitButton = true;
+                });
+                Navigator.pop(context);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showSelectedFruitDialog(String fruit) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Selected Fruit'),
+          content: Text('You selected: $fruit'),
           actions: [
             TextButton(
               onPressed: () {
@@ -227,7 +251,7 @@ class _M1L3State extends State<M1L3> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Congratulations!'),
-          content: Text('🎉🎉🎉 Your Answer is Correct. 🏆'),
+          content: Text('🎉🎉🎉 Your answer is correct. 🏆'),
           actions: [
             TextButton(
               onPressed: () {
@@ -241,31 +265,37 @@ class _M1L3State extends State<M1L3> {
     );
   }
 
-  // void showTryAgainDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('Oops!'),
-  //         content: Text('Please try again.'),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.pop(context);
-  //             },
-  //             child: Text('OK'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  void displayRandomFruits() {
+    List<String> remainingFruits = List.from(fruits);
+    Random random = Random();
+    while (selectedFruits.length < 5) {
+      int index = random.nextInt(remainingFruits.length);
+      selectedFruits.add(remainingFruits[index]);
+      remainingFruits.removeAt(index);
+    }
+    setState(() {
+      showFruit = true;
+      showSelectFruitButton = false;
+      displayedFruits = List.from(selectedFruits);
+    });
+  }
+
+  void onFruitSelected(String fruit) {
+    setState(() {
+      userAnswer = fruit;
+      fruitSelected = true;
+      showSelectedFruitDialog(fruit);
+      displayedFruits.clear();
+      showSureButton = false; // Hide the "Sure" button when fruit is selected
+    });
+    updateFirebaseUserAnswer(fruit);
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).requestFocus(new FocusNode());
+        FocusScope.of(context).requestFocus(FocusNode());
       },
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -302,9 +332,7 @@ class _M1L3State extends State<M1L3> {
                   bottom: 20.0,
                   right: 20.0,
                   child: Visibility(
-                    // Wrap boy2 image in a Visibility widget
-                    visible:
-                        showBoyImage, // Control visibility based on showBoyImage variable
+                    visible: showBoyImage,
                     child: Image.asset(
                       'assets/boy2.png',
                       width: 200.0,
@@ -313,12 +341,10 @@ class _M1L3State extends State<M1L3> {
                   ),
                 ),
                 Positioned(
-                  top: 100,
+                  top: 180,
                   right: 20,
                   child: Visibility(
-                    // Wrap table image in a Visibility widget
-                    visible:
-                        showtable, // Control visibility based on showBoyImage variable
+                    visible: showTable,
                     child: Image.asset(
                       'assets/table2.png',
                       width: 300.0,
@@ -327,12 +353,10 @@ class _M1L3State extends State<M1L3> {
                   ),
                 ),
                 Positioned(
-                  top: 70.0,
+                  top: 150.0,
                   right: 110.0,
                   child: Visibility(
-                    // Wrap boy2 image in a Visibility widget
-                    visible:
-                        showfruit, // Control visibility based on showBoyImage variable
+                    visible: showfruitbasket,
                     child: Image.asset(
                       'assets/fruit.png',
                       width: 120.0,
@@ -340,7 +364,34 @@ class _M1L3State extends State<M1L3> {
                     ),
                   ),
                 ),
-
+                Positioned(
+                  top: 90.0,
+                  right: 220.0,
+                  child: Visibility(
+                    visible: showFruit && !fruitSelected,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10), // Adding spacing
+                        Wrap(
+                          spacing: 10, // Adding spacing between buttons
+                          children: displayedFruits
+                              .map(
+                                (fruit) => ElevatedButton(
+                                  onPressed: () {
+                                    M1L3Attempts++;
+                                    M1L3Point = 1;
+                                    updateFirebaseDataM1L3();
+                                    onFruitSelected(fruit);
+                                  },
+                                  child: Text(fruit),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 Positioned(
                   top: 150.0,
                   right: 200,
@@ -351,14 +402,13 @@ class _M1L3State extends State<M1L3> {
                         visible: showSpeechBubble,
                         child: SpeechBubble(
                           text: userAnswer.isNotEmpty
-                              ? 'Thank You' // Change the text here
+                              ? 'Thank You'
                               : getSpeechBubbleText(),
                         ),
                       ),
                     ],
                   ),
                 ),
-
                 Positioned(
                   bottom: 20.0,
                   left: 30.0,
@@ -371,22 +421,23 @@ class _M1L3State extends State<M1L3> {
                             setState(() {
                               showSpeechBubble = true;
                               showStartButton = false;
-                              showselectfruit = true;
+                              showSelectFruitButton = true;
                             });
                           },
                           child: Text('Start'),
                         ),
                       ),
-                      if (showselectfruit)
+                      if (showSelectFruitButton)
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
                               showSpeechBubble = false;
                               showBoyImage = false;
-                              showtable = true;
-                              showfruit = true;
-
-                              showinstruction();
+                              showTable = true;
+                              showFruit = true;
+                              showfruitbasket = true;
+                              showInstruction();
+                              displayRandomFruits();
                             });
                           },
                           child: Text('Sure'),
@@ -394,10 +445,11 @@ class _M1L3State extends State<M1L3> {
                     ],
                   ),
                 ),
-                if (nextLevelButton)
-                  Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
+                Positioned(
+                  bottom: 20.0,
+                  right: 30.0,
+                  child: Visibility(
+                    visible: fruitSelected,
                     child: ElevatedButton(
                       onPressed: () {
                         navigateToNextLevel();
@@ -405,17 +457,7 @@ class _M1L3State extends State<M1L3> {
                       child: Text('Next Level'),
                     ),
                   ),
-                // if (level1Attempts >= 1 && showHintButton)
-                //   Positioned(
-                //     bottom: 20.0,
-                //     right: 30.0,
-                //     child: ElevatedButton(
-                //       onPressed: () {
-                //         // showHint();
-                //       },
-                //       child: Text('Show Hint'),
-                //     ),
-                //   ),
+                ),
               ],
             ),
           ),
@@ -426,7 +468,6 @@ class _M1L3State extends State<M1L3> {
 
   @override
   void dispose() {
-    // Revert to original orientation when leaving this page
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,

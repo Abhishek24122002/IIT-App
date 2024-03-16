@@ -81,9 +81,9 @@ class _M1L3State extends State<M1L3> {
   List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
   int currentLevelIndex = 2;
   bool fruitSelected = false;
-  bool showSureButton = true;
+
   int M1L3Attempts = 0;
-  int M1L3Point = 0; // Added to control the visibility of the "Sure" button
+  int M1L3Point = 0;
 
   @override
   void initState() {
@@ -286,7 +286,7 @@ class _M1L3State extends State<M1L3> {
       fruitSelected = true;
       showSelectedFruitDialog(fruit);
       displayedFruits.clear();
-      showSureButton = false; // Hide the "Sure" button when fruit is selected
+      // Hide the "Sure" button when fruit is selected
     });
     updateFirebaseUserAnswer(fruit);
   }
@@ -382,6 +382,7 @@ class _M1L3State extends State<M1L3> {
                                     M1L3Point = 1;
                                     updateFirebaseDataM1L3();
                                     onFruitSelected(fruit);
+                                    showSelectFruitButton = false;
                                   },
                                   child: Text(fruit),
                                 ),
@@ -436,6 +437,7 @@ class _M1L3State extends State<M1L3> {
                               showTable = true;
                               showFruit = true;
                               showfruitbasket = true;
+
                               showInstruction();
                               displayRandomFruits();
                             });

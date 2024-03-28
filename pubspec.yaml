@@ -91,6 +91,9 @@ flutter:
     - assets/man2.png
     - assets/table2.png
     - assets/table3.png
+    - assets/login.gif
+    - assets/login1.gif
+    - assets/signup.gif
 
 
 

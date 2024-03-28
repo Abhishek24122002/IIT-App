@@ -131,9 +131,9 @@ class _LoginPageState extends State<LoginPage> {
                   child: ElevatedButton(
                     onPressed: () async {
                       try {
-                        UserCredential userCredential =
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
+                        UserCredential userCredential = await FirebaseAuth
+                            .instance
+                            .signInWithEmailAndPassword(
                           email: emailController.text.trim(),
                           password: passwordController.text.trim(),
                         );

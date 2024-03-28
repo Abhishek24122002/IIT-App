@@ -90,6 +90,9 @@ flutter:
     - assets/fruit.png
     - assets/table2.png
     - assets/man2.png
+    - assets/login.gif
+    - assets/login1.gif
+    - assets/signup.gif
 
 
 

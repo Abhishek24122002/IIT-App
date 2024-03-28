@@ -236,6 +236,7 @@ class _M1L3State extends State<M1L3> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
+                showCelebrationDialog();
               },
               child: Text('OK'),
             ),
@@ -286,6 +287,7 @@ class _M1L3State extends State<M1L3> {
       fruitSelected = true;
       showSelectedFruitDialog(fruit);
       displayedFruits.clear();
+
       // Hide the "Sure" button when fruit is selected
     });
     updateFirebaseUserAnswer(fruit);
@@ -381,6 +383,7 @@ class _M1L3State extends State<M1L3> {
                                     M1L3Attempts++;
                                     M1L3Point = 1;
                                     updateFirebaseDataM1L3();
+
                                     onFruitSelected(fruit);
                                     showSelectFruitButton = false;
                                   },

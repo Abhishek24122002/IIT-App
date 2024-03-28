@@ -94,6 +94,9 @@ class _M1L3State extends State<M1L3> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
+     Future.delayed(Duration.zero, () {
+    initialPopup();
+  });
   }
 
   void fetchGender() async {
@@ -144,6 +147,74 @@ class _M1L3State extends State<M1L3> {
       print('Error updating data: $e');
     }
   }
+  void initialPopup() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              ' Task 3 ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 24.0,
+                color: Color.fromARGB(255, 94, 114, 228), // Title color
+              ),
+            ),
+            
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Instructions:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18.0,
+                color: Color.fromARGB(255, 158, 124, 193), // Instruction title color
+              ),
+            ),
+            SizedBox(height: 10.0),
+            Text(
+              'In this task, your grandchild will provide you with some information that will be useful for future game tasks.',
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.black87, // Content color
+              ),
+            ),
+            
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+            },
+            child: Text(
+              'Got it!',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18.0,
+                color: Color.fromARGB(255, 94, 114, 228), // Button color
+              ),
+            ),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        elevation: 10.0,
+        backgroundColor: Colors.white, // Background color
+      );
+    },
+  );
+}
+
+
 
   void updateFirebaseUserAnswer(String selectedFruit) async {
     try {
@@ -236,7 +307,7 @@ class _M1L3State extends State<M1L3> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                showCelebrationDialog();
+                // showCelebrationDialog();
               },
               child: Text('OK'),
             ),
@@ -267,19 +338,20 @@ class _M1L3State extends State<M1L3> {
   }
 
   void displayRandomFruits() {
-    List<String> remainingFruits = List.from(fruits);
-    Random random = Random();
-    while (selectedFruits.length < 5) {
-      int index = random.nextInt(remainingFruits.length);
-      selectedFruits.add(remainingFruits[index]);
-      remainingFruits.removeAt(index);
-    }
-    setState(() {
-      showFruit = true;
-      showSelectFruitButton = false;
-      displayedFruits = List.from(selectedFruits);
-    });
+  List<String> remainingFruits = List.from(fruits);
+  Random random = Random();
+  while (selectedFruits.length < 5) {
+    int index = random.nextInt(remainingFruits.length);
+    selectedFruits.add(remainingFruits[index]);
+    remainingFruits.removeAt(index);
   }
+  setState(() {
+    showFruit = true;
+    showSelectFruitButton = false;
+    displayedFruits = List.from(selectedFruits);
+  });
+}
+
 
   void onFruitSelected(String fruit) {
     setState(() {
@@ -367,8 +439,8 @@ class _M1L3State extends State<M1L3> {
                   ),
                 ),
                 Positioned(
-                  top: 90.0,
-                  right: 220.0,
+                  bottom: 120.0,
+                  left: 220.0,
                   child: Visibility(
                     visible: showFruit && !fruitSelected,
                     child: Column(

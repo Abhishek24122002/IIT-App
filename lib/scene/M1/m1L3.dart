@@ -94,9 +94,9 @@ class _M1L3State extends State<M1L3> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-     Future.delayed(Duration.zero, () {
-    initialPopup();
-  });
+    Future.delayed(Duration.zero, () {
+      initialPopup();
+    });
   }
 
   void fetchGender() async {
@@ -147,74 +147,72 @@ class _M1L3State extends State<M1L3> {
       print('Error updating data: $e');
     }
   }
+
   void initialPopup() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              ' Task 3 ',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 24.0,
-                color: Color.fromARGB(255, 94, 114, 228), // Title color
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                ' Task 3 ',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24.0,
+                  color: Color.fromARGB(255, 94, 114, 228), // Title color
+                ),
               ),
-            ),
-            
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Instructions:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18.0,
-                color: Color.fromARGB(255, 158, 124, 193), // Instruction title color
-              ),
-            ),
-            SizedBox(height: 10.0),
-            Text(
-              'In this task, your grandchild will provide you with some information that will be useful for future game tasks.',
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.black87, // Content color
-              ),
-            ),
-            
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close the dialog
-            },
-            child: Text(
-              'Got it!',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18.0,
-                color: Color.fromARGB(255, 94, 114, 228), // Button color
-              ),
-            ),
+            ],
           ),
-        ],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        elevation: 10.0,
-        backgroundColor: Colors.white, // Background color
-      );
-    },
-  );
-}
-
-
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Instructions:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  color: Color.fromARGB(
+                      255, 158, 124, 193), // Instruction title color
+                ),
+              ),
+              SizedBox(height: 10.0),
+              Text(
+                'In this task, your grandchild will provide you with some information that will be useful for future game tasks.',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black87, // Content color
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text(
+                'Got it!',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  color: Color.fromARGB(255, 94, 114, 228), // Button color
+                ),
+              ),
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          elevation: 10.0,
+          backgroundColor: Colors.white, // Background color
+        );
+      },
+    );
+  }
 
   void updateFirebaseUserAnswer(String selectedFruit) async {
     try {
@@ -230,9 +228,25 @@ class _M1L3State extends State<M1L3> {
         DocumentReference scoreDocRef =
             userDocRef.collection('score').doc('M1');
 
-        // Update the 'userAnswer' field in the 'Score-M1' document
+        // Get the current userAnswer array from Firestore
+        DocumentSnapshot<Map<String, dynamic>> snapshot =
+            await scoreDocRef.get() as DocumentSnapshot<Map<String, dynamic>>;
+        Map<String, dynamic> userAnswerMap =
+            snapshot.data()?['userAnswer'] ?? {};
+
+        // Update the value of the selected fruit in 'L3' level
+        if (userAnswerMap.containsKey('L3') &&
+            userAnswerMap['L3'].containsKey(selectedFruit)) {
+          userAnswerMap['L3'][selectedFruit] =
+              (userAnswerMap['L3'][selectedFruit] ?? 0) + 1;
+        } else {
+          // If 'L3' level or selected fruit doesn't exist, create/update accordingly
+          userAnswerMap['L3'] = {selectedFruit: 1};
+        }
+
+        // Update the 'userAnswer' field in the 'Score-M1' document with the modified map
         await scoreDocRef.update({
-          'userAnswer': selectedFruit,
+          'userAnswer': userAnswerMap,
         });
       }
     } catch (e) {
@@ -338,20 +352,19 @@ class _M1L3State extends State<M1L3> {
   }
 
   void displayRandomFruits() {
-  List<String> remainingFruits = List.from(fruits);
-  Random random = Random();
-  while (selectedFruits.length < 5) {
-    int index = random.nextInt(remainingFruits.length);
-    selectedFruits.add(remainingFruits[index]);
-    remainingFruits.removeAt(index);
+    List<String> remainingFruits = List.from(fruits);
+    Random random = Random();
+    while (selectedFruits.length < 5) {
+      int index = random.nextInt(remainingFruits.length);
+      selectedFruits.add(remainingFruits[index]);
+      remainingFruits.removeAt(index);
+    }
+    setState(() {
+      showFruit = true;
+      showSelectFruitButton = false;
+      displayedFruits = List.from(selectedFruits);
+    });
   }
-  setState(() {
-    showFruit = true;
-    showSelectFruitButton = false;
-    displayedFruits = List.from(selectedFruits);
-  });
-}
-
 
   void onFruitSelected(String fruit) {
     setState(() {

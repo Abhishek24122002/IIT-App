@@ -10,8 +10,8 @@ class M1L5 extends StatefulWidget {
 
 class _M1L5State extends State<M1L5> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  int M1L5Attempts = 0;
-  int M1L5Point = 0;
+  // int M1L5Attempts = 0;
+  // int M1L5Point = 0;
 
   Future<void> updateFirebaseUserAnswer(String savedSequence) async {
     try {
@@ -54,35 +54,35 @@ class _M1L5State extends State<M1L5> {
     return ''; // Return an empty string if the user is not authenticated
   }
 
-  void updateFirebaseDataM1L5() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = await getCurrentUserUid();
+  // void updateFirebaseDataM1L5() async {
+  //   try {
+  //     FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //     String userUid = await getCurrentUserUid();
 
-      if (userUid.isNotEmpty) {
-        // Reference to the user's document
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userUid);
+  //     if (userUid.isNotEmpty) {
+  //       // Reference to the user's document
+  //       DocumentReference userDocRef =
+  //           firestore.collection('users').doc(userUid);
 
-        // Reference to the 'score' document with document ID 'M1'
-        DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M1');
+  //       // Reference to the 'score' document with document ID 'M1'
+  //       DocumentReference scoreDocRef =
+  //           userDocRef.collection('score').doc('M1');
 
-        DocumentReference attemptDocRef =
-            userDocRef.collection('attempt').doc('M1');
+  //       DocumentReference attemptDocRef =
+  //           userDocRef.collection('attempt').doc('M1');
 
-        // Update the fields in the 'score' document
-        await scoreDocRef.update({
-          'M1L5Point': M1L5Point,
-        });
-        await attemptDocRef.update({
-          'M1L5Attempts': M1L5Attempts,
-        });
-      }
-    } catch (e) {
-      print('Error updating data: $e');
-    }
-  }
+  //       // Update the fields in the 'score' document
+  //       await scoreDocRef.update({
+  //         'M1L5Point': M1L5Point,
+  //       });
+  //       await attemptDocRef.update({
+  //         'M1L5Attempts': M1L5Attempts,
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error updating data: $e');
+  //   }
+  // }
 
   List<String> tasks = [
     'Fruit eated',
@@ -186,10 +186,9 @@ class _M1L5State extends State<M1L5> {
           actions: [
             TextButton(
               onPressed: () {
-                updateFirebaseUserAnswer(savedSequence);
-                M1L5Attempts++;
-                M1L5Point = 1;
-                updateFirebaseDataM1L5();
+                // M1L5Attempts++;
+                // M1L5Point = 1;
+                // updateFirebaseDataM1L5();
                 Navigator.pop(context);
               },
               child: Text('OK'),
@@ -315,6 +314,7 @@ class _M1L5State extends State<M1L5> {
 
           // Compare savedSequence with correctSequence
           if (savedSequence == correctSequence.join(', ')) {
+            updateFirebaseUserAnswer(savedSequence);
             showCelebrationDialog();
           } else {
             showTryAgainDialog();

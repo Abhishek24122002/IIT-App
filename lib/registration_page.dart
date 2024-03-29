@@ -55,7 +55,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   // Password validation function
   bool _isPasswordValid(String password) {
-    String pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$])[A-Za-z\d@$]{8,15}$';
+    String pattern =
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$])[A-Za-z\d@$]{8,15}$';
     RegExp regex = RegExp(pattern);
     return regex.hasMatch(password);
   }
@@ -63,185 +64,305 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Registration'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: _getImage,
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: _image != null ? FileImage(_image!) : null,
-                  child: _image == null ? Icon(Icons.add_a_photo) : null,
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color.fromARGB(255, 94, 114, 228),
+                    Color.fromARGB(255, 158, 124, 193),
+                  ],
                 ),
               ),
-              SizedBox(height: 20),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  hintText: 'Name',
-                ),
-              ),
-              SizedBox(height: 20),
-              // New Date of Birth field
-              TextField(
-                readOnly: true,
-                controller: TextEditingController(
-                  text: _selectedDate != null
-                      ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                      : '',
-                ),
-                onTap: () async {
-                  final DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (pickedDate != null && pickedDate != _selectedDate) {
-                    setState(() {
-                      _selectedDate = pickedDate;
-                    });
-                  }
-                },
-                decoration: InputDecoration(
-                  hintText: 'Date of Birth',
-                  suffixIcon: Icon(Icons.calendar_today),
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: passwordController,
-                obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              // Red-bordered box for error message
-              if (!_passwordValidated)
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.red), // Red border
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                  padding: EdgeInsets.all(8.0),
-                  margin: EdgeInsets.only(bottom: 20), // Added margin
-                  child: Text(
-                    'Password must be 8-15 characters long and contain at least 1 uppercase letter, 1 number, and 1 special character (@ or \$).',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              Row(
-                children: [
-                  Text(
-                    'Gender: ',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(width: 10),
-                  DropdownButton<String>(
-                    value: _selectedGender,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedGender = newValue;
-                      });
-                    },
-                    hint: Text('Select'), // Added hint to show "Select" as default label
-                    items: <String>['Male', 'Female']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: TextStyle(fontSize: 16),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 150),
+                      GestureDetector(
+                        onTap: _getImage,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage:
+                              _image != null ? FileImage(_image!) : null,
+                          child:
+                              _image == null ? Icon(Icons.add_a_photo) : null,
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color.fromARGB(34, 255, 255, 255),
+                                Color.fromARGB(34, 255, 255, 255),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: TextField(
+                              controller: nameController,
+                              style:
+                                  TextStyle(color: Colors.white), // Text color
+                              decoration: InputDecoration(
+                                hintText: 'Name',
+                                hintStyle: TextStyle(color: Colors.white54),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color.fromARGB(34, 255, 255, 255),
+                                Color.fromARGB(34, 255, 255, 255),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: TextField(
+                              readOnly: true,
+                              controller: TextEditingController(
+                                text: _selectedDate != null
+                                    ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                                    : '',
+                              ),
+                              onTap: () async {
+                                final DateTime? pickedDate =
+                                    await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(1900),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (pickedDate != null &&
+                                    pickedDate != _selectedDate) {
+                                  setState(() {
+                                    _selectedDate = pickedDate;
+                                  });
+                                }
+                              },
+                              style:
+                                  TextStyle(color: Colors.white), // Text color
+                              decoration: InputDecoration(
+                                hintText: 'Date of Birth',
+                                hintStyle: TextStyle(color: Colors.white54),
+                                suffixIcon: Icon(Icons.calendar_today),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color.fromARGB(34, 255, 255, 255),
+                                Color.fromARGB(34, 255, 255, 255),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: TextField(
+                              controller: emailController,
+                              style:
+                                  TextStyle(color: Colors.white), // Text color
+                              decoration: InputDecoration(
+                                hintText: 'Email',
+                                hintStyle: TextStyle(color: Colors.white54),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color.fromARGB(34, 255, 255, 255),
+                                Color.fromARGB(34, 255, 255, 255),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: TextField(
+                              controller: passwordController,
+                              obscureText: _obscurePassword,
+                              style:
+                                  TextStyle(color: Colors.white), // Text color
+                              decoration: InputDecoration(
+                                hintText: 'Password',
+                                hintStyle: TextStyle(color: Colors.white54),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      // Red-bordered box for error message
+                      if (!_passwordValidated)
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.red), // Red border
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          padding: EdgeInsets.all(8.0),
+                          margin: EdgeInsets.only(bottom: 20), // Added margin
+                          child: Text(
+                            'Password must be 8-15 characters long and contain at least 1 uppercase letter, 1 number, and 1 special character (@ or \$).',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Gender: ',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            SizedBox(width: 10),
+                            DropdownButton<String>(
+                              value: _selectedGender,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedGender = newValue;
+                                });
+                              },
+                              hint: Text(
+                                  'Select'), // Added hint to show "Select" as default label
+                              items: <String>[
+                                'Male',
+                                'Female'
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(
+                                    value,
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () async {
+                          String password = passwordController.text.trim();
+                          // Check password validation
+                          if (!_isPasswordValid(password)) {
+                            setState(() {
+                              _passwordValidated = false;
+                            });
+                            return; // Stop registration process if password is invalid
+                          }
+
+                          try {
+                            UserCredential userCredential = await FirebaseAuth
+                                .instance
+                                .createUserWithEmailAndPassword(
+                              email: emailController.text.trim(),
+                              password: password,
+                            );
+
+                            String photoURL =
+                                await _uploadImage(userCredential.user!.uid);
+                            _imageURL = photoURL; // Store Firebase Storage URL
+
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(userCredential.user!.uid)
+                                .set({
+                              'name': nameController.text.trim(),
+                              'email': emailController.text.trim(),
+                              'photoURL': _imageURL,
+                              'gender': _selectedGender,
+                              'dob': _selectedDate != null
+                                  ? Timestamp.fromDate(_selectedDate!)
+                                  : null, // Store DOB in Firestore as Timestamp
+                            });
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      HomePage(user: userCredential.user)),
+                            );
+                          } catch (e) {
+                            print('Registration Error: $e');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Registration failed. Please try again later.')),
+                            );
+                          }
+                        },
+                        child: Text('Register'),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  String password = passwordController.text.trim();
-                  // Check password validation
-                  if (!_isPasswordValid(password)) {
-                    setState(() {
-                      _passwordValidated = false;
-                    });
-                    return; // Stop registration process if password is invalid
-                  }
-
-                  try {
-                    UserCredential userCredential =
-                        await FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                      email: emailController.text.trim(),
-                      password: password,
-                    );
-
-                    String photoURL =
-                        await _uploadImage(userCredential.user!.uid);
-                    _imageURL = photoURL; // Store Firebase Storage URL
-
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(userCredential.user!.uid)
-                        .set({
-                      'name': nameController.text.trim(),
-                      'email': emailController.text.trim(),
-                      'photoURL': _imageURL,
-                      'gender': _selectedGender,
-                      'dob': _selectedDate != null
-                          ? Timestamp.fromDate(_selectedDate!)
-                          : null, // Store DOB in Firestore as Timestamp
-                    });
-
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              HomePage(user: userCredential.user)),
-                    );
-                  } catch (e) {
-                    print('Registration Error: $e');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              'Registration failed. Please try again later.')),
-                    );
-                  }
-                },
-                child: Text('Register'),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

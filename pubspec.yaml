@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_windowmanager: ^0.2.0
+  flutter_svg: ^2.0.10+1
   
 
 
@@ -94,6 +95,11 @@ flutter:
     - assets/login.gif
     - assets/login1.gif
     - assets/signup.gif
+    - assets/signIn.svg
+    - assets/signUp.svg
+    - assets/uploadImage.svg
+    - assets/newlogin.svg
+    - assets/newregister.svg
 
 
 

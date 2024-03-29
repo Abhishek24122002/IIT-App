@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'home_page.dart';
 import 'registration_page.dart';
 import 'forgot_password_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
   runApp(LoginApp());
@@ -50,11 +51,20 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 60.0, bottom: 30.0),
+                  padding: const EdgeInsets.only(top: 10.0, bottom: 30.0),
                   child: Image.asset(
                     'assets/logo.png',
                     width: 100.0,
                     height: 100.0,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 60.0, bottom: 30.0),
+                  child: SvgPicture.asset(
+                    'assets/newlogin.svg',
+                    semanticsLabel: 'My SVG Image',
+                    height: 180,
+                    width: 100,
                   ),
                 ),
                 Padding(

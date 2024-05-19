@@ -15,19 +15,7 @@ class M2L1 extends StatefulWidget {
 }
 
 class _M2L1State extends State<M2L1> {
-  List<Offset> points = [
-    Offset(100, 100),
-    Offset(200, 200),
-    Offset(300, 100),
-    Offset(400, 200),
-    Offset(500, 100),
-    Offset(600, 200),
-    Offset(700, 100),
-    Offset(800, 200),
-    Offset(900, 100),
-    Offset(1000, 200),
-  ];
-
+  List<Offset> points = [];
   List<String> icons = [
     'assets/house.png',
     'assets/shop.png',
@@ -37,8 +25,6 @@ class _M2L1State extends State<M2L1> {
     'assets/pharmacy.png',
     'assets/vegetableshop.png',
     'assets/meatshop.png',
-    'assets/dairyshop.png',
-    'assets/barbershop.png',
   ];
 
   List<String> labels = [
@@ -50,13 +36,9 @@ class _M2L1State extends State<M2L1> {
     'Pharmacy',
     'Vegetable Shop',
     'Meat Shop',
-    'Dairy Shop',
-    'Barber Shop',
   ];
 
-  List<Offset> selectedPoints = [
-    Offset(100, 150)
-  ]; // Start with the house selected
+  List<Offset> selectedPoints = [Offset(0, 0)]; // Start with the house selected
   List<ui.Image> images = [];
 
   @override
@@ -92,9 +74,17 @@ class _M2L1State extends State<M2L1> {
   }
 
   void _onTapDown(TapDownDetails details) {
+    Size screenSize = MediaQuery.of(context).size;
+
+    double boxWidth = screenSize.width / 6;
+    double boxHeight = screenSize.height / 4;
+
     for (int i = 0; i < points.length; i++) {
-      Offset circleOffset = Offset(points[i].dx, points[i].dy + 50);
-      if ((details.localPosition - circleOffset).distance < 20) {
+      Rect boxRect = Rect.fromCenter(
+          center: points[i], width: boxWidth, height: boxHeight);
+      if (boxRect.contains(details.localPosition)) {
+        Offset circleOffset =
+            Offset(points[i].dx, points[i].dy + boxHeight / 2 + 20);
         setState(() {
           if (!selectedPoints.contains(circleOffset)) {
             selectedPoints.add(circleOffset);
@@ -109,11 +99,34 @@ class _M2L1State extends State<M2L1> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+
+    // Adjust box size based on screen size
+    double boxWidth = screenSize.width / 6;
+    double boxHeight = screenSize.height / 4;
+
+    points = [
+      Offset(screenSize.width / 8, screenSize.height / 4),
+      Offset(screenSize.width * 3 / 8, screenSize.height / 4),
+      Offset(screenSize.width * 5 / 8, screenSize.height / 4),
+      Offset(screenSize.width * 7 / 8, screenSize.height / 4),
+      Offset(screenSize.width / 8, screenSize.height * 3 / 4),
+      Offset(screenSize.width * 3 / 8, screenSize.height * 3 / 4),
+      Offset(screenSize.width * 5 / 8, screenSize.height * 3 / 4),
+      Offset(screenSize.width * 7 / 8, screenSize.height * 3 / 4),
+    ];
+
+    if (selectedPoints.length == 1) {
+      selectedPoints[0] = Offset(
+          screenSize.width / 8, screenSize.height / 4 + boxHeight / 2 + 20);
+    }
+
     return Scaffold(
       body: GestureDetector(
         onTapDown: _onTapDown,
         child: CustomPaint(
-          painter: PathPainter(points, images, labels, selectedPoints),
+          painter: PathPainter(points, images, labels, selectedPoints, boxWidth,
+              boxHeight, screenSize),
           child: Container(),
         ),
       ),
@@ -126,8 +139,12 @@ class PathPainter extends CustomPainter {
   final List<ui.Image> images;
   final List<String> labels;
   final List<Offset> selectedPoints;
+  final double boxWidth;
+  final double boxHeight;
+  final Size screenSize;
 
-  PathPainter(this.points, this.images, this.labels, this.selectedPoints);
+  PathPainter(this.points, this.images, this.labels, this.selectedPoints,
+      this.boxWidth, this.boxHeight, this.screenSize);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -145,16 +162,18 @@ class PathPainter extends CustomPainter {
       if (i < images.length) {
         final ui.Image image = images[i];
         final offset = points[i];
-        _drawImage(canvas, image, offset, 60.0);
-        _drawLabel(canvas, labels[i], offset, 60.0);
+        _drawBoxWithShadow(canvas, offset, boxWidth, boxHeight);
+        _drawImage(canvas, image, offset, boxWidth / 2);
+        _drawLabel(canvas, labels[i], offset, boxWidth / 2, screenSize);
 
-        Offset circleOffset = Offset(offset.dx, offset.dy + 50);
+        Offset circleOffset = Offset(offset.dx, offset.dy + boxHeight / 2 + 20);
         if (selectedPoints.contains(circleOffset)) {
           _drawSelectedCircle(canvas, circleOffset, 10.0, circlePaint);
         }
       }
     }
 
+    // Draw path starting from the house (first box)
     if (selectedPoints.length > 1) {
       for (int i = 0; i < selectedPoints.length - 1; i++) {
         canvas.drawLine(selectedPoints[i], selectedPoints[i + 1], paint);
@@ -162,14 +181,29 @@ class PathPainter extends CustomPainter {
     }
   }
 
+  void _drawBoxWithShadow(
+      Canvas canvas, Offset offset, double width, double height) {
+    final rect = Rect.fromCenter(center: offset, width: width, height: height);
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.5)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10);
+
+    final boxPaint = Paint()..color = Colors.white.withOpacity(0.7);
+
+    canvas.drawRect(rect.shift(Offset(0, 10)), shadowPaint);
+    canvas.drawRect(rect, boxPaint);
+  }
+
   void _drawImage(Canvas canvas, ui.Image image, Offset offset, double size) {
     final src =
         Offset.zero & Size(image.width.toDouble(), image.height.toDouble());
-    final dst = Rect.fromCenter(center: offset, width: size, height: size);
+    final dst = Rect.fromCenter(center: offset, width: size, height: size)
+        .translate(0, -boxHeight / 4);
     canvas.drawImageRect(image, src, dst, Paint());
   }
 
-  void _drawLabel(Canvas canvas, String label, Offset offset, double size) {
+  void _drawLabel(Canvas canvas, String label, Offset offset, double size,
+      Size screenSize) {
     final textPainter = TextPainter(
       text: TextSpan(
         text: label,
@@ -178,8 +212,10 @@ class PathPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
-    final offsetLabel = Offset(
-        offset.dx - (textPainter.width / 2), offset.dy + (size / 2) + 35);
+
+    // Center the text within the box
+    final offsetLabel = Offset(offset.dx - (textPainter.width / 2),
+        offset.dy + (size / 2) - (textPainter.height / 2));
     textPainter.paint(canvas, offsetLabel);
   }
 

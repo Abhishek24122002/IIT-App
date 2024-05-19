@@ -100,6 +100,17 @@ flutter:
     - assets/uploadImage.svg
     - assets/newlogin.svg
     - assets/newregister.svg
+    - assets/barbershop.png
+    - assets/dairyshop.png
+    - assets/hospital.png
+    - assets/pharmacy.png
+    - assets/school.png
+    - assets/shop.png
+    - assets/meatshop.png
+    - assets/temple.png
+    - assets/house.png
+    - assets/vegetableshop.png
+
 
 
 

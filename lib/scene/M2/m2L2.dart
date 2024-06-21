@@ -289,7 +289,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
 
   void incrementMoveCount() {
     moveCount++;
-    if (moveCount >= 1) {
+    if (moveCount >= 20) {
       setState(() {
         showHintButton = true;
       });

@@ -54,14 +54,12 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
         title: Text('Module 2 level 2'),
       ),
-       backgroundColor: const Color.fromARGB(255, 110, 238, 117),
+      backgroundColor: const Color.fromARGB(255, 110, 238, 117),
       body: Stack(
         children: [
-          
           // Road (Path)
           Positioned.fill(
             child: CustomPaint(
@@ -71,16 +69,16 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
           // House Image
           Positioned(
             left: 0,
-            top: 20,
+            top: 25,
             child: Image.asset(
               'assets/home.png', // Path to the house image
-              width: 70,
-              height: 70,
+              width: 80,
+              height: 80,
             ),
           ),
           Positioned(
-            left: 260,
-            top: 120,
+            left: 262,
+            top: 135,
             child: Image.asset(
               'assets/lake.png', // Path to the house image
               width: 130,
@@ -89,17 +87,17 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
           ),
           Positioned(
             right: 350,
-            top: 40,
+            top: 55,
             child: Image.asset(
               'assets/tree.png', // Path to the house image
               width: 100,
               height: 100,
             ),
           ),
-          
+
           Positioned(
             right: 40,
-            top: 10,
+            top: 35,
             child: Image.asset(
               'assets/hospital.png', // Path to the hospital image
               width: 70,
@@ -108,7 +106,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
           ),
           Positioned(
             right: 210,
-            top: 40,
+            top: 85,
             child: Image.asset(
               'assets/temple.png', // Path to the hospital image
               width: 70,
@@ -121,19 +119,19 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
             bottom: 10,
             child: Image.asset(
               'assets/school.png', // Path to the school image
-              width: 70,
-              height: 70,
+              width: 80,
+              height: 80,
             ),
           ),
           // Character
           AnimatedPositioned(
             left: xPosition,
             top: yPosition,
-            duration: Duration(milliseconds: 300),
+            duration: Duration(milliseconds: 200),
             child: Image.asset(
               'assets/old1.png', // Path to the character image
               width: 80,
-              height: 80,
+              height: 70,
             ),
           ),
           // Coordinates Display
@@ -163,7 +161,8 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
                     child: Text('Next Level'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       textStyle: TextStyle(fontSize: 24),
                     ),
                   ),
@@ -333,7 +332,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   Timer? movementTimer;
 
   void moveContinuously(Function moveFunction) {
-    movementTimer = Timer.periodic(Duration(milliseconds: 200), (timer) {
+    movementTimer = Timer.periodic(Duration(milliseconds: 150), (timer) {
       moveFunction();
     });
   }
@@ -352,28 +351,28 @@ class RoadPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       // ..color = Color.fromARGB(255, 158, 158, 158)
-      ..color = Color.fromARGB(255, 236,205,162)
+      ..color = Color.fromARGB(255, 236, 205, 162)
       ..strokeWidth = 30
       ..style = PaintingStyle.stroke;
 
     final path1 = Path();
-    path1.moveTo(50, 50);
+    path1.moveTo(50, 85);
 
-    path1.lineTo(160, 50);
-    path1.lineTo(160, 150);
-    path1.lineTo(260, 150);
-    path1.lineTo(260, 250);
-    path1.lineTo(400, 250);
-    path1.lineTo(400, 150);
-    path1.lineTo(500, 150);
-    path1.lineTo(500, 50);
-    path1.lineTo(640, 50);
-    path1.lineTo(640, 270);
-    path1.lineTo(730, 270);
+    path1.lineTo(160, 85);
+    path1.lineTo(160, 165);
+    path1.lineTo(260, 165);
+    path1.lineTo(260, 265);
+    path1.lineTo(400, 265);
+    path1.lineTo(400, 165);
+    path1.lineTo(500, 165);
+    path1.lineTo(500, 85);
+    path1.lineTo(640, 85);
+    path1.lineTo(640, 275);
+    path1.lineTo(730, 275);
 
     final path3 = Path();
-    path3.moveTo(650, 50);
-    path3.lineTo(730, 50);
+    path3.moveTo(650, 85);
+    path3.lineTo(730, 85);
 
     // Draw both paths
     canvas.drawPath(path1, paint);
@@ -387,18 +386,19 @@ class RoadPainter extends CustomPainter {
         ..style = PaintingStyle.stroke;
 
       final hintPath = Path();
-      hintPath.moveTo(50, 50);
-      hintPath.lineTo(160, 50);
-      hintPath.lineTo(160, 150);
-      hintPath.lineTo(260, 150);
-      hintPath.lineTo(260, 250);
-      hintPath.lineTo(400, 250);
-      hintPath.lineTo(400, 150);
-      hintPath.lineTo(500, 150);
-      hintPath.lineTo(500, 50);
-      hintPath.lineTo(640, 50);
-      hintPath.lineTo(640, 270);
-      hintPath.lineTo(730, 270);
+      hintPath.moveTo(50, 85);
+
+      hintPath.lineTo(160, 85);
+      hintPath.lineTo(160, 165);
+      hintPath.lineTo(260, 165);
+      hintPath.lineTo(260, 265);
+      hintPath.lineTo(400, 265);
+      hintPath.lineTo(400, 165);
+      hintPath.lineTo(500, 165);
+      hintPath.lineTo(500, 85);
+      hintPath.lineTo(640, 85);
+      hintPath.lineTo(640, 275);
+      hintPath.lineTo(730, 275);
 
       canvas.drawPath(hintPath, hintPaint);
     }

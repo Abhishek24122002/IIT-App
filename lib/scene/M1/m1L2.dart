@@ -60,12 +60,11 @@ class _M1L2State extends State<M1L2> {
   bool showSpeechBubble2 = false;
   bool nextLevelButton = false;
   int level2Attempts = 0;
-  bool showHintButton = true;
+  bool showHintButton = false;
   String? gender;
   String userAnswer = '';
   String weather = '';
-  TextEditingController answerController = TextEditingController();
- List<Widget> levels = [M1L1(), M1L2(), M1L3(),M1L4(), M1L5()];
+  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
   int currentLevelIndex = 1;
   String sceneImage = 'assets/bg1.jpg';
   int M1L2Attempts = 0;
@@ -111,32 +110,34 @@ class _M1L2State extends State<M1L2> {
   }
 
   void updateFirebaseDataM1L2() async {
-  try {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String userUid = getCurrentUserUid();
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
 
-    if (userUid.isNotEmpty) {
-      // Reference to the user's document
-      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
-      // Reference to the 'score' document with document ID 'M1'
-      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M1');
+        // Reference to the 'score' document with document ID 'M1'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M1');
 
-      DocumentReference attemptDocRef = userDocRef.collection('attempt').doc('M1');
+        DocumentReference attemptDocRef =
+            userDocRef.collection('attempt').doc('M1');
 
-      // Update the fields in the 'score' document
-      await scoreDocRef.update({
-        'M1L2Point': M1L2Point,
-      });
-      await attemptDocRef.update({
-        'M1L2Attempts': M1L2Attempts,
-      });
+        // Update the fields in the 'score' document
+        await scoreDocRef.update({
+          'M1L2Point': M1L2Point,
+        });
+        await attemptDocRef.update({
+          'M1L2Attempts': M1L2Attempts,
+        });
+      }
+    } catch (e) {
+      print('Error updating data: $e');
     }
-  } catch (e) {
-    print('Error updating data: $e');
   }
-}
-
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
@@ -158,10 +159,11 @@ class _M1L2State extends State<M1L2> {
     }
   }
 
-  void submitAnswer() {
+  void submitAnswer(String selectedAnswer) {
     M1L2Attempts++;
+    level2Attempts++;
 
-    bool correctAnswer = isAnswerCorrect(userAnswer, weather);
+    bool correctAnswer = isAnswerCorrect(selectedAnswer, weather);
 
     if (correctAnswer) {
       showCelebrationDialog();
@@ -178,23 +180,16 @@ class _M1L2State extends State<M1L2> {
       ScoreManager.updateUserScore(2); // You need to define this function
     } else {
       showTryAgainDialog();
+      if (level2Attempts >= 2) {
+        setState(() {
+          showHintButton = true;
+        });
+      }
     }
 
-    String grandpaResponse = correctAnswer
-        ? "The weather is $weather"
-        : "The weather is $weather, not $userAnswer";
-
     setState(() {
-      showSpeechBubble = true;
-      userAnswer = grandpaResponse;
-    });
-
-    Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        if (!correctAnswer) {
-          showAnswerButton = true;
-        }
-      });
+      userAnswer = '';
+      showAnswerButton = true;
     });
   }
 
@@ -217,7 +212,7 @@ class _M1L2State extends State<M1L2> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Hint'),
-          content: Text('The weather is $weather.'),
+          content: Text('The season is $weather.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -271,36 +266,6 @@ class _M1L2State extends State<M1L2> {
     );
   }
 
-  void _showInputDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return SingleChildScrollView(
-        child: AlertDialog(
-          title: Text('Input'),
-          content: TextField(
-            controller: answerController,
-            decoration: InputDecoration(hintText: 'Enter season (winter/rainy/summer)'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() {
-                  userAnswer = answerController.text;
-                });
-                submitAnswer();
-              },
-              child: Text('Submit'),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
-
-
   void setInitialSceneImage() {
     setRandomWeatherAndBackground();
   }
@@ -330,25 +295,57 @@ class _M1L2State extends State<M1L2> {
     }
   }
 
+  void _showInputDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Select the season"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  submitAnswer('winter');
+                },
+                child: Text('Winter'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  submitAnswer('rainy');
+                },
+                child: Text('Rainy'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  submitAnswer('summer');
+                },
+                child: Text('Summer'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).requestFocus(new FocusNode());
-      },
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          resizeToAvoidBottomInset: true,
-          body: SingleChildScrollView(
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(sceneImage),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
             child: Stack(
               children: [
-                Image.asset(
-                  sceneImage,
-                  fit: BoxFit.cover,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                ),
                 Positioned(
                   top: 50.0,
                   left: -130.0,
@@ -432,7 +429,7 @@ class _M1L2State extends State<M1L2> {
                           child: Text('Start'),
                         ),
                       ),
-                      if (showAnswerButton)
+                      if (showAnswerButton && nextLevelButton==false)
                         ElevatedButton(
                           onPressed: () {
                             _showInputDialog();
@@ -453,7 +450,7 @@ class _M1L2State extends State<M1L2> {
                       child: Text('Next Level'),
                     ),
                   ),
-                if (level2Attempts >= 2 && showHintButton)
+                if (showHintButton)
                   Positioned(
                     bottom: 20.0,
                     right: 30.0,

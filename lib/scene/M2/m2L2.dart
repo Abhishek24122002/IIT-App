@@ -1,6 +1,7 @@
+import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:async';
 
 void main() {
   runApp(MaterialApp(
@@ -13,399 +14,333 @@ class M2L2 extends StatefulWidget {
   _M2L2State createState() => _M2L2State();
 }
 
-class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
-  double xPosition = 20.0;
-  double yPosition = 20.0;
-  double step = 20.0;
-  bool isAtSchool = false; // Flag to track if character is at school
-  AnimationController? _controller;
-  int moveCount = 0; // Track number of moves
-  bool showHintButton = false; // Flag to show hint button
-  Timer? hintTimer; // Timer to show hint button
-  bool showHintPath = false; // Flag to show hint path
+class _M2L2State extends State<M2L2> {
+  List<Offset> points = [];
+  List<String> icons = [
+    'assets/house.png',
+    'assets/shop.png',
+    'assets/hospital.png',
+    'assets/temple.png',
+    'assets/school.png',
+    'assets/pharmacy.png',
+    'assets/vegetableshop.png',
+    'assets/meatshop.png',
+  ];
+
+  List<String> labels = [
+    'House',
+    'Shop',
+    'Hospital',
+    'Temple',
+    'School',
+    'Pharmacy',
+    'Vegetable Shop',
+    'Meat Shop',
+  ];
+
+  List<Offset> selectedPoints = [];
+  List<Offset> drawnPath = [];
+  List<ui.Image> images = [];
+  int hoveredIndex = -1;
+
+  // Define the correct path from house to school
+  List<int> correctPathIndices = [0, 1, 2, 3];
+  List<Offset> correctPath = [];
+  int wrongAttempts = 0;
+  bool showHint = false;
+  bool showCorrectPath = false;
+  bool levelCompleted = false;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
     ]);
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    // Start a timer to show hint button after 30 seconds
-    hintTimer = Timer(Duration(seconds: 30), () {
-      setState(() {
-        showHintButton = true;
-      });
-    });
+    _loadAllImages();
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
-    hintTimer?.cancel();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Module 2 level 2'),
-      ),
-      backgroundColor: const Color.fromARGB(255, 110, 238, 117),
-      body: Stack(
-        children: [
-          // Road (Path)
-          Positioned.fill(
-            child: CustomPaint(
-              painter: RoadPainter(showHintPath),
-            ),
-          ),
-          // House Image
-          Positioned(
-            left: 0,
-            top: 25,
-            child: Image.asset(
-              'assets/home.png', // Path to the house image
-              width: 80,
-              height: 80,
-            ),
-          ),
-          Positioned(
-            left: 262,
-            top: 135,
-            child: Image.asset(
-              'assets/lake.png', // Path to the house image
-              width: 130,
-              height: 120,
-            ),
-          ),
-          Positioned(
-            right: 350,
-            top: 55,
-            child: Image.asset(
-              'assets/tree.png', // Path to the house image
-              width: 100,
-              height: 100,
-            ),
-          ),
-
-          Positioned(
-            right: 40,
-            top: 35,
-            child: Image.asset(
-              'assets/hospital.png', // Path to the hospital image
-              width: 70,
-              height: 70,
-            ),
-          ),
-          Positioned(
-            right: 210,
-            top: 85,
-            child: Image.asset(
-              'assets/temple.png', // Path to the hospital image
-              width: 70,
-              height: 70,
-            ),
-          ),
-          // School Image
-          Positioned(
-            right: 40,
-            bottom: 10,
-            child: Image.asset(
-              'assets/school.png', // Path to the school image
-              width: 80,
-              height: 80,
-            ),
-          ),
-          // Character
-          AnimatedPositioned(
-            left: xPosition,
-            top: yPosition,
-            duration: Duration(milliseconds: 200),
-            child: Image.asset(
-              'assets/old1.png', // Path to the character image
-              width: 80,
-              height: 70,
-            ),
-          ),
-          // Coordinates Display
-          // Positioned(
-          //   top: 20,
-          //   left: 20,
-          //   child: Container(
-          //     color: Colors.white.withOpacity(0.7),
-          //     padding: EdgeInsets.all(8),
-          //     child: Text(
-          //       'x: $xPosition, y: $yPosition',
-          //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          //     ),
-          //   ),
-          // ),
-          // Next Level Button (Show when at school)
-          if (isAtSchool)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Navigate to next level or perform next level action
-                      print('Next level action here');
-                    },
-                    child: Text('Next Level'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      textStyle: TextStyle(fontSize: 24),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          // Hint Button (Show when hint conditions are met)
-          if (showHintButton && !isAtSchool)
-            Positioned(
-              bottom: 20,
-              left: 460,
-              child: ElevatedButton(
-                onPressed: showHint,
-                child: Text('Show Hint'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
-          // Control Buttons
-          Positioned(
-            bottom: 65,
-            left: 10,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveLeft),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveLeft,
-                child: Icon(Icons.arrow_left),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 120,
-            left: 65,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveUp),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveUp,
-                child: Icon(Icons.arrow_upward),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 65,
-            left: 120,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveRight),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveRight,
-                child: Icon(Icons.arrow_right),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 10,
-            left: 65,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveDown),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveDown,
-                child: Icon(Icons.arrow_downward),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  Future<void> _loadAllImages() async {
+    for (String icon in icons) {
+      final ByteData data = await rootBundle.load(icon);
+      final ui.Codec codec =
+          await ui.instantiateImageCodec(data.buffer.asUint8List());
+      final ui.FrameInfo fi = await codec.getNextFrame();
+      images.add(fi.image);
+    }
+    setState(() {});
   }
 
-  void moveUp() {
-    setState(() {
-      if (!isOutOfBounds(xPosition, yPosition - step)) {
-        yPosition -= step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
+  void _onPanStart(DragStartDetails details) {
+    _addPoint(details.localPosition);
   }
 
-  void moveDown() {
-    setState(() {
-      if (!isOutOfBounds(xPosition, yPosition + step)) {
-        yPosition += step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
+  void _onPanUpdate(DragUpdateDetails details) {
+    _addPoint(details.localPosition);
   }
 
-  void moveLeft() {
-    setState(() {
-      if (!isOutOfBounds(xPosition - step, yPosition)) {
-        xPosition -= step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
-  }
-
-  void moveRight() {
-    setState(() {
-      if (!isOutOfBounds(xPosition + step, yPosition)) {
-        xPosition += step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
-  }
-
-  void incrementMoveCount() {
-    moveCount++;
-    if (moveCount >= 20) {
+  void _onPanEnd(DragEndDetails details) {
+    if (_checkIfPathIsCorrect()) {
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('You found the correct path!'),
+        backgroundColor: Colors.green,
+      ));
+      wrongAttempts = 0; // Reset wrong attempts on success
       setState(() {
-        showHintButton = true;
+        levelCompleted = true;
       });
+    } else {
+      // Show error feedback
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Wrong path. Try again.'),
+        backgroundColor: Colors.red,
+      ));
+      setState(() {
+        drawnPath.clear();
+      });
+      wrongAttempts++;
+      if (wrongAttempts > 1) {
+        setState(() {
+          showHint = true;
+        });
+      }
     }
   }
 
-  void checkIfAtSchool() {
-    // Check if character is at the school (adjust coordinates as needed)
-    if (xPosition >= 680 && yPosition == 220) {
-      setState(() {
-        isAtSchool = true;
-      });
-    }
+  void _addPoint(Offset point) {
+    setState(() {
+      drawnPath.add(point);
+    });
   }
 
-  bool isOutOfBounds(double x, double y) {
-    // Define the bounds of the roads with multiple paths
-    if ((x >= 20 && x <= 120 && y == 20) ||
-        (x == 120 && y >= 20 && y <= 100) ||
-        (x >= 120 && x <= 220 && y == 100) ||
-        (x == 220 && y >= 100 && y <= 200) ||
-        (x >= 210 && x <= 360 && y == 200) ||
-        (x == 360 && y >= 100 && y <= 200) ||
-        (x >= 360 && x <= 460 && y == 100) ||
-        (x == 460 && y >= 20 && y <= 100) ||
-        (x >= 460 && x <= 600 && y == 20) ||
-        (x == 600 && y >= 20 && y <= 220) ||
-        (x >= 600 && x <= 680 && y == 220) ||
-        (x >= 460 && x <= 680 && y == 20)) {
-      return false;
+  bool _checkIfPathIsCorrect() {
+    correctPath.clear();
+    for (int i = 0; i < correctPathIndices.length - 1; i++) {
+      Offset start = points[correctPathIndices[i]];
+      Offset end = points[correctPathIndices[i + 1]];
+      correctPath.add(start);
+      correctPath.add(end);
+      bool segmentCorrect = drawnPath.any((p) =>
+          (p.dx - start.dx) * (end.dy - start.dy) ==
+          (p.dy - start.dy) * (end.dx - start.dx));
+      if (!segmentCorrect) {
+        return false;
+      }
     }
     return true;
   }
 
-  void showHint() {
+  void _showHint() {
     setState(() {
-      showHintPath = true;
+      correctPath.clear();
+      for (int i = 0; i < correctPathIndices.length - 1; i++) {
+        Offset start = points[correctPathIndices[i]];
+        Offset end = points[correctPathIndices[i + 1]];
+        correctPath.add(start);
+        correctPath.add(end);
+      }
+      showHint = false;
+      showCorrectPath = true;
     });
   }
 
-  Timer? movementTimer;
-
-  void moveContinuously(Function moveFunction) {
-    movementTimer = Timer.periodic(Duration(milliseconds: 150), (timer) {
-      moveFunction();
+  void _reset() {
+    setState(() {
+      drawnPath.clear();
+      wrongAttempts = 0;
+      showHint = false;
+      showCorrectPath = false;
+      levelCompleted = false;
+      correctPath.clear(); // Clear the correct path hints
     });
   }
 
-  void stopMovement() {
-    movementTimer?.cancel();
+  @override
+  Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+
+    // Adjust box size based on screen size
+    double boxWidth = screenSize.width / 6;
+    double boxHeight = screenSize.height / 4;
+
+    points = [
+      Offset(screenSize.width / 8, screenSize.height / 4), // House
+      Offset(screenSize.width * 3 / 8, screenSize.height / 4), // Shop
+      Offset(screenSize.width * 5 / 8, screenSize.height / 4), // Hospital
+      Offset(screenSize.width * 7 / 8, screenSize.height / 4), // Temple
+      Offset(screenSize.width / 8, screenSize.height * 3 / 4), // School
+      Offset(screenSize.width * 3 / 8, screenSize.height * 3 / 4), // Pharmacy
+      Offset(screenSize.width * 5 / 8, screenSize.height * 3 / 4), // Vegetable Shop
+      Offset(screenSize.width * 7 / 8, screenSize.height * 3 / 4), // Meat Shop
+    ];
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          GestureDetector(
+            onPanStart: _onPanStart,
+            onPanUpdate: _onPanUpdate,
+            onPanEnd: _onPanEnd,
+            child: CustomPaint(
+              painter: PathPainter(
+                points,
+                images,
+                labels,
+                selectedPoints,
+                drawnPath,
+                showCorrectPath ? correctPath : [],
+                boxWidth,
+                boxHeight,
+                screenSize,
+                hoveredIndex,
+              ),
+              child: Container(),
+            ),
+          ),
+          if (showHint)
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: ElevatedButton(
+                onPressed: _showHint,
+                child: Text('Show Hint'),
+              ),
+            ),
+          Positioned(
+            bottom: 20,
+            left: 20,
+            child: ElevatedButton(
+              onPressed: _reset,
+              child: Text('Reset'),
+            ),
+          ),
+          if (levelCompleted)
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Proceed to next level
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Next Level Coming Soon!'),
+                  ));
+                },
+                child: Text('Next Level'),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
-class RoadPainter extends CustomPainter {
-  final bool showHintPath;
+class PathPainter extends CustomPainter {
+  final List<Offset> points;
+  final List<ui.Image> images;
+  final List<String> labels;
+  final List<Offset> selectedPoints;
+  final List<Offset> drawnPath;
+  final List<Offset> correctPath;
+  final double boxWidth;
+  final double boxHeight;
+  final Size screenSize;
+  final int hoveredIndex;
 
-  RoadPainter(this.showHintPath);
+  PathPainter(this.points, this.images, this.labels, this.selectedPoints,
+      this.drawnPath, this.correctPath, this.boxWidth, this.boxHeight,
+      this.screenSize, this.hoveredIndex);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      // ..color = Color.fromARGB(255, 158, 158, 158)
-      ..color = Color.fromARGB(255, 236, 205, 162)
-      ..strokeWidth = 30
+    Paint paint = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 5.0
       ..style = PaintingStyle.stroke;
 
-    final path1 = Path();
-    path1.moveTo(50, 85);
+    Paint pathPaint = Paint()
+      ..color = Colors.green
+      ..strokeWidth = 5.0
+      ..style = PaintingStyle.stroke;
 
-    path1.lineTo(160, 85);
-    path1.lineTo(160, 165);
-    path1.lineTo(260, 165);
-    path1.lineTo(260, 265);
-    path1.lineTo(400, 265);
-    path1.lineTo(400, 165);
-    path1.lineTo(500, 165);
-    path1.lineTo(500, 85);
-    path1.lineTo(640, 85);
-    path1.lineTo(640, 275);
-    path1.lineTo(730, 275);
+    Paint correctPathPaint = Paint()
+      ..color = Colors.red
+      ..strokeWidth = 5.0
+      ..style = PaintingStyle.stroke;
 
-    final path3 = Path();
-    path3.moveTo(650, 85);
-    path3.lineTo(730, 85);
+    for (int i = 0; i < points.length; i++) {
+      if (i < images.length) {
+        final ui.Image image = images[i];
+        final offset = points[i];
+        _drawBoxWithShadow(canvas, offset, boxWidth, boxHeight);
+        _drawImage(canvas, image, offset, boxWidth / 2);
+        _drawLabel(canvas, '${i + 1}. ${labels[i]}', offset, boxWidth / 2, screenSize);
+      }
+    }
 
-    // Draw both paths
-    canvas.drawPath(path1, paint);
-    canvas.drawPath(path3, paint);
+    if (drawnPath.isNotEmpty) {
+      canvas.drawPoints(ui.PointMode.polygon, drawnPath, pathPaint);
+    }
 
-    // Draw hint path if showHintPath is true
-    if (showHintPath) {
-      final hintPaint = Paint()
-        ..color = Colors.amber
-        ..strokeWidth = 20
-        ..style = PaintingStyle.stroke;
-
-      final hintPath = Path();
-      hintPath.moveTo(50, 85);
-
-      hintPath.lineTo(160, 85);
-      hintPath.lineTo(160, 165);
-      hintPath.lineTo(260, 165);
-      hintPath.lineTo(260, 265);
-      hintPath.lineTo(400, 265);
-      hintPath.lineTo(400, 165);
-      hintPath.lineTo(500, 165);
-      hintPath.lineTo(500, 85);
-      hintPath.lineTo(640, 85);
-      hintPath.lineTo(640, 275);
-      hintPath.lineTo(730, 275);
-
-      canvas.drawPath(hintPath, hintPaint);
+    if (correctPath.isNotEmpty) {
+      for (int i = 0; i < correctPath.length - 1; i += 2) {
+        canvas.drawLine(correctPath[i], correctPath[i + 1], correctPathPaint);
+      }
     }
   }
 
+  void _drawBoxWithShadow(
+      Canvas canvas, Offset offset, double width, double height) {
+    final rect = Rect.fromCenter(center: offset, width: width, height: height);
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.3) // Adjusted shadow opacity
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 5); // Adjusted blur radius
+
+    final boxPaint = Paint()..color = Colors.white.withOpacity(0.7);
+
+    canvas.drawRect(rect.shift(Offset(5, 5)), shadowPaint); // Adjusted shadow offset
+    canvas.drawRect(rect, boxPaint);
+  }
+
+  void _drawImage(Canvas canvas, ui.Image image, Offset offset, double size) {
+    final src =
+        Offset.zero & Size(image.width.toDouble(), image.height.toDouble());
+    final dst = Rect.fromCenter(center: offset, width: size, height: size)
+        .translate(0, -boxHeight / 4);
+    canvas.drawImageRect(image, src, dst, Paint());
+  }
+
+  void _drawLabel(Canvas canvas, String label, Offset offset, double size,
+      Size screenSize) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(color: Colors.black, fontSize: 14),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+
+    // Center the text within the box
+    final offsetLabel = Offset(offset.dx - (textPainter.width / 2),
+        offset.dy + (size / 2) - (textPainter.height / 2));
+    textPainter.paint(canvas, offsetLabel);
+  }
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(PathPainter oldDelegate) {
     return true;
   }
 }

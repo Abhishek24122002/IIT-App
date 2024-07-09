@@ -1,17 +1,8 @@
+import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-void main() => runApp(TreasureMapApp());
-
-class TreasureMapApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Treasure Map',
-      home: M2L4(),
-    );
-  }
-}
+import 'package:flutter_joystick/flutter_joystick.dart';
+import 'package:vector_math/vector_math_64.dart' as vector;
 
 class M2L4 extends StatefulWidget {
   @override
@@ -19,55 +10,111 @@ class M2L4 extends StatefulWidget {
 }
 
 class _M2L4State extends State<M2L4> {
-  late GoogleMapController mapController;
+  Offset initialPosition = Offset(50, 350);
+  Offset characterPosition = Offset(50, 350);
+  final double speed = 4.0; // Speed factor to increase movement speed
 
-  final LatLng _startingPoint = LatLng(37.7749, -122.4194); // Example starting point
-  final LatLng _treasurePoint = LatLng(37.7849, -122.4094); // Example treasure point
+  void onJoystickUpdate(double x, double y) {
+    double distance = sqrt(x * x + y * y) * speed;
+    double angle = atan2(y, x);
 
-  final Set<Marker> _markers = {};
-  final Set<Polyline> _polylines = {};
+    Offset newPosition = Offset(
+      characterPosition.dx + distance * cos(angle),
+      characterPosition.dy + distance * sin(angle),
+    );
 
-  @override
-  void initState() {
-    super.initState();
-    _markers.add(Marker(
-      markerId: MarkerId('start'),
-      position: _startingPoint,
-      infoWindow: InfoWindow(title: 'Start'),
-    ));
-    _markers.add(Marker(
-      markerId: MarkerId('treasure'),
-      position: _treasurePoint,
-      infoWindow: InfoWindow(title: 'Treasure'),
-    ));
-
-    _polylines.add(Polyline(
-      polylineId: PolylineId('route'),
-      points: [_startingPoint, _treasurePoint],
-      color: Colors.red,
-      width: 5,
-    ));
+    if (isOnPath(newPosition)) {
+      setState(() {
+        characterPosition = newPosition;
+      });
+    }
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+  bool isOnPath(Offset position) {
+    // Define the curved path
+    Path path = Path();
+    path.moveTo(50, 350);
+    path.quadraticBezierTo(100, -120, 240, 250);
+    path.quadraticBezierTo(350, 300, 550, 250);
+    path.quadraticBezierTo(660, 200, 750, 70);
+
+    PathMetrics pathMetrics = path.computeMetrics();
+    for (PathMetric metric in pathMetrics) {
+      for (double i = 0; i < metric.length; i += 1.0) {
+        Tangent? tangent = metric.getTangentForOffset(i);
+        if (tangent != null) {
+          Offset point = tangent.position;
+          if ((position - point).distance <= 15) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Treasure Map'),
-      ),
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: _startingPoint,
-          zoom: 14.0,
-        ),
-        markers: _markers,
-        polylines: _polylines,
+    return Container(
+      color: const Color.fromARGB(255, 110, 238, 117),
+      child: Stack(
+        children: [
+          CustomPaint(
+            size: Size(double.infinity, double.infinity),
+            painter: PathPainter(),
+          ),
+          Positioned(
+            left: initialPosition.dx -40,
+            top: initialPosition.dy-10,
+            child: Image.asset('assets/school.png', width: 50, height: 50),
+          ),
+          Positioned(
+            left: characterPosition.dx - 10,
+            top: characterPosition.dy - 10,
+            child: Image.asset('assets/old_circle.png', width: 25, height: 25),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Joystick(
+                base: JoystickBase(
+                  
+                  size: 160,
+                  // drawArrows: false,
+                  withBorderCircle: false,
+                ),
+                mode: JoystickMode.all,
+                
+                listener: (details) {
+                  onJoystickUpdate(details.x, details.y);
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+class PathPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = Color.fromARGB(255, 236, 205, 162)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 30.0;
+
+    Path path = Path();
+    path.moveTo(50, 350);
+    path.quadraticBezierTo(100, -120, 240, 250);
+    path.quadraticBezierTo(350, 300, 550, 250);
+    path.quadraticBezierTo(660, 200, 750, 70);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

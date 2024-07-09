@@ -29,7 +29,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   Timer? hintTimer; // Timer to show hint button
   bool showHintPath = false; // Flag to show hint path
   String? gender;
-  int M2L1Point = 0;
+  int M2L2Point = 0;
   bool hint = false;
   bool showHintMessage = false; // Flag to show hint message
   Timer? hintMessageTimer; // Timer to hide hint message
@@ -91,7 +91,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
 
         // Update the fields in the 'score' document
         await scoreDocRef.update({
-          'M2L1Point': M2L1Point,
+          'M2L2Point': M2L2Point,
         });
       }
     } catch (e) {
@@ -390,7 +390,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
     if (xPosition >= 680 && yPosition == 220) {
       setState(() {
         isAtSchool = true;
-        M2L1Point = 1;
+        M2L2Point = 1;
       });
     }
     updateFirebaseDataM2L1();

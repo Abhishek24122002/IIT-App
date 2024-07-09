@@ -2,7 +2,7 @@ import 'package:alzymer/scene/M2/M2L1.dart';
 import 'package:alzymer/scene/M2/M2L2.dart';
 import 'package:alzymer/scene/M2/M2L3.dart';
 import 'package:alzymer/scene/M2/M2L4.dart';
-import 'package:alzymer/scene/M2/M2L5.dart';
+import 'package:alzymer/scene/M2/joystick.dart';
 import 'package:flutter/material.dart';
 
 

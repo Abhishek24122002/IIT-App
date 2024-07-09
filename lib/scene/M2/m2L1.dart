@@ -30,6 +30,9 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   bool showHintPath = false; // Flag to show hint path
   String? gender;
   int M2L1Point = 0;
+  bool hint = false;
+  bool showHintMessage = false; // Flag to show hint message
+  Timer? hintMessageTimer; // Timer to hide hint message
 
   @override
   void initState() {
@@ -49,7 +52,10 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
         showHintButton = true;
       });
     });
+
+    fetchGender();
   }
+
   void fetchGender() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
@@ -64,6 +70,7 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
       });
     }
   }
+
   String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
@@ -82,12 +89,10 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
         // Reference to the 'score' document with document ID 'M2'
         DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
 
-
         // Update the fields in the 'score' document
         await scoreDocRef.update({
           'M2L1Point': M2L1Point,
         });
-        
       }
     } catch (e) {
       print('Error updating data: $e');
@@ -98,6 +103,7 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   void dispose() {
     _controller?.dispose();
     hintTimer?.cancel();
+    hintMessageTimer?.cancel();
     super.dispose();
   }
 
@@ -127,25 +133,6 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           Positioned(
-            left: 262,
-            top: 135,
-            child: Image.asset(
-              'assets/lake.png', // Path to the house image
-              width: 130,
-              height: 120,
-            ),
-          ),
-          Positioned(
-            right: 350,
-            top: 55,
-            child: Image.asset(
-              'assets/tree.png', // Path to the house image
-              width: 100,
-              height: 100,
-            ),
-          ),
-
-          Positioned(
             right: 40,
             top: 35,
             child: Image.asset(
@@ -155,24 +142,53 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           Positioned(
-            right: 210,
-            top: 85,
+            right: 109,
+            bottom: 13,
             child: Image.asset(
-              'assets/temple.png', // Path to the hospital image
-              width: 70,
-              height: 70,
+              'assets/boy2_circle.png', // Path to the school image
+              width: 30,
+              height: 30,
             ),
           ),
-          // School Image
-          Positioned(
-            right: 40,
-            bottom: 10,
-            child: Image.asset(
-              'assets/school.png', // Path to the school image
-              width: 80,
-              height: 80,
+          // Show additional images when hint is enabled
+          if (showHintPath) ...[
+            Positioned(
+              left: 262,
+              top: 135,
+              child: Image.asset(
+                'assets/lake.png', // Path to the lake image
+                width: 130,
+                height: 120,
+              ),
             ),
-          ),
+            Positioned(
+              right: 33,
+              bottom: 10,
+              child: Image.asset(
+                'assets/school.png', // Path to the school image
+                width: 80,
+                height: 80,
+              ),
+            ),
+            Positioned(
+              right: 210,
+              top: 85,
+              child: Image.asset(
+                'assets/tree.png', // Path to the tree image
+                width: 70,
+                height: 70,
+              ),
+            ),
+            Positioned(
+              right: 300,
+              top: 8,
+              child: Image.asset(
+                'assets/post.png', // Path to the tree image
+                width: 70,
+                height: 70,
+              ),
+            ),
+          ],
           // Character
           AnimatedPositioned(
             left: xPosition,
@@ -184,22 +200,8 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
               height: 70,
             ),
           ),
-          // Coordinates Display
-          // Positioned(
-          //   top: 20,
-          //   left: 20,
-          //   child: Container(
-          //     color: Colors.white.withOpacity(0.7),
-          //     padding: EdgeInsets.all(8),
-          //     child: Text(
-          //       'x: $xPosition, y: $yPosition',
-          //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          //     ),
-          //   ),
-          // ),
           // Next Level Button (Show when at school)
           if (isAtSchool)
-          
             Positioned.fill(
               child: Container(
                 color: Colors.black.withOpacity(0.5),
@@ -220,7 +222,6 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
-            
           // Hint Button (Show when hint conditions are met)
           if (showHintButton && !isAtSchool)
             Positioned(
@@ -293,6 +294,20 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
+          // Hint Message (Show for 5 seconds when hint button is pressed)
+          if (showHintMessage)
+            Positioned(
+              top: 20,
+              right: 20,
+              child: Container(
+                padding: EdgeInsets.all(10),
+                color: Color.fromARGB(245, 226, 224, 224),
+                child: Text(
+                  'Take Right from Tree',
+                  style: TextStyle(fontSize: 18, color: Colors.black),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -381,6 +396,14 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   void showHint() {
     setState(() {
       showHintPath = true;
+      showHintMessage = true;
+    });
+
+    // Hide hint message after 5 seconds
+    hintMessageTimer = Timer(Duration(seconds: 5), () {
+      setState(() {
+        showHintMessage = false;
+      });
     });
   }
 
@@ -405,7 +428,6 @@ class RoadPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      // ..color = Color.fromARGB(255, 158, 158, 158)
       ..color = Color.fromARGB(255, 236, 205, 162)
       ..strokeWidth = 30
       ..style = PaintingStyle.stroke;
@@ -432,31 +454,6 @@ class RoadPainter extends CustomPainter {
     // Draw both paths
     canvas.drawPath(path1, paint);
     canvas.drawPath(path3, paint);
-
-    // Draw hint path if showHintPath is true
-    if (showHintPath) {
-      final hintPaint = Paint()
-        ..color = Colors.amber
-        ..strokeWidth = 20
-        ..style = PaintingStyle.stroke;
-
-      final hintPath = Path();
-      hintPath.moveTo(50, 85);
-
-      hintPath.lineTo(160, 85);
-      hintPath.lineTo(160, 165);
-      hintPath.lineTo(260, 165);
-      hintPath.lineTo(260, 265);
-      hintPath.lineTo(400, 265);
-      hintPath.lineTo(400, 165);
-      hintPath.lineTo(500, 165);
-      hintPath.lineTo(500, 85);
-      hintPath.lineTo(640, 85);
-      hintPath.lineTo(640, 275);
-      hintPath.lineTo(730, 275);
-
-      canvas.drawPath(hintPath, hintPaint);
-    }
   }
 
   @override

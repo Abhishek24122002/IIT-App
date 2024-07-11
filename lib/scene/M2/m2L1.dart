@@ -112,6 +112,7 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: Text('Module 2 level 1'),
+        toolbarHeight: 30,
       ),
       backgroundColor: const Color.fromARGB(255, 110, 238, 117),
       body: Stack(
@@ -133,8 +134,8 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           Positioned(
-            right: 40,
-            top: 35,
+            right:42,
+            top: 30,
             child: Image.asset(
               'assets/hospital.png', // Path to the hospital image
               width: 70,
@@ -142,8 +143,17 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           Positioned(
+            right:70,
+            top: 120,
+            child: Image.asset(
+              'assets/book.png', // Path to the hospital image
+              width: 70,
+              height: 70,
+            ),
+          ),
+          Positioned(
             right: 109,
-            bottom: 13,
+            bottom: 40,
             child: Image.asset(
               'assets/boy2_circle.png', // Path to the school image
               width: 30,
@@ -163,7 +173,7 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
             Positioned(
               right: 33,
-              bottom: 10,
+              bottom: 35,
               child: Image.asset(
                 'assets/school.png', // Path to the school image
                 width: 80,
@@ -174,20 +184,20 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
               right: 210,
               top: 85,
               child: Image.asset(
-                'assets/tree.png', // Path to the tree image
-                width: 70,
-                height: 70,
-              ),
-            ),
-            Positioned(
-              right: 300,
-              top: 8,
-              child: Image.asset(
                 'assets/post.png', // Path to the tree image
                 width: 70,
                 height: 70,
               ),
             ),
+            // Positioned(
+            //   right: 330,
+            //   top: 85,
+            //   child: Image.asset(
+            //     'assets/post.png', // Path to the tree image
+            //     width: 70,
+            //     height: 70,
+            //   ),
+            // ),
           ],
           // Character
           AnimatedPositioned(
@@ -198,6 +208,19 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
               'assets/old1.png', // Path to the character image
               width: 80,
               height: 70,
+            ),
+          ),
+          // Coordinates Display
+          Positioned(
+            top: 20,
+            left: 20,
+            child: Container(
+              color: Colors.white.withOpacity(0.7),
+              padding: EdgeInsets.all(8),
+              child: Text(
+                'x: $xPosition, y: $yPosition',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           // Next Level Button (Show when at school)
@@ -377,15 +400,15 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   bool isOutOfBounds(double x, double y) {
     // Define the bounds of the roads with multiple paths
     if ((x >= 20 && x <= 120 && y == 20) ||
-        (x == 120 && y >= 20 && y <= 100) ||
+        (x == 120 && y >= 10 && y <= 100) ||
         (x >= 120 && x <= 220 && y == 100) ||
         (x == 220 && y >= 100 && y <= 200) ||
         (x >= 210 && x <= 360 && y == 200) ||
         (x == 360 && y >= 100 && y <= 200) ||
-        (x >= 360 && x <= 460 && y == 100) ||
+        (x >= 360 && x <= 680 && y == 100) ||
         (x == 460 && y >= 20 && y <= 100) ||
         (x >= 460 && x <= 600 && y == 20) ||
-        (x == 600 && y >= 20 && y <= 220) ||
+        (x == 600 && y >= 10 && y <= 220) ||
         (x >= 600 && x <= 680 && y == 220) ||
         (x >= 460 && x <= 680 && y == 20)) {
       return false;
@@ -442,18 +465,23 @@ class RoadPainter extends CustomPainter {
     path1.lineTo(400, 265);
     path1.lineTo(400, 165);
     path1.lineTo(500, 165);
-    path1.lineTo(500, 85);
-    path1.lineTo(640, 85);
+    path1.lineTo(500,80);
+    path1.lineTo(640, 80);
     path1.lineTo(640, 275);
     path1.lineTo(730, 275);
 
     final path3 = Path();
-    path3.moveTo(650, 85);
-    path3.lineTo(730, 85);
+    path3.moveTo(650,80);
+    path3.lineTo(730, 80);
+
+    final path2 = Path();
+    path2.moveTo(500, 165);
+    path2.lineTo(730, 165);
 
     // Draw both paths
     canvas.drawPath(path1, paint);
     canvas.drawPath(path3, paint);
+    canvas.drawPath(path2, paint);
   }
 
   @override

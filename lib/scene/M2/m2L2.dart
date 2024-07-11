@@ -1,491 +1,206 @@
-import 'package:alzymer/ScoreManager.dart';
+import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:async';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-
-void main() {
-  runApp(MaterialApp(
-    home: M2L2(),
-  ));
-}
+import 'package:flutter_joystick/flutter_joystick.dart';
+import 'package:vector_math/vector_math_64.dart' as vector;
 
 class M2L2 extends StatefulWidget {
   @override
   _M2L2State createState() => _M2L2State();
 }
 
-class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
-  double xPosition = 20.0;
-  double yPosition = 20.0;
-  double step = 20.0;
-  bool isAtSchool = false; // Flag to track if character is at school
-  AnimationController? _controller;
-  int moveCount = 0; // Track number of moves
-  bool showHintButton = false; // Flag to show hint button
-  Timer? hintTimer; // Timer to show hint button
-  bool showHintPath = false; // Flag to show hint path
-  String? gender;
-  int M2L2Point = 0;
-  bool hint = false;
-  bool showHintMessage = false; // Flag to show hint message
-  Timer? hintMessageTimer; // Timer to hide hint message
+class _M2L2State extends State<M2L2> {
+  Offset initialPosition = Offset(50, 330);
+  Offset housePosition = Offset(750, 70);
+  Offset characterPosition = Offset(50, 300);
+  final double speed = 6.0; // Speed factor to increase movement speed
 
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
+  void onJoystickUpdate(double x, double y) {
+    double distance = sqrt(x * x + y * y) * speed;
+    double angle = atan2(y, x);
+
+    Offset newPosition = Offset(
+      characterPosition.dx + distance * cos(angle),
+      characterPosition.dy + distance * sin(angle),
     );
 
-    // Start a timer to show hint button after 30 seconds
-    hintTimer = Timer(Duration(seconds: 30), () {
+    if (isOnPath(newPosition)) {
       setState(() {
-        showHintButton = true;
-      });
-    });
-
-    fetchGender();
-  }
-
-  void fetchGender() async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? user = auth.currentUser;
-
-    if (user != null) {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      DocumentSnapshot<Map<String, dynamic>> snapshot =
-          await firestore.collection('users').doc(user.uid).get();
-
-      setState(() {
-        gender = snapshot.get('gender');
+        characterPosition = newPosition;
       });
     }
   }
 
-  String getCurrentUserUid() {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? user = auth.currentUser;
-    return user?.uid ?? '';
-  }
+  bool isOnPath(Offset position) {
+    // Define the paths
+    Path path = Path();
+    path.moveTo(50, 330);
+    path.quadraticBezierTo(100, -120, 240, 250);
+    path.quadraticBezierTo(350, 300, 550, 250);
+    path.quadraticBezierTo(660, 200, 750, 70);
 
-  void updateFirebaseDataM2L1() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
+    Path path2 = Path();
+    path2.moveTo(840, 130);
+    path2.quadraticBezierTo(550, 250, 520, 60);
 
-      if (userUid.isNotEmpty) {
-        // Reference to the user's document
-        DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+    // path from school to turning point
+    Path path3 = Path();
+    path3.moveTo(50, 330);
+    path3.quadraticBezierTo(140, 220, 240, 250);
 
-        // Reference to the 'score' document with document ID 'M2'
-        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
+    //path from turning (top A curve) to icecream
+    Path path4 = Path();
+    path4.moveTo(120, 85);
+    path4.quadraticBezierTo(300, 43, 560, 140);
 
-        // Update the fields in the 'score' document
-        await scoreDocRef.update({
-          'M2L2Point': M2L2Point,
-        });
+    Path path5 = Path();
+    path5.moveTo(240, 250);
+    path5.quadraticBezierTo(260, 350, 390, 350);
+
+    //Extra obstacle 2
+    Path path6 = Path();
+    path6.moveTo(520, 250);
+    path6.quadraticBezierTo(520, 300, 630, 350);
+
+    Iterable<PathMetric> combinedPathMetrics = path
+        .computeMetrics()
+        .followedBy(path2.computeMetrics())
+        .followedBy(path3.computeMetrics())
+        .followedBy(path4.computeMetrics())
+        .followedBy(path5.computeMetrics())
+        .followedBy(path6.computeMetrics());
+
+    for (PathMetric metric in combinedPathMetrics) {
+      for (double i = 0; i < metric.length; i += 1.0) {
+        Tangent? tangent = metric.getTangentForOffset(i);
+        if (tangent != null) {
+          Offset point = tangent.position;
+          if ((position - point).distance <= 15) {
+            return true;
+          }
+        }
       }
-    } catch (e) {
-      print('Error updating data: $e');
     }
-  }
 
-  @override
-  void dispose() {
-    _controller?.dispose();
-    hintTimer?.cancel();
-    hintMessageTimer?.cancel();
-    super.dispose();
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Module 2 level 1'),
-        toolbarHeight: 30,
-      ),
-      backgroundColor: const Color.fromARGB(255, 110, 238, 117),
-      body: Stack(
+    return Container(
+      color: const Color.fromARGB(255, 110, 238, 117),
+      child: Stack(
         children: [
-          // Road (Path)
-          Positioned.fill(
-            child: CustomPaint(
-              painter: RoadPainter(showHintPath),
-            ),
-          ),
-          // House Image
-          Positioned(
-            left: 0,
-            top: 25,
-            child: Image.asset(
-              'assets/home.png', // Path to the house image
-              width: 80,
-              height: 80,
-            ),
+          CustomPaint(
+            size: Size(double.infinity, double.infinity),
+            painter: PathPainter(),
           ),
           Positioned(
-            right:42,
-            top: 30,
-            child: Image.asset(
-              'assets/hospital.png', // Path to the hospital image
-              width: 70,
-              height: 70,
-            ),
+            left: initialPosition.dx - 25,
+            top: initialPosition.dy - 18,
+            child: Image.asset('assets/school.png', width: 50, height: 50),
           ),
           Positioned(
-            right:70,
-            top: 120,
-            child: Image.asset(
-              'assets/post.png', // Path to the hospital image
-              width: 70,
-              height: 70,
-            ),
+            left: characterPosition.dx - 10,
+            top: characterPosition.dy - 10,
+            child: Image.asset('assets/old_circle.png', width: 25, height: 25),
           ),
           Positioned(
-            right: 109,
-            bottom: 40,
-            child: Image.asset(
-              'assets/boy2_circle.png', // Path to the school image
-              width: 30,
-              height: 30,
-            ),
+            left: housePosition.dx - 27,
+            top: housePosition.dy - 40,
+            child: Image.asset('assets/home.png', width: 50, height: 50),
           ),
-          // Show additional images when hint is enabled
-          if (showHintPath) ...[
-            Positioned(
-              left: 262,
-              top: 135,
-              child: Image.asset(
-                'assets/lake.png', // Path to the lake image
-                width: 130,
-                height: 120,
-              ),
-            ),
-            Positioned(
-              right: 33,
-              bottom: 35,
-              child: Image.asset(
-                'assets/school.png', // Path to the school image
-                width: 80,
-                height: 80,
-              ),
-            ),
-            Positioned(
-              right: 210,
-              top: 85,
-              child: Image.asset(
-                'assets/tree.png', // Path to the tree image
-                width: 70,
-                height: 70,
-              ),
-            ),
-            // Positioned(
-            //   right: 330,
-            //   top: 85,
-            //   child: Image.asset(
-            //     'assets/post.png', // Path to the tree image
-            //     width: 70,
-            //     height: 70,
-            //   ),
-            // ),
-          ],
-          // Character
-          AnimatedPositioned(
-            left: xPosition,
-            top: yPosition,
-            duration: Duration(milliseconds: 200),
-            child: Image.asset(
-              'assets/old1.png', // Path to the character image
-              width: 80,
-              height: 70,
-            ),
-          ),
-          // Coordinates Display
           Positioned(
+            left: 490,
             top: 20,
-            left: 20,
-            child: Container(
-              color: Colors.white.withOpacity(0.7),
-              padding: EdgeInsets.all(8),
-              child: Text(
-                'x: $xPosition, y: $yPosition',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
+            child: Image.asset('assets/icecream.png', width: 60, height: 60),
           ),
-          // Next Level Button (Show when at school)
-          if (isAtSchool)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Navigate to next level or perform next level action
-                      print('Next level action here');
-                    },
-                    child: Text('Next Level'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      textStyle: TextStyle(fontSize: 24),
-                    ),
-                  ),
+          Positioned(
+            left: 455,
+            top: 130,
+            child: Image.asset('assets/lake.png', width: 120, height: 120),
+          ),
+          Positioned(
+            left: 390 - 25,
+            top: 350 -40,
+            child: Image.asset('assets/bakery.png', width: 70, height: 70),
+          ),
+          Positioned(
+            left: 630 - 25,
+            top: 350 - 28,
+            child: Image.asset('assets/shop.png', width: 50, height: 50),
+          ),
+          
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Joystick(
+                base: JoystickBase(
+                  size: 160,
+                  withBorderCircle: false,
                 ),
-              ),
-            ),
-          // Hint Button (Show when hint conditions are met)
-          if (showHintButton && !isAtSchool)
-            Positioned(
-              bottom: 20,
-              left: 460,
-              child: ElevatedButton(
-                onPressed: showHint,
-                child: Text('Show Hint'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
-          // Control Buttons
-          Positioned(
-            bottom: 65,
-            left: 10,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveLeft),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveLeft,
-                child: Icon(Icons.arrow_left),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
+                mode: JoystickMode.all,
+                listener: (details) {
+                  onJoystickUpdate(details.x, details.y);
+                },
               ),
             ),
           ),
-          Positioned(
-            bottom: 120,
-            left: 65,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveUp),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveUp,
-                child: Icon(Icons.arrow_upward),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 65,
-            left: 120,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveRight),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveRight,
-                child: Icon(Icons.arrow_right),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 10,
-            left: 65,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveDown),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveDown,
-                child: Icon(Icons.arrow_downward),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          // Hint Message (Show for 5 seconds when hint button is pressed)
-          if (showHintMessage)
-            Positioned(
-              top: 20,
-              right: 20,
-              child: Container(
-                padding: EdgeInsets.all(10),
-                color: Color.fromARGB(245, 226, 224, 224),
-                child: Text(
-                  'Take Right from Tree',
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                ),
-              ),
-            ),
         ],
       ),
     );
   }
-
-  void moveUp() {
-    setState(() {
-      if (!isOutOfBounds(xPosition, yPosition - step)) {
-        yPosition -= step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
-  }
-
-  void moveDown() {
-    setState(() {
-      if (!isOutOfBounds(xPosition, yPosition + step)) {
-        yPosition += step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
-  }
-
-  void moveLeft() {
-    setState(() {
-      if (!isOutOfBounds(xPosition - step, yPosition)) {
-        xPosition -= step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
-  }
-
-  void moveRight() {
-    setState(() {
-      if (!isOutOfBounds(xPosition + step, yPosition)) {
-        xPosition += step;
-        checkIfAtSchool();
-        incrementMoveCount();
-      }
-    });
-  }
-
-  void incrementMoveCount() {
-    moveCount++;
-    if (moveCount >= 20) {
-      setState(() {
-        showHintButton = true;
-      });
-    }
-  }
-
-  void checkIfAtSchool() {
-    // Check if character is at the school (adjust coordinates as needed)
-    if (xPosition >= 680 && yPosition == 220) {
-      setState(() {
-        isAtSchool = true;
-        M2L2Point = 1;
-      });
-    }
-    updateFirebaseDataM2L1();
-    ScoreManager.updateUserScore(1);
-  }
-
-  bool isOutOfBounds(double x, double y) {
-    // Define the bounds of the roads with multiple paths
-    if ((x >= 20 && x <= 120 && y == 20) ||
-        (x == 120 && y >= 10 && y <= 100) ||
-        (x >= 120 && x <= 220 && y == 100) ||
-        (x == 220 && y >= 100 && y <= 200) ||
-        (x >= 210 && x <= 360 && y == 200) ||
-        (x == 360 && y >= 100 && y <= 200) ||
-        (x >= 360 && x <= 680 && y == 100) ||
-        (x == 460 && y >= 20 && y <= 100) ||
-        (x >= 460 && x <= 600 && y == 20) ||
-        (x == 600 && y >= 10 && y <= 220) ||
-        (x >= 600 && x <= 680 && y == 220) ||
-        (x >= 460 && x <= 680 && y == 20)) {
-      return false;
-    }
-    return true;
-  }
-
-  void showHint() {
-    setState(() {
-      showHintPath = true;
-      showHintMessage = true;
-    });
-
-    // Hide hint message after 5 seconds
-    hintMessageTimer = Timer(Duration(seconds: 5), () {
-      setState(() {
-        showHintMessage = false;
-      });
-    });
-  }
-
-  Timer? movementTimer;
-
-  void moveContinuously(Function moveFunction) {
-    movementTimer = Timer.periodic(Duration(milliseconds: 150), (timer) {
-      moveFunction();
-    });
-  }
-
-  void stopMovement() {
-    movementTimer?.cancel();
-  }
 }
 
-class RoadPainter extends CustomPainter {
-  final bool showHintPath;
-
-  RoadPainter(this.showHintPath);
-
+class PathPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
+    Paint paint = Paint()
       ..color = Color.fromARGB(255, 236, 205, 162)
-      ..strokeWidth = 30
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 35.0;
 
-    final path1 = Path();
-    path1.moveTo(50, 85);
+    // Path from school to home
+    Path path = Path();
+    path.moveTo(50, 330);
+    path.quadraticBezierTo(100, -120, 240, 250);
+    path.quadraticBezierTo(350, 300, 550, 250);
+    path.quadraticBezierTo(700, 200, 750, 70);
 
-    path1.lineTo(160, 85);
-    path1.lineTo(160, 165);
-    path1.lineTo(260, 165);
-    path1.lineTo(260, 265);
-    path1.lineTo(400, 265);
-    path1.lineTo(400, 165);
-    path1.lineTo(500, 165);
-    path1.lineTo(500,80);
-    path1.lineTo(640, 80);
-    path1.lineTo(640, 275);
-    path1.lineTo(730, 275);
+    // path to icecream
+    Path path2 = Path();
+    path2.moveTo(840, 130);
+    path2.quadraticBezierTo(550, 250, 520, 60);
 
-    final path3 = Path();
-    path3.moveTo(650,80);
-    path3.lineTo(730, 80);
+    // path from school to turning point
+    Path path3 = Path();
+    path3.moveTo(50, 330);
+    path3.quadraticBezierTo(140, 220, 240, 250);
 
-    final path2 = Path();
-    path2.moveTo(500, 165);
-    path2.lineTo(730, 165);
+    //path from turning (top A curve) to icecream
+    Path path4 = Path();
+    path4.moveTo(120, 85);
+    path4.quadraticBezierTo(300, 43, 560, 140);
 
-    // Draw both paths
-    canvas.drawPath(path1, paint);
-    canvas.drawPath(path3, paint);
+    //Extra obstacle 1
+    Path path5 = Path();
+    path5.moveTo(240, 250);
+    path5.quadraticBezierTo(260, 350, 390, 350);
+
+    //Extra obstacle 2
+    Path path6 = Path();
+    path6.moveTo(520, 250);
+    path6.quadraticBezierTo(520, 300, 630, 350);
+
+    canvas.drawPath(path, paint);
     canvas.drawPath(path2, paint);
+    canvas.drawPath(path3, paint);
+    canvas.drawPath(path4, paint);
+    canvas.drawPath(path5, paint);
+    canvas.drawPath(path6, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

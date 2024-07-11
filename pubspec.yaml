@@ -107,21 +107,17 @@ flutter:
     - assets/uploadImage.svg
     - assets/newlogin.svg
     - assets/newregister.svg
-    - assets/barbershop.png
-    - assets/dairyshop.png
     - assets/hospital.png
-    - assets/pharmacy.png
     - assets/school.png
     - assets/shop.png
-    - assets/meatshop.png
-    - assets/temple.png
-    - assets/temp.png
     - assets/house.png
     - assets/home.png
-    - assets/vegetableshop.png
     - assets/lake.png
     - assets/tree.png
     - assets/post.png
+    - assets/icecream.png
+    - assets/bakery.png
+    - assets/book.png
 
 
 

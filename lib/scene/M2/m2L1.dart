@@ -1,4 +1,8 @@
 import 'package:alzymer/ScoreManager.dart';
+import 'package:alzymer/scene/M2/M2L3.dart';
+import 'package:alzymer/scene/M2/M2L4.dart';
+import 'package:alzymer/scene/M2/m2L2.dart';
+import 'package:alzymer/scene/M2/m2L5.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -33,6 +37,8 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   bool hint = false;
   bool showHintMessage = false; // Flag to show hint message
   Timer? hintMessageTimer; // Timer to hide hint message
+  List<Widget> levels = [M2L1(), M2L2(), M2L3(), M2L4(), M2L5()];
+  int currentLevelIndex = 0;
 
   @override
   void initState() {
@@ -134,7 +140,7 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           Positioned(
-            right:42,
+            left:710,
             top: 30,
             child: Image.asset(
               'assets/hospital.png', // Path to the hospital image
@@ -143,12 +149,12 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           Positioned(
-            right:70,
-            top: 120,
+            left:700,
+            top: 100,
             child: Image.asset(
               'assets/book.png', // Path to the hospital image
-              width: 70,
-              height: 70,
+              width: 100,
+              height: 100,
             ),
           ),
           Positioned(
@@ -231,7 +237,7 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
                 child: Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigate to next level or perform next level action
+                      navigateToNextLevel();
                       print('Next level action here');
                     },
                     child: Text('Next Level'),
@@ -326,7 +332,7 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
                 padding: EdgeInsets.all(10),
                 color: Color.fromARGB(245, 226, 224, 224),
                 child: Text(
-                  'Take Right from Tree',
+                  'Take Right from Post Box',
                   style: TextStyle(fontSize: 18, color: Colors.black),
                 ),
               ),
@@ -391,10 +397,13 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
       setState(() {
         isAtSchool = true;
         M2L1Point = 1;
+        
       });
+      showConversationDialog();
     }
     updateFirebaseDataM2L1();
     ScoreManager.updateUserScore(1);
+    
   }
 
   bool isOutOfBounds(double x, double y) {
@@ -441,6 +450,115 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   void stopMovement() {
     movementTimer?.cancel();
   }
+  
+   void navigateToNextLevel() {
+    if (currentLevelIndex < levels.length - 1) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
+      );
+    }
+  }
+  
+ void showConversationDialog() {
+  List<Map<String, String>> conversation = [
+    {'speaker': 'Grandchild', 'message': 'Grandpa, I want ice cream!'},
+    {'speaker': 'Grandpa', 'message': 'Ok, we will first go to the ice cream shop and then home.'},
+  ];
+
+  int currentMessageIndex = 0;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          if (currentMessageIndex == 0) {
+            Future.delayed(Duration(seconds: 2), () {
+              setState(() {
+                currentMessageIndex++;
+              });
+            });
+          }
+
+          return AlertDialog(
+            title: Text('Conversation'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Child's message and image (always shown initially)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[100],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(conversation[0]['message']!),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Image.asset(
+                      'assets/boy2_circle.png',
+                      width: 50,
+                      height: 50,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20), // Add some space between the two messages
+                // Grandpa's image (always shown initially) and text (shown after delay)
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/old1.png',
+                      width: 50,
+                      height: 50,
+                    ),
+                    SizedBox(width: 10),
+                    Flexible(
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          currentMessageIndex > 0 ? conversation[1]['message']! : '                      ',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  setState(() {
+                    isAtSchool = true; // Show the Next Level button
+                  });
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+
+
+
+
 }
 
 class RoadPainter extends CustomPainter {

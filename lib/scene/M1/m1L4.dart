@@ -233,14 +233,14 @@ class _M1L4State extends State<M1L4> {
   }
 
   void showHint() {
-    String pickupTime = DateFormat('hh:mm a').format(DateTime.now());
+    
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Hint'),
-          content: Text('Today\'s pickup time is $pickupTime'),
+          content: Text('Today\'s pickup time is 3 PM'),
           actions: [
             TextButton(
               onPressed: () {

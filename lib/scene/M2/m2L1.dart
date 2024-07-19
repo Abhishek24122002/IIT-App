@@ -158,8 +158,8 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           Positioned(
-            right: 109,
-            bottom: 40,
+            top: 260,
+            left: 700,
             child: Image.asset(
               'assets/boy2_circle.png', // Path to the school image
               width: 30,
@@ -178,8 +178,8 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
               ),
             ),
             Positioned(
-              right: 33,
-              bottom: 35,
+              top: 215,
+              left: 720,
               child: Image.asset(
                 'assets/school.png', // Path to the school image
                 width: 80,

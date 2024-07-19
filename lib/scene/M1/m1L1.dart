@@ -1,15 +1,16 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+
 import 'package:alzymer/scene/M1/M1L2.dart';
 import 'package:alzymer/scene/M1/M1L3.dart';
 import 'package:alzymer/scene/M1/M1L4.dart';
 import 'package:alzymer/scene/M1/M1L5.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:alzymer/ScoreManager.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -58,10 +59,9 @@ class _M1L1State extends State<M1L1> {
   bool showStartButton = true;
   bool showAnswerButton = false;
   bool showSpeechBubble = false;
-  bool showSpeechBubble2 = false;
   bool nextLevelButton = false;
   int M1L1Attempts = 0;
-  bool showHintButton = true;
+  bool showHintButton = false;
   String? gender;
   int M1L1Point = 0;
 
@@ -117,12 +117,15 @@ class _M1L1State extends State<M1L1> {
 
       if (userUid.isNotEmpty) {
         // Reference to the user's document
-        DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
         // Reference to the 'score' document with document ID 'M1'
-        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M1');
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M1');
 
-        DocumentReference attemptDocRef = userDocRef.collection('attempt').doc('M1');
+        DocumentReference attemptDocRef =
+            userDocRef.collection('attempt').doc('M1');
 
         // Update the fields in the 'score' document
         await scoreDocRef.update({
@@ -168,13 +171,15 @@ class _M1L1State extends State<M1L1> {
         nextLevelButton = true;
         showHintButton = false;
         showSpeechBubble = false;
-        showSpeechBubble2 = false;
         M1L1Point = 1;
       });
 
       updateFirebaseDataM1L1();
       ScoreManager.updateUserScore(1);
     } else {
+      setState(() {
+        showHintButton = true;
+      });
       showTryAgainDialog();
     }
 
@@ -197,34 +202,27 @@ class _M1L1State extends State<M1L1> {
   }
 
   Future<void> _showDatePickerDialog() async {
-  DateTime now = DateTime.now();
-  DateTime initialDate = DateTime(now.year, 1, 1); // January 1st of the current year
-
-  DateTime? selectedDate = await showDatePicker(
-    context: context,
-    initialDate: initialDate,
-    firstDate: DateTime(2000),
-    lastDate: DateTime(2101),
-  );
-
-  if (selectedDate != null) {
-    setState(() {
-      userAnswer = DateFormat('dd/MM/yyyy').format(selectedDate);
-    });
-
-    // Delay the scroll to show the selected date
-    Future.delayed(Duration(milliseconds: 200), () {
-      Scrollable.ensureVisible(
-        context,
-        alignment: 0.5, // Adjust as needed to center the date picker
-        duration: Duration(milliseconds: 300),
-      );
-    });
-
-    submitAnswer();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDatePicker(
+          onDateSelected: (selectedDate) {
+            setState(() {
+              userAnswer = DateFormat('dd/MM/yyyy').format(selectedDate);
+            });
+            bool correctAnswer = isAnswerCorrect(userAnswer);
+            Navigator.pop(context);
+            if (correctAnswer) {
+              submitAnswer();
+              showCelebrationDialog();
+            } else {
+              showTryAgainDialog();
+            }
+          },
+        );
+      },
+    );
   }
-}
-
 
   void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {
@@ -325,99 +323,56 @@ class _M1L1State extends State<M1L1> {
                   left: -130.0,
                   child: Image.asset(
                     getSpeechBubbleImage(),
-                    width: 500.0,
-                    height: 500.0,
+                    width: 450,
+                    height: 450,
                   ),
                 ),
                 Positioned(
                   bottom: 20.0,
-                  right: 20.0,
-                  child: Image.asset(
-                    'assets/boy1.png',
-                    width: 200.0,
-                    height: 300.0,
-                  ),
-                ),
-                Positioned(
-                  top: 150.0,
-                  right: 200,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Visibility(
-                        visible: showSpeechBubble,
-                        child: SpeechBubble(
-                          text: userAnswer.isNotEmpty
-                              ? 'Thank You' // Change the text here
-                              : getSpeechBubbleText(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 80.0,
-                  left: 150.0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Visibility(
-                        visible: userAnswer.isNotEmpty,
-                        child: SpeechBubble(
-                          text: userAnswer,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  bottom: 20.0,
-                  left: 30.0,
+                  right: 100,
                   child: Row(
                     children: [
-                      Visibility(
-                        visible: showStartButton,
-                        child: ElevatedButton(
+                      if (showStartButton)
+                        ElevatedButton(
                           onPressed: () {
                             setState(() {
-                              showSpeechBubble = true;
                               showStartButton = false;
                               showAnswerButton = true;
+                              showSpeechBubble = true;
                             });
                           },
                           child: Text('Start'),
                         ),
-                      ),
                       if (showAnswerButton)
                         ElevatedButton(
                           onPressed: () {
                             _showDatePickerDialog();
                           },
-                          child: Text('Answer the Question'),
+                          child: Text('Answer'),
+                        ),
+                      if (nextLevelButton)
+                        ElevatedButton(
+                          onPressed: () {
+                            navigateToNextLevel();
+                          },
+                          child: Text('Next Level'),
+                        ),
+                      if (showHintButton)
+                        ElevatedButton(
+                          onPressed: () {
+                            showHint();
+                          },
+                          child: Text('Hint'),
                         ),
                     ],
                   ),
                 ),
-                if (nextLevelButton)
+                if (showSpeechBubble)
                   Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        navigateToNextLevel();
-                      },
-                      child: Text('Next Level'),
-                    ),
-                  ),
-                if (M1L1Attempts >= 1 && showHintButton)
-                  Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showHint();
-                      },
-                      child: Text('Show Hint'),
+                    top: 120.0,
+                    left: 160.0,
+                    child: SpeechBubble(
+                      text: getSpeechBubbleText(),
                     ),
                   ),
               ],
@@ -427,16 +382,110 @@ class _M1L1State extends State<M1L1> {
       ),
     );
   }
+}
+
+class CustomDatePicker extends StatefulWidget {
+  final Function(DateTime) onDateSelected;
+
+  CustomDatePicker({required this.onDateSelected});
 
   @override
-  void dispose() {
-    // Revert to original orientation when leaving this page
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-    super.dispose();
+  _CustomDatePickerState createState() => _CustomDatePickerState();
+}
+
+class _CustomDatePickerState extends State<CustomDatePicker> {
+  int selectedDay = DateTime.now().day;
+  int selectedMonth = DateTime.now().month;
+  int selectedYear = DateTime.now().year;
+
+  List<int> getDaysInMonth(int month, int year) {
+    return List.generate(
+      DateTime(year, month + 1, 0).day,
+      (index) => index + 1,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.lightBlue[50],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      title: Center(
+          child: Text('Select Date',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+      content: Container(
+        height: 200,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: CupertinoPicker(
+                    itemExtent: 40,
+                    onSelectedItemChanged: (index) {
+                      setState(() {
+                        selectedDay = index + 1;
+                      });
+                    },
+                    children: getDaysInMonth(selectedMonth, selectedYear)
+                        .map((day) => Center(child: Text(day.toString())))
+                        .toList(),
+                    scrollController: FixedExtentScrollController(
+                      initialItem: selectedDay - 1,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CupertinoPicker(
+                    itemExtent: 30,
+                    onSelectedItemChanged: (index) {
+                      setState(() {
+                        selectedMonth = index + 1;
+                      });
+                    },
+                    children: List.generate(12, (index) => index + 1)
+                        .map((month) => Center(child: Text(month.toString())))
+                        .toList(),
+                    scrollController: FixedExtentScrollController(
+                      initialItem: selectedMonth - 1,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CupertinoPicker(
+                    itemExtent: 30,
+                    onSelectedItemChanged: (index) {
+                      setState(() {
+                        selectedYear = DateTime.now().year - index;
+                      });
+                    },
+                    children: List.generate(
+                            100, (index) => DateTime.now().year - index)
+                        .map((year) => Center(child: Text(year.toString())))
+                        .toList(),
+                    scrollController: FixedExtentScrollController(
+                      initialItem: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            DateTime selectedDate =
+                DateTime(selectedYear, selectedMonth, selectedDay);
+            widget.onDateSelected(selectedDate);
+          },
+          child: Text('OK', style: TextStyle(color: Colors.blue, fontSize: 16)),
+        ),
+      ],
+    );
   }
 }

@@ -36,7 +36,7 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
     final DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
     if (snapshot.exists) {
       setState(() {
-        m1Trophy = snapshot.data()!['M1Trophy'];
+        m1Trophy = snapshot.data()?['M1Trophy'] ?? 0;
       });
     } else {
       // If document doesn't exist, create one with initial data

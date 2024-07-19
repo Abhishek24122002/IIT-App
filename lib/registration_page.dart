@@ -339,6 +339,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   : null, // Store DOB in Firestore as Timestamp
                             });
 
+                            // Initialize user score data
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(userCredential.user!.uid)
+                                .collection('score')
+                                .doc('M1')
+                                .set({
+                              'M1L1Point': 0,
+                              'M1L2Point': 0,
+                              'M1L3Point': 0,
+                              'M1L4Point': 0,
+                              'M1L5Point': 0,
+                            });
+
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(

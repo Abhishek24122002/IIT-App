@@ -114,10 +114,14 @@ flutter:
     - assets/home.png
     - assets/lake.png
     - assets/tree.png
+    - assets/tree2.png
+    - assets/tree3.png
     - assets/post.png
     - assets/icecream.png
     - assets/bakery.png
     - assets/book.png
+    - assets/red.png
+    - assets/green.png
 
 
 

@@ -18,6 +18,8 @@ class _M3L1State extends State<M3L1> {
   int points = 0;
   String warningMessage = '';
   List<double> crossedSignals = [];
+  List<Widget> trees = [];
+  double previousYPosition = 0.0;
 
   @override
   void initState() {
@@ -27,11 +29,14 @@ class _M3L1State extends State<M3L1> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       double screenWidth = MediaQuery.of(context).size.width;
       double screenHeight = MediaQuery.of(context).size.height;
+      double maxDimension = max(screenWidth, screenHeight);
       setState(() {
-        characterPosition = Offset(screenWidth / 2, screenHeight * 4 - 100);
+        characterPosition = Offset(screenWidth / 2, maxDimension * 4 - 100);
+        previousYPosition = characterPosition.dy;
       });
 
       startSignalTimer();
+      generateTrees(maxDimension);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         scrollToCharacterPosition(characterPosition);
@@ -81,8 +86,9 @@ class _M3L1State extends State<M3L1> {
     List<double> signalPositions = getSignalYPositions();
 
     for (double signalYPosition in signalPositions) {
-      if ((newPosition.dy - signalYPosition).abs() < 10 && !crossedSignals.contains(signalYPosition)) {
-        if (!isSignalRed) {
+      if ((newPosition.dy - signalYPosition).abs() < 10 &&
+          !crossedSignals.contains(signalYPosition)) {
+        if (!isSignalRed && newPosition.dy < previousYPosition) {
           setState(() {
             points += 1;
             warningMessage = 'Crossed on Green Signal: +1 Point';
@@ -91,15 +97,18 @@ class _M3L1State extends State<M3L1> {
         }
       }
     }
+
+    previousYPosition = newPosition.dy;
   }
 
   List<double> getSignalYPositions() {
-    double screenHeight = MediaQuery.of(context).size.height;
+    double maxDimension = max(
+        MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
     double signalSpacing = 500.0;
     List<double> signalPositions = [];
 
-    for (double y = screenHeight * 4 - 100; y > 0; y -= signalSpacing) {
-      if (y == screenHeight * 4 - 100) continue;
+    for (double y = maxDimension * 4 - 100; y > 0; y -= signalSpacing) {
+      if (y == maxDimension * 4 - 100) continue;
       signalPositions.add(y - 15);
     }
 
@@ -137,20 +146,22 @@ class _M3L1State extends State<M3L1> {
     double centerX = MediaQuery.of(context).size.width / 2;
     double minX = centerX - pathWidth / 2;
     double maxX = centerX + pathWidth / 2;
+    double maxDimension = max(
+        MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
 
     return position.dx >= minX &&
         position.dx <= maxX &&
         position.dy >= 80 &&
-        position.dy <= MediaQuery.of(context).size.height * 4 - 100;
+        position.dy <= maxDimension * 4 - 100;
   }
 
-  List<Widget> buildSignals(double screenHeight) {
+  List<Widget> buildSignals(double maxDimension) {
     List<Widget> signals = [];
     double signalSpacing = 500.0;
     double signalX = MediaQuery.of(context).size.width / 2 - 80;
 
-    for (double y = screenHeight * 4 - 100; y > 0; y -= signalSpacing) {
-      if (y == screenHeight * 4 - 100) continue;
+    for (double y = maxDimension * 4 - 100; y > 0; y -= signalSpacing) {
+      if (y == maxDimension * 4 - 100) continue;
       signals.add(Positioned(
         left: signalX,
         top: y - 15,
@@ -165,9 +176,44 @@ class _M3L1State extends State<M3L1> {
     return signals;
   }
 
+  void generateTrees(double maxDimension) {
+    List<String> treeImages = [
+      'assets/tree.png',
+      'assets/tree2.png',
+      'assets/tree3.png'
+    ];
+    double treeSpacing = 200.0;
+    double roadCenterX = MediaQuery.of(context).size.width / 2;
+    double roadWidth = 100.0;
+    double leftTreeX = roadCenterX - roadWidth / 2 - 80; // Updated
+    double rightTreeX = roadCenterX + roadWidth / 2 + 50; // Updated
+    List<double> signalPositions = getSignalYPositions();
+
+    for (double y = maxDimension * 4 - 150; y > 50; y -= treeSpacing) {
+      // Ensure the tree is not placed horizontally aligned with any signal
+      if (signalPositions.any((signalY) => (y - signalY).abs() < 80)) {
+        continue;
+      }
+
+      String treeImage = treeImages[Random().nextInt(treeImages.length)];
+      bool placeOnLeft = Random().nextBool();
+
+      trees.add(Positioned(
+        left: placeOnLeft ? leftTreeX : rightTreeX,
+        top: y,
+        child: Image.asset(
+          treeImage,
+          width: 50,
+          height: 50,
+        ),
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+    double maxDimension = max(MediaQuery.of(context).size.width, screenHeight);
 
     return Scaffold(
       body: Stack(
@@ -176,21 +222,24 @@ class _M3L1State extends State<M3L1> {
             controller: _scrollController,
             child: Container(
               width: MediaQuery.of(context).size.width,
-              height: screenHeight * 4,
+              height: maxDimension * 4,
               color: Color.fromARGB(255, 167, 216, 97),
               child: Stack(
                 children: [
                   CustomPaint(
-                    size: Size(double.infinity, screenHeight * 4),
+                    size: Size(double.infinity, maxDimension * 4),
                     painter: PathPainter(
-                      startY: screenHeight * 4 - 100,
+                      startY: maxDimension * 4 - 100,
+                      signalYPositions: getSignalYPositions(),
                     ),
                   ),
-                  ...buildSignals(screenHeight),
+                  ...buildSignals(maxDimension),
+                  ...trees,
                   Positioned(
                     left: characterPosition.dx - 12.5,
                     top: characterPosition.dy - 30,
-                    child: Image.asset('assets/old_circle.png', width: 30, height: 30),
+                    child: Image.asset('assets/old_circle.png',
+                        width: 30, height: 30),
                   ),
                 ],
               ),
@@ -245,8 +294,9 @@ class _M3L1State extends State<M3L1> {
 
 class PathPainter extends CustomPainter {
   final double startY;
+  final List<double> signalYPositions;
 
-  PathPainter({required this.startY});
+  PathPainter({required this.startY, required this.signalYPositions});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -260,12 +310,21 @@ class PathPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
-    Path path = Path();
-    path.moveTo(size.width / 2, startY);
-    path.lineTo(size.width / 2, 0);
+    Path verticalPath = Path();
+    verticalPath.moveTo(size.width / 2, startY);
+    verticalPath.lineTo(size.width / 2, 0);
 
-    canvas.drawPath(path, pathPaint);
-    canvas.drawPath(path, centerLinePaint);
+    canvas.drawPath(verticalPath, pathPaint);
+    canvas.drawPath(verticalPath, centerLinePaint);
+
+    for (double y in signalYPositions) {
+      Path horizontalPath = Path();
+      horizontalPath.moveTo(0, y);
+      horizontalPath.lineTo(size.width, y);
+
+      canvas.drawPath(horizontalPath, pathPaint);
+      canvas.drawPath(horizontalPath, centerLinePaint);
+    }
   }
 
   @override

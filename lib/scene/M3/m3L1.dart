@@ -1,14 +1,15 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:flutter_joystick/flutter_joystick.dart';
+  import 'dart:async';
+  import 'dart:math';
+  import 'package:flutter/material.dart';
+  import 'package:flutter_joystick/flutter_joystick.dart';
+  import 'package:fluttertoast/fluttertoast.dart'; // Import fluttertoast
 
-class M3L1 extends StatefulWidget {
-  @override
-  _M3L1State createState() => _M3L1State();
-}
+  class M3L1 extends StatefulWidget {
+    @override
+    _M3L1State createState() => _M3L1State();
+  }
 
-class _M3L1State extends State<M3L1> {
+ class _M3L1State extends State<M3L1> {
   late Offset characterPosition;
   final double speed = 6.0;
   late ScrollController _scrollController;
@@ -16,10 +17,10 @@ class _M3L1State extends State<M3L1> {
   int signalTimerCounter = 10;
   bool isSignalRed = true;
   int points = 0;
-  String warningMessage = '';
   List<double> crossedSignals = [];
   List<Widget> trees = [];
   double previousYPosition = 0.0;
+  bool hasShownRedSignalToast = false; // Add this flag
 
   @override
   void initState() {
@@ -91,14 +92,31 @@ class _M3L1State extends State<M3L1> {
         if (!isSignalRed && newPosition.dy < previousYPosition) {
           setState(() {
             points += 1;
-            warningMessage = 'Crossed on Green Signal: +1 Point';
             crossedSignals.add(signalYPosition); // Mark this signal as crossed
+            hasShownRedSignalToast = false; // Reset the flag
+          });
+          showToastMessage('Crossed on Green Signal', Colors.green);
+        } else if (isSignalRed && newPosition.dy < previousYPosition && !hasShownRedSignalToast) {
+          showToastMessage('Crossed on Red Signal', Colors.red);
+          setState(() {
+            hasShownRedSignalToast = true; // Set the flag to true
           });
         }
       }
     }
 
     previousYPosition = newPosition.dy;
+  }
+
+  void showToastMessage(String message, Color color) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.TOP,
+      backgroundColor: color,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   List<double> getSignalYPositions() {
@@ -163,12 +181,12 @@ class _M3L1State extends State<M3L1> {
     for (double y = maxDimension * 4 - 100; y > 0; y -= signalSpacing) {
       if (y == maxDimension * 4 - 100) continue;
       signals.add(Positioned(
-        left: signalX,
+        left: signalX-5,
         top: y - 15,
         child: Image.asset(
           isSignalRed ? 'assets/red.png' : 'assets/green.png',
-          width: 30,
-          height: 100,
+          width: 35,
+          height: 140,
         ),
       ));
     }
@@ -257,18 +275,17 @@ class _M3L1State extends State<M3L1> {
                       color: Colors.black,
                     )),
                 SizedBox(height: 10),
-                Text('Signal Timer: $signalTimerCounter',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.black,
-                    )),
-                SizedBox(height: 10),
-                if (warningMessage.isNotEmpty)
-                  Text(warningMessage,
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: Colors.red,
-                      )),
+                Row(
+                  children: [
+                    Icon(Icons.timer, size: 24, color: Colors.black), // Stopwatch icon
+                    SizedBox(width: 5),
+                    Text('$signalTimerCounter',
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: Colors.black,
+                        )),
+                  ],
+                ),
               ],
             ),
           ),

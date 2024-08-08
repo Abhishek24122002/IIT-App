@@ -49,6 +49,7 @@ dependencies:
   intl: ^0.19.0
   flip_card: ^0.6.0
   google_maps_flutter: ^2.1.0
+  fluttertoast: ^8.0.9
   
   
 
@@ -122,6 +123,19 @@ flutter:
     - assets/book.png
     - assets/red.png
     - assets/green.png
+    - assets/Car1_Left.png
+    - assets/Car1_Right.png
+    - assets/Car2_Left.png
+    - assets/Car2_Right.png
+    - assets/Car3_Left.png
+    - assets/Car3_Right.png
+    - assets/Truck1_Left.png
+    - assets/Truck1_Right.png
+    - assets/Truck2_Left.png
+    - assets/Truck2_Right.png
+    - assets/Truck3_Left.png
+    - assets/Truck3_Right.png
+
 
 
 

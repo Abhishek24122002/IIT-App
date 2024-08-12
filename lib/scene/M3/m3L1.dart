@@ -1,17 +1,18 @@
-  import 'dart:async';
-  import 'dart:math';
-  import 'package:flutter/material.dart';
-  import 'package:flutter_joystick/flutter_joystick.dart';
-  import 'package:fluttertoast/fluttertoast.dart'; // Import fluttertoast
+import 'dart:async';
+import 'dart:math';
+import 'package:alzymer/scene/M3/m3L2.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_joystick/flutter_joystick.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-  class M3L1 extends StatefulWidget {
-    @override
-    _M3L1State createState() => _M3L1State();
-  }
+class M3L1 extends StatefulWidget {
+  @override
+  _M3L1State createState() => _M3L1State();
+}
 
- class _M3L1State extends State<M3L1> {
+class _M3L1State extends State<M3L1> {
   late Offset characterPosition;
-  final double speed = 6.0;
+  final double speed = 20.0;
   late ScrollController _scrollController;
   late Timer signalTimer;
   int signalTimerCounter = 10;
@@ -20,7 +21,8 @@
   List<double> crossedSignals = [];
   List<Widget> trees = [];
   double previousYPosition = 0.0;
-  bool hasShownRedSignalToast = false; // Add this flag
+  bool hasShownRedSignalToast = false;
+  bool islevelcompleted = false; // Flag to track level completion
 
   @override
   void initState() {
@@ -31,6 +33,7 @@
       double screenWidth = MediaQuery.of(context).size.width;
       double screenHeight = MediaQuery.of(context).size.height;
       double maxDimension = max(screenWidth, screenHeight);
+
       setState(() {
         characterPosition = Offset(screenWidth / 2, maxDimension * 4 - 100);
         previousYPosition = characterPosition.dy;
@@ -54,18 +57,22 @@
 
   void startSignalTimer() {
     signalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        if (signalTimerCounter > 0) {
-          signalTimerCounter--;
-        } else {
-          isSignalRed = !isSignalRed;
-          signalTimerCounter = 10;
-        }
-      });
+      if (!islevelcompleted) {
+        setState(() {
+          if (signalTimerCounter > 0) {
+            signalTimerCounter--;
+          } else {
+            isSignalRed = !isSignalRed;
+            signalTimerCounter = 10;
+          }
+        });
+      }
     });
   }
 
   void onJoystickUpdate(double x, double y) {
+    if (islevelcompleted) return; // Stop all actions if level is completed
+
     double distance = sqrt(x * x + y * y) * speed;
     double angle = atan2(y, x);
 
@@ -84,39 +91,38 @@
   }
 
   void checkSignalCrossing(Offset newPosition) {
-    List<double> signalPositions = getSignalYPositions();
+  List<double> signalPositions = getSignalYPositions();
 
-    for (double signalYPosition in signalPositions) {
-      if ((newPosition.dy - signalYPosition).abs() < 10 &&
-          !crossedSignals.contains(signalYPosition)) {
-        if (!isSignalRed && newPosition.dy < previousYPosition) {
-          setState(() {
-            points += 1;
-            crossedSignals.add(signalYPosition); // Mark this signal as crossed
-            hasShownRedSignalToast = false; // Reset the flag
-          });
-          showToastMessage('Crossed on Green Signal', Colors.green);
-        } else if (isSignalRed && newPosition.dy < previousYPosition && !hasShownRedSignalToast) {
-          showToastMessage('Crossed on Red Signal', Colors.red);
-          setState(() {
-            hasShownRedSignalToast = true; // Set the flag to true
-          });
-        }
+  for (double signalYPosition in signalPositions) {
+    if ((newPosition.dy - signalYPosition).abs() < 10 &&
+        !crossedSignals.contains(signalYPosition)) {
+      if (!isSignalRed && newPosition.dy < previousYPosition) {
+        setState(() {
+          points += 1;
+          crossedSignals.add(signalYPosition);
+        });
+        showToastMessage('Crossed on Green Signal', Colors.green);
+      } else if (isSignalRed && newPosition.dy < previousYPosition) {
+        showToastMessage('Crossed on Red Signal', Colors.red);
       }
     }
-
-    previousYPosition = newPosition.dy;
   }
 
+  previousYPosition = newPosition.dy;
+}
+
+
   void showToastMessage(String message, Color color) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.TOP,
-      backgroundColor: color,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+    if (!islevelcompleted) { // Prevent showing toast if level is completed
+      Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        backgroundColor: color,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
   }
 
   List<double> getSignalYPositions() {
@@ -134,6 +140,8 @@
   }
 
   void scrollToPosition(double joystickY) {
+    if (islevelcompleted) return; // Stop scrolling if level is completed
+
     double scrollAmount = joystickY * speed;
     double newScrollPosition = _scrollController.position.pixels - scrollAmount;
 
@@ -147,6 +155,8 @@
   }
 
   void scrollToCharacterPosition(Offset position) {
+    if (islevelcompleted) return; // Stop scrolling if level is completed
+
     double screenHeight = MediaQuery.of(context).size.height;
     double newScrollPosition = position.dy - screenHeight / 2;
 
@@ -181,7 +191,7 @@
     for (double y = maxDimension * 4 - 100; y > 0; y -= signalSpacing) {
       if (y == maxDimension * 4 - 100) continue;
       signals.add(Positioned(
-        left: signalX-5,
+        left: signalX - 5,
         top: y - 15,
         child: Image.asset(
           isSignalRed ? 'assets/red.png' : 'assets/green.png',
@@ -203,12 +213,11 @@
     double treeSpacing = 200.0;
     double roadCenterX = MediaQuery.of(context).size.width / 2;
     double roadWidth = 100.0;
-    double leftTreeX = roadCenterX - roadWidth / 2 - 80; // Updated
-    double rightTreeX = roadCenterX + roadWidth / 2 + 50; // Updated
+    double leftTreeX = roadCenterX - roadWidth / 2 - 80;
+    double rightTreeX = roadCenterX + roadWidth / 2 + 50;
     List<double> signalPositions = getSignalYPositions();
 
     for (double y = maxDimension * 4 - 150; y > 50; y -= treeSpacing) {
-      // Ensure the tree is not placed horizontally aligned with any signal
       if (signalPositions.any((signalY) => (y - signalY).abs() < 80)) {
         continue;
       }
@@ -228,122 +237,204 @@
     }
   }
 
+  void showCongratulationsPopup(BuildContext context) {
+    if (islevelcompleted) return; // Prevent showing multiple popups
+    islevelcompleted = true; // Mark the level as completed
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Disable closing the dialog by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            '🎉🏆Congratulations!🏆🎉',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              
+              Text(
+                'Level Completed with',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                '$points Points',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Next Level'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => M3L2()),
+                );
+              },
+            ),
+            TextButton(
+              child: Text('Repeat Level'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => M3L1()),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    double maxDimension = max(MediaQuery.of(context).size.width, screenHeight);
+    double maxDimension = max(screenWidth, screenHeight);
+    double mallPositionY = 0.0; 
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            controller: _scrollController,
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: maxDimension * 4,
-              color: Color.fromARGB(255, 167, 216, 97),
-              child: Stack(
-                children: [
-                  CustomPaint(
-                    size: Size(double.infinity, maxDimension * 4),
-                    painter: PathPainter(
-                      startY: maxDimension * 4 - 100,
-                      signalYPositions: getSignalYPositions(),
+    // Check if the character has crossed all signals
+    if (points >= getSignalYPositions().length) {
+      showCongratulationsPopup(context);
+    }
+    bool hasReachedMall =
+          characterPosition.dy <= (mallPositionY + 100); // Add some buffer to ensure condition is met
+
+      if (hasReachedMall) {
+        Future.delayed(Duration.zero, () => showCongratulationsPopup(context));
+      }
+
+
+     return Scaffold(
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              controller: _scrollController,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: maxDimension * 4,
+                color: Color.fromARGB(255, 167, 216, 97),
+                child: Stack(
+                  children: [
+                    CustomPaint(
+                      size: Size(double.infinity, maxDimension * 4),
+                      painter: PathPainter(
+                        startY: maxDimension * 4 - 100,
+                        signalYPositions: getSignalYPositions(),
+                      ),
                     ),
-                  ),
-                  ...buildSignals(maxDimension),
-                  ...trees,
-                  Positioned(
-                    left: characterPosition.dx - 12.5,
-                    top: characterPosition.dy - 30,
-                    child: Image.asset('assets/old_circle.png',
-                        width: 30, height: 30),
+                    Positioned(
+                      left: MediaQuery.of(context).size.width / 2 - 40,
+                      top: maxDimension * 4 - 100,
+                      child: Image.asset('assets/home.png', width: 80, height: 80),
+                    ),
+                    Positioned(
+                      left: MediaQuery.of(context).size.width / 2 - 75,
+                      top: mallPositionY,
+                      child:
+                          Image.asset('assets/mall.png', width: 150, height: 150),
+                    ),
+                    ...buildSignals(maxDimension),
+                    ...trees,
+                    Positioned(
+                      left: characterPosition.dx - 12.5,
+                      top: characterPosition.dy - 30,
+                      child: Image.asset('assets/old_circle.png',
+                          width: 30, height: 30),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 50,
+              left: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Points: $points',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.black,
+                      )),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(Icons.timer, size: 24, color: Colors.black),
+                      SizedBox(width: 5),
+                      Text('$signalTimerCounter',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Colors.black,
+                          )),
+                    ],
                   ),
                 ],
               ),
             ),
-          ),
-          Positioned(
-            top: 50,
-            left: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Points: $points',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.black,
-                    )),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(Icons.timer, size: 24, color: Colors.black), // Stopwatch icon
-                    SizedBox(width: 5),
-                    Text('$signalTimerCounter',
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Colors.black,
-                        )),
-                  ],
+            Positioned(
+              bottom: 30,
+              right: 6,
+              child: Joystick(
+                base: JoystickBase(
+                  size: 150,
+                  withBorderCircle: false,
                 ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 30,
-            right: 30,
-            child: Joystick(
-              base: JoystickBase(
-                size: 160,
-                withBorderCircle: false,
+                mode: JoystickMode.all,
+                listener: (details) {
+                  onJoystickUpdate(details.x, details.y);
+                },
               ),
-              mode: JoystickMode.all,
-              listener: (details) {
-                onJoystickUpdate(details.x, details.y);
-              },
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
   }
+  
 }
-
 class PathPainter extends CustomPainter {
-  final double startY;
-  final List<double> signalYPositions;
+    final double startY;
+    final List<double> signalYPositions;
 
-  PathPainter({required this.startY, required this.signalYPositions});
+    PathPainter({required this.startY, required this.signalYPositions});
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint pathPaint = Paint()
-      ..color = Color.fromARGB(255, 70, 77, 85)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 100.0;
+    @override
+    void paint(Canvas canvas, Size size) {
+      Paint pathPaint = Paint()
+        ..color = Color.fromARGB(255, 70, 77, 85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 100.0;
 
-    Paint centerLinePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      Paint centerLinePaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
 
-    Path verticalPath = Path();
-    verticalPath.moveTo(size.width / 2, startY);
-    verticalPath.lineTo(size.width / 2, 0);
+      Path verticalPath = Path();
+      verticalPath.moveTo(size.width / 2, startY);
+      verticalPath.lineTo(size.width / 2, 0);
 
-    canvas.drawPath(verticalPath, pathPaint);
-    canvas.drawPath(verticalPath, centerLinePaint);
+      canvas.drawPath(verticalPath, pathPaint);
+      canvas.drawPath(verticalPath, centerLinePaint);
 
-    for (double y in signalYPositions) {
-      Path horizontalPath = Path();
-      horizontalPath.moveTo(0, y);
-      horizontalPath.lineTo(size.width, y);
+      for (double y in signalYPositions) {
+        Path horizontalPath = Path();
+        horizontalPath.moveTo(0, y);
+        horizontalPath.lineTo(size.width, y);
 
-      canvas.drawPath(horizontalPath, pathPaint);
-      canvas.drawPath(horizontalPath, centerLinePaint);
+        canvas.drawPath(horizontalPath, pathPaint);
+        canvas.drawPath(horizontalPath, centerLinePaint);
+      }
     }
+
+    @override
+    bool shouldRepaint(CustomPainter oldDelegate) => false;
   }
 
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}

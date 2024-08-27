@@ -50,6 +50,7 @@ dependencies:
   flip_card: ^0.6.0
   google_maps_flutter: ^2.1.0
   fluttertoast: ^8.0.9
+  font_awesome_flutter: ^10.3.0
   
   
 
@@ -136,6 +137,22 @@ flutter:
     - assets/Truck3_Left.png
     - assets/Truck3_Right.png
     - assets/mall.png
+    - assets/Fruit_Store.png
+    - assets/Food_Store.png
+    - assets/Cloth_Store.png
+    - assets/Toy_Store.png
+    - assets/Apple.png
+    - assets/Banana.png
+    - assets/Mango.png
+    - assets/Orange.png
+    - assets/Grapes.png
+    - assets/Carrot.png
+    - assets/Tomato.png
+    - assets/Potato.png
+    - assets/Onion.png
+    - assets/Cabbage.png
+    - assets/basket.png
+
 
 
 

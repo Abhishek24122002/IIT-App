@@ -11,6 +11,7 @@ import 'package:alzymer/scene/M1/M1L3.dart';
 import 'package:alzymer/scene/M1/M1L4.dart';
 import 'package:alzymer/scene/M1/M1L5.dart';
 import 'package:alzymer/ScoreManager.dart';
+import 'package:flutter/cupertino.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -408,15 +409,15 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Colors.lightBlue[50],
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
       ),
       title: Center(
           child: Text('Select Date',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
       content: Container(
-        height: 200,
+        height: 100,
         child: Column(
           children: [
             Row(
@@ -424,7 +425,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               children: [
                 Expanded(
                   child: CupertinoPicker(
-                    itemExtent: 40,
+                    itemExtent: 60,
                     onSelectedItemChanged: (index) {
                       setState(() {
                         selectedDay = index + 1;
@@ -440,7 +441,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                 ),
                 Expanded(
                   child: CupertinoPicker(
-                    itemExtent: 30,
+                    itemExtent: 60,
                     onSelectedItemChanged: (index) {
                       setState(() {
                         selectedMonth = index + 1;
@@ -456,7 +457,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                 ),
                 Expanded(
                   child: CupertinoPicker(
-                    itemExtent: 30,
+                    itemExtent: 60,
                     onSelectedItemChanged: (index) {
                       setState(() {
                         selectedYear = DateTime.now().year - index;

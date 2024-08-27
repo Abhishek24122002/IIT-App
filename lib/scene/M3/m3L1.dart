@@ -45,8 +45,106 @@ class _M3L1State extends State<M3L1> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         scrollToCharacterPosition(characterPosition);
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+      showInstructionsPopup(context);
+    });
     });
   }
+  void showInstructionsPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.info, color: Colors.blue),
+              SizedBox(width: 10),
+              Text('Instructions', style: TextStyle(fontSize: 24)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.shopping_cart, color: Colors.blueAccent),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Your Task is To Bring Groceries From The Mall.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.traffic, color: Colors.blueGrey),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'There are 6 Signals Between Your Home and The Mall.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.directions_walk, color: Colors.green),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Cross The Signal Only When it is Green For Pedestrians.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.error, color: Colors.red),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Stop When The Signal is Red.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.star, color: Colors.yellow),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'You Will Be Rewarded With A Point For Each Correct Crossing On Green.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),  
+            ],
+          )),
+          actions: [
+            TextButton(
+              child: Text('Got it!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
 
   @override
   void dispose() {
@@ -54,6 +152,7 @@ class _M3L1State extends State<M3L1> {
     _scrollController.dispose();
     super.dispose();
   }
+
 
   void startSignalTimer() {
     signalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
@@ -312,7 +411,7 @@ class _M3L1State extends State<M3L1> {
       }
 
 
-     return Scaffold(
+     return SafeArea(child: Scaffold(
         body: Stack(
           children: [
             SingleChildScrollView(
@@ -395,7 +494,7 @@ class _M3L1State extends State<M3L1> {
             ),
           ],
         ),
-      );
+      ));
   }
   
 }

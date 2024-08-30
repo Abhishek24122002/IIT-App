@@ -1,3 +1,6 @@
+import 'dart:math';
+import 'package:alzymer/scene/M3/m3L3.dart';
+import 'package:alzymer/scene/M3/m3L5.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,13 +10,17 @@ class M3L4 extends StatefulWidget {
 }
 
 class _M3L4State extends State<M3L4> {
-  int collectedApples = 0;
+  int collectedOranges = 0;
   bool showPopup = true;
+  
   List<List<String>> baskets = [
-    ['Orange', 'Orange', 'Orange', 'Orange', 'Orange', 'Orange', 'Apple', 'Apple', 'Apple'],
-    ['Mango', 'Mango', 'Mango', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple'],
-    ['Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato'],
+    ['Apple','Apple', 'Apple', 'Apple', "Apple",'Apple', 'Apple', 'Orange', 'Orange', 'Orange'],
+    ['Mango', 'Mango', 'Mango','Mango',  'Orange', 'Orange', 'Orange', 'Orange', 'Orange','Orange'],
+    ['Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato','Orange'],
   ];
+  
+  // Store random positions for each fruit
+  List<List<Offset>> fruitPositions = [[], [], []];
 
   @override
   void initState() {
@@ -23,8 +30,9 @@ class _M3L4State extends State<M3L4> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    // Generate random positions only once when the screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Show instruction dialog when the screen loads
+      _generateFruitPositions();
       showInstructionDialog();
     });
   }
@@ -39,38 +47,83 @@ class _M3L4State extends State<M3L4> {
     super.dispose();
   }
 
+  // Generate random positions for the fruits in each basket
+  void _generateFruitPositions() {
+    Random random = Random();
+    double basketSize = 180.0; // Assuming the basket container is 180x180
+    double fruitSize = 50.0; // Assuming each fruit image is 50x50
+
+    for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
+      List<Offset> usedPositions = []; // Track used positions to avoid overlap
+
+      for (int i = 0; i < baskets[basketIndex].length; i++) {
+        Offset position = Offset.zero; // Initialize with a default value
+        bool positionFound = false;
+
+        // Attempt to place the fruit without overlap
+        for (int attempt = 0; attempt < 10; attempt++) {
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+          position = Offset(randomLeft, randomTop);
+
+          // Check for overlap
+          bool overlaps = usedPositions.any((usedPosition) {
+            return (position - usedPosition).distance < fruitSize;
+          });
+
+          if (!overlaps) {
+            positionFound = true;
+            usedPositions.add(position);
+            break;
+          }
+        }
+
+        // If a position without overlap wasn't found, allow overlap
+        if (!positionFound) {
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+          position = Offset(randomLeft, randomTop);
+        }
+
+        fruitPositions[basketIndex].add(position);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Find the Apples - Level 4'),
+        title: Text('Find the Oranges - Level 4'),
       ),
       body: Stack(
         children: [
           if (!showPopup) _buildGameScreen(), // Show game content only if popup is not displayed
+          if (showPopup) _buildPopupMessage(), // Show popup message if needed
           Positioned(
             top: 20,
             right: 20,
-            child: _buildCollectedApplesCounter(),
+            child: _buildCollectedOrangesCounter(),
           ),
-          if (showPopup) _buildPopupMessage(), // Show popup message if needed
         ],
       ),
     );
   }
 
   Widget _buildGameScreen() {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Find and collect all apples!',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          _buildBasketRow(),
-        ],
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Find and collect all oranges!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            _buildBasketRow(),
+          ],
+        ),
       ),
     );
   }
@@ -87,53 +140,71 @@ class _M3L4State extends State<M3L4> {
   }
 
   Widget _buildBasket(int basketIndex) {
-    return Container(
-      width: 200,
-      height: 200,
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.brown, width: 3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: GridView.count(
-        crossAxisCount: 3,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        shrinkWrap: true,
-        children: List.generate(baskets[basketIndex].length, (fruitIndex) {
-          String fruit = baskets[basketIndex][fruitIndex];
-          return fruit.isNotEmpty
-              ? GestureDetector(
-                  onTap: () {
-                    if (fruit == 'Apple') {
-                      setState(() {
-                        collectedApples++;
-                        baskets[basketIndex][fruitIndex] = ''; // Remove the apple
-                        if (collectedApples == 9) { // Example: 9 apples in total
-                          showLevelCompleteDialog();
-                        }
-                      });
-                    }
-                  },
-                  child: Image.asset(
-                    'assets/$fruit.png',
-                    height: 50, // Larger fruit size
-                    width: 50,
-                  ),
-                )
-              : SizedBox.shrink(); // Empty space if the fruit is removed
-        }),
-      ),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Image.asset(
+          'assets/basket.png',
+          width: 250,
+          height: 250,
+          fit: BoxFit.cover,
+        ),
+        Container(
+          width: 180, // Ensure the Container has a fixed size matching the basket
+          height: 180, // Same size as the basket image
+          child: _buildFruitStack(basketIndex),
+        ),
+      ],
     );
   }
 
-  Widget _buildCollectedApplesCounter() {
+  Widget _buildFruitStack(int basketIndex) {
+    List<Widget> fruitWidgets = [];
+
+    for (int i = 0; i < baskets[basketIndex].length; i++) {
+      String fruit = baskets[basketIndex][i];
+      Offset position = fruitPositions[basketIndex][i];
+
+      if (fruit.isNotEmpty) {
+        fruitWidgets.add(
+          Positioned(
+            top: position.dy,
+            left: position.dx,
+            child: GestureDetector(
+              onTap: () {
+                if (fruit == 'Orange') {
+                  setState(() {
+                    collectedOranges++;
+                    baskets[basketIndex][i] = ''; // Remove the orange
+                    if (collectedOranges == 10) { // Example: 10 oranges in total
+                      showLevelCompleteDialog();
+                    }
+                  });
+                }
+              },
+              child: Image.asset(
+                'assets/$fruit.png',
+                height: 50,
+                width: 50,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Stack(
+      children: fruitWidgets,
+    );
+  }
+
+  Widget _buildCollectedOrangesCounter() {
     return Row(
       children: [
-        Image.asset('assets/Apple.png', height: 50), // Larger apple icon
+        Image.asset('assets/Orange.png', height: 50), // Larger orange icon
         SizedBox(width: 10),
         Text(
-          '$collectedApples',
+          '$collectedOranges',
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
         ),
       ],
@@ -141,33 +212,30 @@ class _M3L4State extends State<M3L4> {
   }
 
   Widget _buildPopupMessage() {
-  return Center(
-    child: AlertDialog(
-      title: Text('Collect All Apples To Complete Level'),
-      content: SingleChildScrollView( // Add SingleChildScrollView here
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            
-            
-            Image.asset('assets/Apple.png', height: 80),
-          ],
+    return Center(
+      child: AlertDialog(
+        title: Text('Collect All Oranges To Complete Level'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/Orange.png', height: 80),
+            ],
+          ),
         ),
+        actions: <Widget>[
+          ElevatedButton(
+            child: Text('OK'),
+            onPressed: () {
+              setState(() {
+                showPopup = false; // Close the popup and show the game screen
+              });
+            },
+          ),
+        ],
       ),
-      actions: <Widget>[
-        ElevatedButton(
-          child: Text('OK'),
-          onPressed: () {
-            setState(() {
-              showPopup = false;
-            });
-          },
-        ),
-      ],
-    ),
-  );
-}
-
+    );
+  }
 
   void showInstructionDialog() {
     setState(() {
@@ -181,13 +249,13 @@ class _M3L4State extends State<M3L4> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Level Complete!'),
-          content: Text('Congratulations! You collected all the apples.'),
+          content: Text('Congratulations! You collected all the oranges.'),
           actions: <Widget>[
             ElevatedButton(
               child: Text('Next Level'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
-                // Navigate to the next level or reset the game
+                Navigator.push(context, MaterialPageRoute(builder: (context) => M3L5()));
               },
             ),
           ],

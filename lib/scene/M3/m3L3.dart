@@ -1,4 +1,7 @@
+import 'dart:math';
+import 'package:alzymer/scene/M3/m3L4.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class M3L3 extends StatefulWidget {
   @override
@@ -6,342 +9,252 @@ class M3L3 extends StatefulWidget {
 }
 
 class _M3L3State extends State<M3L3> {
-  List<String> fruits = ['Apple', 'Banana', 'Mango', 'Orange', 'Grapes'];
-  List<String> vegetables = ['Carrot', 'Tomato', 'Potato', 'Onion', 'Cabbage'];
-  List<String> selectedItems = [];
-  List<String> requiredItems = ['Apple', 'Mango', 'Potato', 'Onion'];
+  int collectedPotatoes = 0;
+  bool showPopup = true;
+
+  List<List<String>> baskets = [
+    ['Cabbage', 'Cabbage','Cabbage', 'Cabbage', 'Carrot', 'Carrot', 'Onion', 'Onion', 'Cabbage', 'Carrot','Potato', 'Potato', 'Potato'],
+    ['Carrot','Carrot','Carrot', 'Cabbage', 'Onion','Onion', 'Onion', 'Cabbage', 'Carrot', 'Carrot','Potato', 'Potato', 'Potato'],
+    ['Onion', 'Onion','Cabbage', 'Cabbage', 'Cabbage', 'Cabbage', 'Carrot', 'Onion','Onion',  'Potato', 'Potato', 'Potato', 'Potato'],
+  ];
+
+  List<List<Offset>> vegetablePositions = [[], [], []];
 
   @override
   void initState() {
     super.initState();
+    // Force landscape mode
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    // Generate random positions only once when the screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _generateVegetablePositions();
       showInstructionDialog();
     });
-  }
-
-  void showInstructionDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Instructions to Complete Level'),
-          content: Text(
-              '1. The character has been given a list of groceries that need to be taken home.\n\n'
-              '2. If the character adds all the required items to the basket, they will be rewarded with a point.\n\n'
-              '3. Click on Icon to add item to Basket\n\n'
-              '4. Click on Icon to remove item from Basket\n\n'
-              '5. To view list Show List button is at top Right'),
-          actions: <Widget>[
-            ElevatedButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                showItemList(
-                    context); // Automatically show the list after instructions
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void addItem(String item) {
-    if (!selectedItems.contains(item)) {
-      setState(() {
-        selectedItems.add(item);
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$item is already in the basket!')),
-      );
-    }
-  }
-
-  void removeItem(String item) {
-    setState(() {
-      selectedItems.remove(item);
-    });
-  }
-
-  void showItemList(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-      ),
-      builder: (BuildContext context) {
-        return FractionallySizedBox(
-          widthFactor: 0.4,
-          heightFactor: 1.7,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Grocery List',
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.close, color: Colors.black),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Scrollbar(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: requiredItems.map((item) {
-                        return ListTile(
-                          leading: Image.asset('assets/$item.png',
-                              width: 40, height: 40),
-                          title: Text(item,
-                              style: TextStyle(fontSize: 18),
-                              textAlign: TextAlign.center),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void checkItems() {
-  if (selectedItems.isEmpty) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Basket is empty'),
-          content: Text('Add items to the basket.'),
-          actions: <Widget>[
-            ElevatedButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  } else {
-    selectedItems.sort();
-    requiredItems.sort();
-    if (selectedItems.length == requiredItems.length &&
-        selectedItems.every((element) => requiredItems.contains(element))) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Congratulations!'),
-            content: Text('All items purchased! Task completed.'),
-            actions: <Widget>[
-              ElevatedButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('List not matched'),
-            content:
-                Text('The items in the basket do not match the required list.'),
-            actions: <Widget>[
-              ElevatedButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-  }
-}
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 45.0,
-        title: Text('Module 3 Level 3'),
-        actions: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-            child: ElevatedButton(
-              onPressed: () {
-                showItemList(context);
-              },
-              child: Text('Show List'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                elevation: 5,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                // List 1: Fruits
-                Expanded(
-                  child: Container(
-                    color: Colors.orangeAccent[100],
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Fruits',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold)),
-                        Expanded(
-                          child: Scrollbar(
-                            child: ListView.builder(
-                              itemCount: fruits.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  leading: Image.asset(
-                                      'assets/${fruits[index]}.png',
-                                      width: 40,
-                                      height: 40),
-                                  title: Text(fruits[index]),
-                                  onTap: () => addItem(fruits[index]),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // List 2: Vegetables
-                Expanded(
-                  child: Container(
-                    color: Colors.greenAccent[100],
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Vegetables',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold)),
-                        Expanded(
-                          child: Scrollbar(
-                            child: ListView.builder(
-                              itemCount: vegetables.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  leading: Image.asset(
-                                      'assets/${vegetables[index]}.png',
-                                      width: 40,
-                                      height: 40),
-                                  title: Text(vegetables[index]),
-                                  onTap: () => addItem(vegetables[index]),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // List 3: Selected Items
-                Expanded(
-                  child: Container(
-                    color: Colors.blueAccent[100],
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Basket',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold)),
-                        Expanded(
-                          child: Scrollbar(
-                            child: ListView.builder(
-                              itemCount: selectedItems.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  leading: Image.asset(
-                                      'assets/${selectedItems[index]}.png',
-                                      width: 40,
-                                      height: 40),
-                                  title: Text(selectedItems[index]),
-                                  onTap: () => removeItem(selectedItems[index]),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(1.0),
-            child: ElevatedButton(
-              onPressed: checkItems,
-              child: Text('Purchase'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 30.0),
-                textStyle: TextStyle(fontSize: 18),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                elevation: 5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  // Generate random positions for the vegetables in each basket
+  void _generateVegetablePositions() {
+    Random random = Random();
+    double basketSize = 200.0; // Increased basket size
+    double vegetableSize = 70.0; // Increased vegetable size
+
+    for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
+      List<Offset> usedPositions = []; // Track used positions to avoid overlap
+
+      for (int i = 0; i < baskets[basketIndex].length; i++) {
+        Offset position = Offset.zero; // Initialize with a default value
+        bool positionFound = false;
+
+        // Attempt to place the vegetable without overlap
+        for (int attempt = 0; attempt < 10; attempt++) {
+          double randomTop = random.nextDouble() * (basketSize - vegetableSize);
+          double randomLeft = random.nextDouble() * (basketSize - vegetableSize);
+          position = Offset(randomLeft, randomTop);
+
+          // Check for overlap
+          bool overlaps = usedPositions.any((usedPosition) {
+            return (position - usedPosition).distance < vegetableSize;
+          });
+
+          if (!overlaps) {
+            positionFound = true;
+            usedPositions.add(position);
+            break;
+          }
+        }
+
+        // If a position without overlap wasn't found, allow overlap
+        if (!positionFound) {
+          double randomTop = random.nextDouble() * (basketSize - vegetableSize);
+          double randomLeft = random.nextDouble() * (basketSize - vegetableSize);
+          position = Offset(randomLeft, randomTop);
+        }
+
+        vegetablePositions[basketIndex].add(position);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Find the Potatoes - Level 3'),
+      ),
+      body: Stack(
+        children: [
+          if (!showPopup) _buildGameScreen(),
+          if (showPopup) _buildPopupMessage(),
+          Positioned(
+            top: 20,
+            right: 20,
+            child: _buildCollectedPotatoesCounter(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGameScreen() {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Find and collect all the potatoes!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            _buildBasketRow(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBasketRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildBasket(0),
+        _buildBasket(1),
+        _buildBasket(2),
+      ],
+    );
+  }
+
+  Widget _buildBasket(int basketIndex) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Image.asset(
+          'assets/basket.png',
+          width: 270,
+          height: 270,
+          fit: BoxFit.cover,
+        ),
+        Container(
+          width: 200,
+          height: 200,
+          child: _buildVegetableStack(basketIndex),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVegetableStack(int basketIndex) {
+    List<Widget> vegetableWidgets = [];
+
+    for (int i = 0; i < baskets[basketIndex].length; i++) {
+      String vegetable = baskets[basketIndex][i];
+      Offset position = vegetablePositions[basketIndex][i];
+
+      if (vegetable.isNotEmpty) {
+        vegetableWidgets.add(
+          Positioned(
+            top: position.dy,
+            left: position.dx,
+            child: GestureDetector(
+              onTap: () {
+                if (vegetable == 'Potato') {
+                  setState(() {
+                    collectedPotatoes++;
+                    baskets[basketIndex][i] = ''; // Remove the potato
+                    if (collectedPotatoes == 10) { // 10 potatoes in total
+                      showLevelCompleteDialog();
+                    }
+                  });
+                }
+              },
+              child: Image.asset(
+                'assets/$vegetable.png',
+                height: 60, // Increased size
+                width: 60,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Stack(
+      children: vegetableWidgets,
+    );
+  }
+
+  Widget _buildCollectedPotatoesCounter() {
+    return Row(
+      children: [
+        Image.asset('assets/Potato.png', height: 60), // Larger potato icon
+        SizedBox(width: 10),
+        Text(
+          '$collectedPotatoes',
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPopupMessage() {
+    return Center(
+      child: AlertDialog(
+        title: Text('Collect All Potatoes To Complete Level'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/Potato.png', height: 80),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            child: Text('OK'),
+            onPressed: () {
+              setState(() {
+                showPopup = false;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showInstructionDialog() {
+    setState(() {
+      showPopup = true;
+    });
+  }
+
+  void showLevelCompleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Level Complete!'),
+          content: Text('Congratulations! You collected all the potatoes.'),
+          actions: <Widget>[
+            ElevatedButton(
+              child: Text('Next Level'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.push(context, MaterialPageRoute(builder: (context) => M3L4()));
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'package:alzymer/scene/M3/m3L3.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Add this import for controlling screen orientation
+import 'package:alzymer/scene/M3/m3L3.dart';
 
 class M3L2 extends StatefulWidget {
   @override
@@ -25,6 +26,12 @@ class _M3L2State extends State<M3L2> {
     stores.shuffle();
     fruitStoreIndex = stores.indexWhere((store) => store['image'] == 'assets/Fruit_Store.png');
 
+    // Force landscape orientation
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
     // Show instruction dialog when the screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
@@ -36,6 +43,16 @@ class _M3L2State extends State<M3L2> {
         showHintButton = true;
       });
     });
+  }
+
+  @override
+  void dispose() {
+    // Reset preferred orientations when the widget is disposed
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.dispose();
   }
 
   void _showInstructions() {
@@ -136,11 +153,6 @@ class _M3L2State extends State<M3L2> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
 

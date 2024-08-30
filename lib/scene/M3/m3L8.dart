@@ -1,44 +1,44 @@
 import 'dart:math';
-import 'package:alzymer/scene/M3/m3L4.dart';
+// import 'package:alzymer/scene/M3/m3L6.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Add this package for persistent state
 
-class M3L5 extends StatefulWidget {
+class M3L8 extends StatefulWidget {
   @override
-  _M3L5State createState() => _M3L5State();
+  _M3L8State createState() => _M3L8State();
 }
 
-class _M3L5State extends State<M3L5> {
+class _M3L8State extends State<M3L8> {
   int collectedApples = 0;
   bool showPopup = true;
-  
+  bool levelCompleted = false;
+
   List<List<String>> baskets = [
-    ['Orange','Orange', 'Orange', 'Orange', "Orange",'Orange', 'Orange', 'Apple', 'Apple', 'Apple'],
-    ['Mango', 'Mango', 'Mango','Mango', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple'],
-    ['Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato','Apple'],
+    ['Orange', 'Orange', 'Orange', 'Orange', "Orange", 'Orange', 'Orange', 'Apple', 'Apple', 'Apple'],
+    ['Mango', 'Mango', 'Mango', 'Mango', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple'],
+    ['Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Apple'],
   ];
-  
+
   // Store random positions for each fruit
   List<List<Offset>> fruitPositions = [[], [], []];
 
   @override
   void initState() {
     super.initState();
-    // Force landscape mode
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    // Generate random positions only once when the screen loads
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _generateFruitPositions();
-      showInstructionDialog();
+      _checkLevelCompletion();
     });
   }
 
   @override
   void dispose() {
-    // Reset orientation to normal when exiting this screen
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -46,49 +46,58 @@ class _M3L5State extends State<M3L5> {
     super.dispose();
   }
 
-  // Generate random positions for the fruits in each basket
-  void _generateFruitPositions() {
-  Random random = Random();
-  double basketSize = 180.0; // Assuming the basket container is 180x180
-  double fruitSize = 50.0; // Assuming each fruit image is 50x50
+  Future<void> _checkLevelCompletion() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    levelCompleted = prefs.getBool('M3L5_completed') ?? false;
 
-  for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
-    List<Offset> usedPositions = []; // Track used positions to avoid overlap
-
-    for (int i = 0; i < baskets[basketIndex].length; i++) {
-      Offset position = Offset.zero; // Initialize with a default value
-      bool positionFound = false;
-
-      // Attempt to place the fruit without overlap
-      for (int attempt = 0; attempt < 10; attempt++) {
-        double randomTop = random.nextDouble() * (basketSize - fruitSize);
-        double randomLeft = random.nextDouble() * (basketSize - fruitSize);
-        position = Offset(randomLeft, randomTop);
-
-        // Check for overlap
-        bool overlaps = usedPositions.any((usedPosition) {
-          return (position - usedPosition).distance < fruitSize;
-        });
-
-        if (!overlaps) {
-          positionFound = true;
-          usedPositions.add(position);
-          break;
-        }
-      }
-
-      // If a position without overlap wasn't found, allow overlap
-      if (!positionFound) {
-        double randomTop = random.nextDouble() * (basketSize - fruitSize);
-        double randomLeft = random.nextDouble() * (basketSize - fruitSize);
-        position = Offset(randomLeft, randomTop);
-      }
-
-      fruitPositions[basketIndex].add(position);
+    if (levelCompleted) {
+      showLevelCompleteDialog(autoShow: true);
+    } else {
+      showInstructionDialog();
     }
   }
-}
 
+  void _generateFruitPositions() {
+    Random random = Random();
+    double basketSize = 180.0; // Assuming the basket container is 180x180
+    double fruitSize = 50.0; // Assuming each fruit image is 50x50
+
+    for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
+      List<Offset> usedPositions = []; // Track used positions to avoid overlap
+
+      for (int i = 0; i < baskets[basketIndex].length; i++) {
+        Offset position = Offset.zero; // Initialize with a default value
+        bool positionFound = false;
+
+        // Attempt to place the fruit without overlap
+        for (int attempt = 0; attempt < 10; attempt++) {
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+          position = Offset(randomLeft, randomTop);
+
+          // Check for overlap
+          bool overlaps = usedPositions.any((usedPosition) {
+            return (position - usedPosition).distance < fruitSize;
+          });
+
+          if (!overlaps) {
+            positionFound = true;
+            usedPositions.add(position);
+            break;
+          }
+        }
+
+        // If a position without overlap wasn't found, allow overlap
+        if (!positionFound) {
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+          position = Offset(randomLeft, randomTop);
+        }
+
+        fruitPositions[basketIndex].add(position);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +186,7 @@ class _M3L5State extends State<M3L5> {
                     collectedApples++;
                     baskets[basketIndex][i] = ''; // Remove the apple
                     if (collectedApples == 10) { // Example: 10 apples in total
-                      showLevelCompleteDialog();
+                      _markLevelComplete();
                     }
                   });
                 }
@@ -243,19 +252,33 @@ class _M3L5State extends State<M3L5> {
     });
   }
 
-  void showLevelCompleteDialog() {
+  Future<void> _markLevelComplete() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('M3L5_completed', true);
+    showLevelCompleteDialog();
+  }
+
+  void showLevelCompleteDialog({bool autoShow = false}) {
+    if (autoShow) {
+      Future.delayed(Duration.zero, () => _showLevelCompleteDialog());
+    } else {
+      _showLevelCompleteDialog();
+    }
+  }
+
+  void _showLevelCompleteDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Task Completed !'),
+          title: Text('Level Complete!'),
           content: Text('Congratulations! You collected all the apples.'),
           actions: <Widget>[
             ElevatedButton(
-              child: Text('Next Task'),
+              child: Text('Next Level'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => M3L4()));
+                // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => M3L6()));
               },
             ),
           ],
@@ -267,6 +290,6 @@ class _M3L5State extends State<M3L5> {
 
 void main() {
   runApp(MaterialApp(
-    home: M3L5(),
+    home: M3L8(),
   ));
 }

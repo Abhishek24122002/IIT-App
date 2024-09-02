@@ -1,5 +1,12 @@
 import 'dart:math';
 import 'dart:ui';
+import 'package:alzymer/scene/M2/M2L1.dart';
+import 'package:alzymer/scene/M2/m2L3.dart';
+import 'package:alzymer/scene/M2/M2L4.dart';
+import 'package:alzymer/scene/M2/m2L5.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
@@ -20,6 +27,23 @@ class _M2L2State extends State<M2L2> {
   bool lakeVisible = false; // Boolean to track if lake is visible
   bool showHintButton = false; // Boolean to track if hint button should be shown
   bool showHintMessage = false; // Boolean to track if hint message should be shown
+  String? gender;
+  int M2L2Point = 0;
+  List<Widget> levels = [M2L1(), M2L2(), M2L3(), M2L4(), M2L5()];
+  int currentLevelIndex = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    Firebase.initializeApp();
+    fetchGender();
+    // Start a timer to show the hint button after 10 seconds
+    Timer(Duration(seconds: 10), () {
+      setState(() {
+        showHintButton = true;
+      });
+    });
+  }
 
   void onJoystickUpdate(double x, double y) {
     double distance = sqrt(x * x + y * y) * speed;
@@ -36,6 +60,10 @@ class _M2L2State extends State<M2L2> {
         if ((characterPosition - icecreamPosition).distance <= 10 && !iceCreamReached) {
           iceCreamReached = true;
           showIceCreamPopup();
+        }// Check if the character is close enough to the house and has bought ice cream
+        if ((characterPosition - housePosition).distance <= 30 && iceCreamReached) {
+          M2L2Point = 1;
+          updateFirebaseDataM2L2();
         }
       });
     }
@@ -115,16 +143,7 @@ class _M2L2State extends State<M2L2> {
     return false;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    // Start a timer to show the hint button after 10 seconds
-    Timer(Duration(seconds: 10), () {
-      setState(() {
-        showHintButton = true;
-      });
-    });
-  }
+  
 
   void showHint() {
     setState(() {
@@ -138,6 +157,62 @@ class _M2L2State extends State<M2L2> {
         showHintMessage = false;
       });
     });
+  }
+  void fetchGender() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+
+    if (user != null) {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot<Map<String, dynamic>> snapshot =
+          await firestore.collection('users').doc(user.uid).get();
+
+      setState(() {
+        gender = snapshot.get('gender');
+      });
+    }
+  }
+
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM2L2() async {
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
+
+    if (userUid.isNotEmpty) {
+      // Reference to the user's document
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+
+      // Reference to the 'score' document with document ID 'M2'
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
+
+      // Check if the 'M2' document exists
+      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+
+      if (!scoreDocSnapshot.exists) {
+        // If the document doesn't exist, create it with the initial score
+        await scoreDocRef.set({
+          'M2L2Point': M2L2Point,
+        });
+      } else {
+        // If the document exists, update the fields
+        await scoreDocRef.update({
+          'M2L2Point': M2L2Point,
+        });
+      }
+    }
+  } catch (e) {
+    print('Error updating data: $e');
+  }
+}
+@override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -249,6 +324,7 @@ class _M2L2State extends State<M2L2> {
                 ),
               ),
             if ((characterPosition - housePosition).distance <= 30)
+            
               Align(
                 alignment: Alignment.center,
                 child: Container(
@@ -257,6 +333,8 @@ class _M2L2State extends State<M2L2> {
                   child: iceCreamReached
                       ? ElevatedButton(
                           onPressed: () {
+                            M2L2Point =1;
+                            updateFirebaseDataM2L2();
                             // Navigate to the next level
                           },
                           child: Text('Next Level'),

@@ -1,4 +1,5 @@
-import 'package:alzymer/ScoreManager.dart';
+// import 'package:alzymer/ScoreManager.dart';
+// import 'package:alzymer/ScoreManagerModule.dart';
 import 'package:alzymer/scene/M2/M2L3.dart';
 import 'package:alzymer/scene/M2/M2L4.dart';
 import 'package:alzymer/scene/M2/m2L2.dart';
@@ -10,6 +11,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 
 void main() {
   runApp(MaterialApp(
@@ -43,6 +45,9 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    Firebase.initializeApp();
+    // ScoreManager().initializeScore('M2L1Point');
+    fetchGender();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -59,7 +64,6 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
       });
     });
 
-    fetchGender();
   }
 
   void fetchGender() async {
@@ -84,26 +88,36 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
   }
 
   void updateFirebaseDataM2L1() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
 
-      if (userUid.isNotEmpty) {
-        // Reference to the user's document
-        DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+    if (userUid.isNotEmpty) {
+      // Reference to the user's document
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
 
-        // Reference to the 'score' document with document ID 'M2'
-        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
+      // Reference to the 'score' document with document ID 'M2'
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
 
-        // Update the fields in the 'score' document
+      // Check if the 'M2' document exists
+      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+
+      if (!scoreDocSnapshot.exists) {
+        // If the document doesn't exist, create it with the initial score
+        await scoreDocRef.set({
+          'M2L1Point': M2L1Point,
+        });
+      } else {
+        // If the document exists, update the fields
         await scoreDocRef.update({
           'M2L1Point': M2L1Point,
         });
       }
-    } catch (e) {
-      print('Error updating data: $e');
     }
+  } catch (e) {
+    print('Error updating data: $e');
   }
+}
 
   @override
   void dispose() {
@@ -399,10 +413,11 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
         M2L1Point = 1;
         
       });
-      showConversationDialog();
+      // ScoreManager().updateUserScore('M2L1Point', 1); // Update Firebase score
+    showConversationDialog(); // Show next level dialog
     }
     updateFirebaseDataM2L1();
-    ScoreManager.updateUserScore(1);
+    // ScoreManager.updateUserScore(1);
     
   }
 

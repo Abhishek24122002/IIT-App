@@ -54,7 +54,7 @@ class _M3L1State extends State<M3L1> {
       double maxDimension = max(screenWidth, screenHeight);
 
       setState(() {
-        characterPosition = Offset(screenWidth / 2, maxDimension * 4 - 100);
+        characterPosition = Offset(screenWidth / 2, maxDimension * 8 - 100);
         previousYPosition = characterPosition.dy;
       });
 
@@ -159,7 +159,7 @@ class _M3L1State extends State<M3L1> {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'There are 6 Signals Between Your Home and The Mall.',
+                      'There are 13 Signals Between Home and The Mall.',
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
@@ -304,8 +304,8 @@ class _M3L1State extends State<M3L1> {
     double signalSpacing = 500.0;
     List<double> signalPositions = [];
 
-    for (double y = maxDimension * 4 - 100; y > 0; y -= signalSpacing) {
-      if (y == maxDimension * 4 - 100) continue;
+    for (double y = maxDimension * 8 - 100; y > 0; y -= signalSpacing) {
+      if (y == maxDimension * 8 - 100) continue;
       signalPositions.add(y - 15);
     }
 
@@ -353,7 +353,7 @@ class _M3L1State extends State<M3L1> {
     return position.dx >= minX &&
         position.dx <= maxX &&
         position.dy >= 80 &&
-        position.dy <= maxDimension * 4 - 100;
+        position.dy <= maxDimension * 8 - 100;
   }
 
   List<Widget> buildSignals(double maxDimension) {
@@ -361,8 +361,8 @@ class _M3L1State extends State<M3L1> {
     double signalSpacing = 500.0;
     double signalX = MediaQuery.of(context).size.width / 2 - 80;
 
-    for (double y = maxDimension * 4 - 100; y > 0; y -= signalSpacing) {
-      if (y == maxDimension * 4 - 100) continue;
+    for (double y = maxDimension * 8 - 100; y > 0; y -= signalSpacing) {
+      if (y == maxDimension * 8 - 100) continue;
       signals.add(Positioned(
         left: signalX - 5,
         top: y - 15,
@@ -390,7 +390,7 @@ class _M3L1State extends State<M3L1> {
     double rightTreeX = roadCenterX + roadWidth / 2 + 50;
     List<double> signalPositions = getSignalYPositions();
 
-    for (double y = maxDimension * 4 - 150; y > 50; y -= treeSpacing) {
+    for (double y = maxDimension * 8 - 150; y > 50; y -= treeSpacing) {
       if (signalPositions.any((signalY) => (y - signalY).abs() < 80)) {
         continue;
       }
@@ -493,20 +493,20 @@ class _M3L1State extends State<M3L1> {
               controller: _scrollController,
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                height: maxDimension * 4,
+                height: maxDimension * 8,
                 color: Color.fromARGB(255, 167, 216, 97),
                 child: Stack(
                   children: [
                     CustomPaint(
                       size: Size(double.infinity, maxDimension * 4),
                       painter: PathPainter(
-                        startY: maxDimension * 4 - 100,
+                        startY: maxDimension * 8 - 100,
                         signalYPositions: getSignalYPositions(),
                       ),
                     ),
                     Positioned(
                       left: MediaQuery.of(context).size.width / 2 - 40,
-                      top: maxDimension * 4 - 100,
+                      top: maxDimension * 8 - 100,
                       child: Image.asset('assets/home.png', width: 80, height: 80),
                     ),
                     Positioned(
@@ -558,7 +558,7 @@ class _M3L1State extends State<M3L1> {
               right: 6,
               child: Joystick(
                 base: JoystickBase(
-                  size: 150,
+                  size: 180,
                   withBorderCircle: false,
                 ),
                 mode: JoystickMode.all,

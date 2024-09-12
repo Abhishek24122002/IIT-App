@@ -83,15 +83,21 @@ class _M3L4State extends State<M3L4> {
 }
 
 
+  // @override
+  // void dispose() {
+  //   // Reset orientation to normal when exiting this screen
+  //   SystemChrome.setPreferredOrientations([
+  //     DeviceOrientation.portraitUp,
+  //     DeviceOrientation.portraitDown,
+  //   ]);
+  //   super.dispose();
+  // }
   @override
-  void dispose() {
-    // Reset orientation to normal when exiting this screen
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    super.dispose();
-  }
+void dispose() {
+  // No need to reset orientation when exiting this screen
+  super.dispose();
+}
+
 
   // Generate random positions for the fruits in each basket
   void _generateFruitPositions() {

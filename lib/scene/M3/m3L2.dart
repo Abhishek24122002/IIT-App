@@ -1,7 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Add this import for controlling screen orientation
+import 'package:flutter/services.dart'; // For screen orientation
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:alzymer/scene/M3/m3L3.dart';
+import 'package:alzymer/scene/M3/m3L4.dart';
+import 'package:alzymer/scene/M3/m3L5.dart';
 
 class M3L2 extends StatefulWidget {
   @override
@@ -19,10 +25,12 @@ class _M3L2State extends State<M3L2> {
   int fruitStoreIndex = 0;
   bool showNames = false;
   bool showHintButton = false;
+  int M3L2Point = 0;
 
   @override
   void initState() {
     super.initState();
+    Firebase.initializeApp();
     stores.shuffle();
     fruitStoreIndex = stores.indexWhere((store) => store['image'] == 'assets/Fruit_Store.png');
 
@@ -32,12 +40,12 @@ class _M3L2State extends State<M3L2> {
       DeviceOrientation.landscapeRight,
     ]);
 
-    // Show instruction dialog when the screen opens
+    // Show instructions when the screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
     });
 
-    // Display the "Show Hint" button after 10 seconds
+    // Show hint button after 10 seconds
     Timer(Duration(seconds: 10), () {
       setState(() {
         showHintButton = true;
@@ -45,9 +53,33 @@ class _M3L2State extends State<M3L2> {
     });
   }
 
+  // Get current user's UID
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  // Update Firebase data
+  void updateFirebaseDataM3L2() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        DocumentReference scoreDocRef = firestore.collection('users').doc(userUid).collection('score').doc('M3');
+        await scoreDocRef.set({
+          'M3L2Point': M3L2Point,
+        }, SetOptions(merge: true));
+      }
+    } catch (e) {
+      print('Error updating data: $e');
+    }
+  }
+
   @override
   void dispose() {
-    // Reset preferred orientations when the widget is disposed
+    // Reset preferred orientations when leaving the screen
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -55,6 +87,7 @@ class _M3L2State extends State<M3L2> {
     super.dispose();
   }
 
+  // Show instruction dialog
   void _showInstructions() {
     showDialog(
       context: context,
@@ -76,13 +109,15 @@ class _M3L2State extends State<M3L2> {
     );
   }
 
+  // Reveal shop names
   void _revealNames() {
     setState(() {
       showNames = true;
-      showHintButton = false; // Hide hint button once the names are revealed
+      showHintButton = false; // Hide hint button after revealing names
     });
   }
 
+  // Build UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,6 +134,12 @@ class _M3L2State extends State<M3L2> {
               return GestureDetector(
                 onTap: () {
                   if (index == fruitStoreIndex) {
+                    setState(() {
+                      M3L2Point = 1; // Award point for correct selection
+                    });
+                    updateFirebaseDataM3L2();
+
+                    // Navigate to the next level (M3L3)
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => M3L3()),
@@ -131,7 +172,6 @@ class _M3L2State extends State<M3L2> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    // Conditionally show the shop names based on showNames flag
                     Text(
                       showNames ? stores[index]['name']! : '',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -142,7 +182,7 @@ class _M3L2State extends State<M3L2> {
             }),
           ),
           SizedBox(height: 20),
-          // Show hint button after 10 seconds, but keep alignment constant
+          // Show hint button after 10 seconds
           Visibility(
             visible: showHintButton && !showNames,
             child: ElevatedButton(

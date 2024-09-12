@@ -1,7 +1,13 @@
 import 'dart:math';
+import 'package:alzymer/scene/M3/m3L1.dart';
+import 'package:alzymer/scene/M3/m3L2.dart';
+import 'package:alzymer/scene/M3/m3L3.dart';
 import 'package:alzymer/scene/M3/m3L4.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class M3L5 extends StatefulWidget {
   @override
@@ -11,6 +17,9 @@ class M3L5 extends StatefulWidget {
 class _M3L5State extends State<M3L5> {
   int collectedApples = 0;
   bool showPopup = true;
+  int M3L5Point = 0;
+  List<Widget> levels = [M3L1(), M3L2(), M3L3(), M3L4(), M3L5()];
+  int currentLevelIndex = 4;
   
   List<List<String>> baskets = [
     ['Orange','Orange', 'Orange', 'Orange', "Orange",'Orange', 'Orange', 'Apple', 'Apple', 'Apple'],
@@ -35,6 +44,43 @@ class _M3L5State extends State<M3L5> {
       showInstructionDialog();
     });
   }
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM3L5() async {
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
+
+    if (userUid.isNotEmpty) {
+      // Reference to the user's document
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+
+      // Reference to the 'score' document with document ID 'M3'
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M3');
+
+      // Check if the 'M2' document exists
+      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+
+      if (!scoreDocSnapshot.exists) {
+        // If the document doesn't exist, create it with the initial score
+        await scoreDocRef.set({
+          'M3L5Point': M3L5Point,
+        });
+      } else {
+        // If the document exists, update the fields
+        await scoreDocRef.update({
+          'M3L5Point': M3L5Point,
+        });
+      }
+    }
+  } catch (e) {
+    print('Error updating data: $e');
+  }
+}
 
   @override
   void dispose() {
@@ -177,7 +223,9 @@ class _M3L5State extends State<M3L5> {
                     collectedApples++;
                     baskets[basketIndex][i] = ''; // Remove the apple
                     if (collectedApples == 10) { // Example: 10 apples in total
+                      M3L5Point=1;// Example: 10 oranges in total
                       showLevelCompleteDialog();
+                      updateFirebaseDataM3L5();
                     }
                   });
                 }
@@ -254,14 +302,27 @@ class _M3L5State extends State<M3L5> {
             ElevatedButton(
               child: Text('Next Task'),
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => M3L4()));
+               Navigator.of(context).pop(); // Close the dialog
+                navigateToNextLevel();
               },
             ),
           ],
         );
       },
     );
+  }
+  void navigateToNextLevel() {
+    if (currentLevelIndex < levels.length - 1) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
+      );
+    }
+    
   }
 }
 

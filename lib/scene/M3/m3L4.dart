@@ -1,8 +1,13 @@
 import 'dart:math';
+import 'package:alzymer/scene/M3/m3L1.dart';
+import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:alzymer/scene/M3/m3L3.dart';
 import 'package:alzymer/scene/M3/m3L5.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class M3L4 extends StatefulWidget {
   @override
@@ -12,6 +17,9 @@ class M3L4 extends StatefulWidget {
 class _M3L4State extends State<M3L4> {
   int collectedOranges = 0;
   bool showPopup = true;
+  int M3L4Point = 0;
+  List<Widget> levels = [M3L1(), M3L2(), M3L3(), M3L4(), M3L5()];
+  int currentLevelIndex = 3;
   
   List<List<String>> baskets = [
     ['Apple','Apple', 'Apple', 'Apple', "Apple",'Apple', 'Apple', 'Orange', 'Orange', 'Orange'],
@@ -36,6 +44,44 @@ class _M3L4State extends State<M3L4> {
       showInstructionDialog();
     });
   }
+ String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM3L4() async {
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
+
+    if (userUid.isNotEmpty) {
+      // Reference to the user's document
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+
+      // Reference to the 'score' document with document ID 'M3'
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M3');
+
+      // Check if the 'M2' document exists
+      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+
+      if (!scoreDocSnapshot.exists) {
+        // If the document doesn't exist, create it with the initial score
+        await scoreDocRef.set({
+          'M3L4Point': M3L4Point,
+        });
+      } else {
+        // If the document exists, update the fields
+        await scoreDocRef.update({
+          'M3L4Point': M3L4Point,
+        });
+      }
+    }
+  } catch (e) {
+    print('Error updating data: $e');
+  }
+}
+
 
   @override
   void dispose() {
@@ -176,8 +222,10 @@ class _M3L4State extends State<M3L4> {
                   setState(() {
                     collectedOranges++;
                     baskets[basketIndex][i] = ''; // Remove the orange
-                    if (collectedOranges == 10) { // Example: 10 oranges in total
+                    if (collectedOranges == 10) { 
+                      M3L4Point=1;// Example: 10 oranges in total
                       showLevelCompleteDialog();
+                      updateFirebaseDataM3L4();
                     }
                   });
                 }
@@ -255,13 +303,25 @@ class _M3L4State extends State<M3L4> {
               child: Text('Next Level'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
-                Navigator.push(context, MaterialPageRoute(builder: (context) => M3L5()));
+                navigateToNextLevel();
               },
             ),
           ],
         );
       },
     );
+  }
+  void navigateToNextLevel() {
+    if (currentLevelIndex < levels.length - 1) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
+      );
+    }
   }
 }
 

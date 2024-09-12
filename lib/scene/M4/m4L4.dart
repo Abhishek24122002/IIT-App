@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 class M4L4 extends StatefulWidget {
   @override
@@ -6,36 +7,71 @@ class M4L4 extends StatefulWidget {
 }
 
 class _M4L4State extends State<M4L4> {
+  int tapCount = 0;
+  bool isGameStarted = false;
+  int timeLeft = 10;
+  Timer? timer;
+
+  void startGame() {
+    setState(() {
+      tapCount = 0;
+      timeLeft = 10;
+      isGameStarted = true;
+    });
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        timeLeft--;
+      });
+      if (timeLeft == 0) {
+        timer.cancel();
+        setState(() {
+          isGameStarted = false;
+        });
+      }
+    });
+  }
+
   @override
-  void initState() {
-    super.initState();
-    // Initialization code here
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Module 4 Level 4'),
-      ),
+      appBar: AppBar(title: Text('Tapping Test')),
       body: Center(
-        child: Text(
-          'This is Module 4 Level 4',
-          style: TextStyle(fontSize: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Taps: $tapCount', style: TextStyle(fontSize: 32)),
+            SizedBox(height: 20),
+            Text('Time left: $timeLeft', style: TextStyle(fontSize: 32)),
+            SizedBox(height: 50),
+            isGameStarted
+                ? GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        tapCount++;
+                      });
+                    },
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      color: Colors.blue,
+                      child: Center(
+                        child: Text('Tap Me', style: TextStyle(fontSize: 24, color: Colors.white)),
+                      ),
+                    ),
+                  )
+                : ElevatedButton(
+                    onPressed: startGame,
+                    child: Text('Start Game'),
+                  ),
+          ],
         ),
       ),
     );
   }
-
-  @override
-  void dispose() {
-    // Cleanup code here
-    super.dispose();
-  }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: M4L4(),
-  ));
 }

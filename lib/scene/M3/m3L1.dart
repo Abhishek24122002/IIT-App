@@ -1,9 +1,17 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:alzymer/scene/M3/M3L3.dart';
+import 'package:alzymer/scene/M3/M3L4.dart';
+import 'package:alzymer/scene/M3/M3L5.dart';
 import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class M3L1 extends StatefulWidget {
   @override
@@ -23,10 +31,21 @@ class _M3L1State extends State<M3L1> {
   double previousYPosition = 0.0;
   bool hasShownRedSignalToast = false;
   bool islevelcompleted = false; // Flag to track level completion
+  String? gender;
+  int M3L1Point = 0;
+  List<Widget> levels = [M3L1(), M3L2(), M3L3(), M3L4(), M3L5()];
+  int currentLevelIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    Firebase.initializeApp();
+    
+    fetchGender();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     _scrollController = ScrollController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -50,6 +69,61 @@ class _M3L1State extends State<M3L1> {
     });
     });
   }
+  void fetchGender() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+
+    if (user != null) {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot<Map<String, dynamic>> snapshot =
+          await firestore.collection('users').doc(user.uid).get();
+
+      setState(() {
+        gender = snapshot.get('gender');
+      });
+    }
+  }
+
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM3L1() async {
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
+
+    if (userUid.isNotEmpty) {
+      // Reference to the user's document
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+
+      // Reference to the 'score' document with document ID 'M3'
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M3');
+
+      // Check if the 'M2' document exists
+      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+
+      if (!scoreDocSnapshot.exists) {
+        // If the document doesn't exist, create it with the initial score
+        await scoreDocRef.set({
+          'M3L1Point': M3L1Point,
+          'M3L1_Green_Signal': points,
+        });
+      } else {
+        // If the document exists, update the fields
+        await scoreDocRef.update({
+          'M3L1Point': M3L1Point,
+          'M3L1_Green_Signal': points,
+        });
+      }
+    }
+  } catch (e) {
+    print('Error updating data: $e');
+  }
+}
+
   void showInstructionsPopup(BuildContext context) {
     showDialog(
       context: context,
@@ -367,16 +441,6 @@ class _M3L1State extends State<M3L1> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Next Level'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => M3L2()),
-                );
-              },
-            ),
-            TextButton(
               child: Text('Repeat Level'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -384,6 +448,13 @@ class _M3L1State extends State<M3L1> {
                   context,
                   MaterialPageRoute(builder: (context) => M3L1()),
                 );
+              },
+            ),
+            TextButton(
+              child: Text('Next Level'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                navigateToNextLevel();
               },
             ),
           ],
@@ -402,11 +473,15 @@ class _M3L1State extends State<M3L1> {
     // Check if the character has crossed all signals
     if (points >= getSignalYPositions().length) {
       showCongratulationsPopup(context);
+      
     }
     bool hasReachedMall =
           characterPosition.dy <= (mallPositionY + 100); // Add some buffer to ensure condition is met
 
       if (hasReachedMall) {
+        M3L1Point=1;
+       
+        updateFirebaseDataM3L1();
         Future.delayed(Duration.zero, () => showCongratulationsPopup(context));
       }
 
@@ -495,6 +570,19 @@ class _M3L1State extends State<M3L1> {
           ],
         ),
       ));
+  }
+  
+  void navigateToNextLevel() {
+    if (currentLevelIndex < levels.length - 1) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
+      );
+    }
   }
   
 }

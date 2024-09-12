@@ -52,6 +52,7 @@ dependencies:
   fluttertoast: ^8.0.9
   font_awesome_flutter: ^10.3.0
   shared_preferences: ^2.1.0
+  vibration: ^2.0.0
   
   
 
@@ -153,6 +154,8 @@ flutter:
     - assets/Onion.png
     - assets/Cabbage.png
     - assets/basket.png
+    - assets/pin.png
+    - assets/boy.png
 
 
 

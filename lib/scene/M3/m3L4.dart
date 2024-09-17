@@ -300,6 +300,7 @@ void dispose() {
   void showLevelCompleteDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Level Complete!'),

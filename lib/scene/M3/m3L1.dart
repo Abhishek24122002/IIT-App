@@ -62,11 +62,12 @@ class _M3L1State extends State<M3L1> {
       generateTrees(maxDimension);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if(mounted){
         scrollToCharacterPosition(characterPosition);
+        showInstructionsPopup(context);
+        }
+        
       });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-      showInstructionsPopup(context);
-    });
     });
   }
   void fetchGender() async {
@@ -220,28 +221,31 @@ class _M3L1State extends State<M3L1> {
   }
   
 
-  @override
-  void dispose() {
+ @override
+void dispose() {
+  if (signalTimer.isActive) {
     signalTimer.cancel();
-    _scrollController.dispose();
-    super.dispose();
   }
+  _scrollController.dispose();
+  super.dispose();
+}
 
 
   void startSignalTimer() {
-    signalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (!islevelcompleted) {
-        setState(() {
-          if (signalTimerCounter > 0) {
-            signalTimerCounter--;
-          } else {
-            isSignalRed = !isSignalRed;
-            signalTimerCounter = 10;
-          }
-        });
-      }
-    });
-  }
+  signalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    if (!islevelcompleted && mounted) {
+      setState(() {
+        if (signalTimerCounter > 0) {
+          signalTimerCounter--;
+        } else {
+          isSignalRed = !isSignalRed;
+          signalTimerCounter = 10;
+        }
+      });
+    }
+  });
+}
+
 
   void onJoystickUpdate(double x, double y) {
     if (islevelcompleted) return; // Stop all actions if level is completed
@@ -411,9 +415,10 @@ class _M3L1State extends State<M3L1> {
   }
 
   void showCongratulationsPopup(BuildContext context) {
-    if (islevelcompleted) return; // Prevent showing multiple popups
-    islevelcompleted = true; // Mark the level as completed
+  if (islevelcompleted) return; // Prevent showing multiple popups
+  islevelcompleted = true; // Mark the level as completed
 
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     showDialog(
       context: context,
       barrierDismissible: false, // Disable closing the dialog by tapping outside
@@ -426,7 +431,6 @@ class _M3L1State extends State<M3L1> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              
               Text(
                 'Level Completed with',
                 style: TextStyle(fontSize: 16),
@@ -461,7 +465,9 @@ class _M3L1State extends State<M3L1> {
         );
       },
     );
-  }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {

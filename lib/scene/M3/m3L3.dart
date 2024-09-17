@@ -289,6 +289,7 @@ class _M3L3State extends State<M3L3> {
   void showLevelCompleteDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Level Complete!'),

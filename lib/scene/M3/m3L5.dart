@@ -3,6 +3,8 @@ import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:alzymer/scene/M3/m3L3.dart';
 import 'package:alzymer/scene/M3/m3L4.dart';
+import 'package:alzymer/scene/M4/m4L3.dart';
+import 'package:alzymer/scene/M4/m4L1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -294,6 +296,7 @@ class _M3L5State extends State<M3L5> {
   void showLevelCompleteDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Task Completed !'),
@@ -302,8 +305,11 @@ class _M3L5State extends State<M3L5> {
             ElevatedButton(
               child: Text('Next Task'),
               onPressed: () {
-               Navigator.of(context).pop(); // Close the dialog
-                navigateToNextLevel();
+              //  Navigator.of(context).pop(); // Close the dialog
+                Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => M4L1()),
+                            );
               },
             ),
           ],

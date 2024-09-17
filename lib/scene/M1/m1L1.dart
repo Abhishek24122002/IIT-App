@@ -330,6 +330,15 @@ class _M1L1State extends State<M1L1> {
                 ),
                 Positioned(
                   bottom: 20.0,
+                  right: 20.0,
+                  child: Image.asset(
+                    'assets/boy1.png',
+                    width: 200.0,
+                    height: 300.0,
+                  ),
+                ),
+                Positioned(
+                  bottom: 20.0,
                   right: 100,
                   child: Row(
                     children: [
@@ -395,8 +404,8 @@ class CustomDatePicker extends StatefulWidget {
 }
 
 class _CustomDatePickerState extends State<CustomDatePicker> {
-  int selectedDay = DateTime.now().day;
-  int selectedMonth = DateTime.now().month;
+   int selectedDay = 1;  // Set to 1 for January 1st
+  int selectedMonth = 1;  // Set to 1 for January
   int selectedYear = DateTime.now().year;
 
   List<int> getDaysInMonth(int month, int year) {
@@ -406,87 +415,104 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
+ @override
+Widget build(BuildContext context) {
+  return AlertDialog(
+    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    title: Center(
+        child: Text('Select Date',
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
+    content: Container(
+      height: 160,  // Adjusted height to accommodate headings
+      child: Column(
+        children: [
+          // Add a row for the headings
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Center(child: Text('Day', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+              ),
+              Expanded(
+                child: Center(child: Text('Month', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+              ),
+              Expanded(
+                child: Center(child: Text('Year', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),  // Add spacing between headings and pickers
+          // Row for the pickers
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 60,
+                  onSelectedItemChanged: (index) {
+                    setState(() {
+                      selectedDay = index + 1;
+                    });
+                  },
+                  children: getDaysInMonth(selectedMonth, selectedYear)
+                      .map((day) => Center(child: Text(day.toString())))
+                      .toList(),
+                  scrollController: FixedExtentScrollController(
+                    initialItem: selectedDay - 1,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 60,
+                  onSelectedItemChanged: (index) {
+                    setState(() {
+                      selectedMonth = index + 1;
+                    });
+                  },
+                  children: List.generate(12, (index) => index + 1)
+                      .map((month) => Center(child: Text(month.toString())))
+                      .toList(),
+                  scrollController: FixedExtentScrollController(
+                    initialItem: selectedMonth - 1,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 60,
+                  onSelectedItemChanged: (index) {
+                    setState(() {
+                      selectedYear = DateTime.now().year - index;
+                    });
+                  },
+                  children: List.generate(
+                          100, (index) => DateTime.now().year - index)
+                      .map((year) => Center(child: Text(year.toString())))
+                      .toList(),
+                  scrollController: FixedExtentScrollController(
+                    initialItem: 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      title: Center(
-          child: Text('Select Date',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
-      content: Container(
-        height: 100,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: CupertinoPicker(
-                    itemExtent: 60,
-                    onSelectedItemChanged: (index) {
-                      setState(() {
-                        selectedDay = index + 1;
-                      });
-                    },
-                    children: getDaysInMonth(selectedMonth, selectedYear)
-                        .map((day) => Center(child: Text(day.toString())))
-                        .toList(),
-                    scrollController: FixedExtentScrollController(
-                      initialItem: selectedDay - 1,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: CupertinoPicker(
-                    itemExtent: 60,
-                    onSelectedItemChanged: (index) {
-                      setState(() {
-                        selectedMonth = index + 1;
-                      });
-                    },
-                    children: List.generate(12, (index) => index + 1)
-                        .map((month) => Center(child: Text(month.toString())))
-                        .toList(),
-                    scrollController: FixedExtentScrollController(
-                      initialItem: selectedMonth - 1,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: CupertinoPicker(
-                    itemExtent: 60,
-                    onSelectedItemChanged: (index) {
-                      setState(() {
-                        selectedYear = DateTime.now().year - index;
-                      });
-                    },
-                    children: List.generate(
-                            100, (index) => DateTime.now().year - index)
-                        .map((year) => Center(child: Text(year.toString())))
-                        .toList(),
-                    scrollController: FixedExtentScrollController(
-                      initialItem: 0,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () {
+          DateTime selectedDate =
+              DateTime(selectedYear, selectedMonth, selectedDay);
+          widget.onDateSelected(selectedDate);
+        },
+        child: Text('OK', style: TextStyle(color: Colors.blue, fontSize: 16)),
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            DateTime selectedDate =
-                DateTime(selectedYear, selectedMonth, selectedDay);
-            widget.onDateSelected(selectedDate);
-          },
-          child: Text('OK', style: TextStyle(color: Colors.blue, fontSize: 16)),
-        ),
-      ],
-    );
-  }
+    ],
+  );
+}
 }

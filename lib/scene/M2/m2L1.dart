@@ -244,27 +244,27 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           // Next Level Button (Show when at school)
-          if (isAtSchool)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      navigateToNextLevel();
-                      print('Next level action here');
-                    },
-                    child: Text('Next Level'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      textStyle: TextStyle(fontSize: 24),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // if (isAtSchool)
+          //   Positioned.fill(
+          //     child: Container(
+          //       color: Colors.black.withOpacity(0.5),
+          //       child: Center(
+          //         child: ElevatedButton(
+          //           onPressed: () {
+          //             navigateToNextLevel();
+          //             print('Next level action here');
+          //           },
+          //           child: Text('Next Level'),
+          //           style: ElevatedButton.styleFrom(
+          //             backgroundColor: Colors.amber,
+          //             padding:
+          //                 EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          //             textStyle: TextStyle(fontSize: 24),
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //   ),
           // Hint Button (Show when hint conditions are met)
           if (showHintButton && !isAtSchool)
             Positioned(
@@ -489,11 +489,12 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
 
   showDialog(
     context: context,
+    barrierDismissible: false, // Prevent closing the dialog by tapping outside
     builder: (BuildContext context) {
       return StatefulBuilder(
         builder: (context, setState) {
           if (currentMessageIndex == 0) {
-            Future.delayed(Duration(seconds: 2), () {
+            Future.delayed(Duration(seconds: 1), () {
               setState(() {
                 currentMessageIndex++;
               });
@@ -555,7 +556,8 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.of(context).pop();
+                  navigateToNextLevel(); // Close the dialog
                   setState(() {
                     isAtSchool = true; // Show the Next Level button
                   });

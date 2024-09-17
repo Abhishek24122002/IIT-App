@@ -120,67 +120,133 @@ class _M3L2State extends State<M3L2> {
   // Build UI
   @override
   Widget build(BuildContext context) {
+    var orientation = MediaQuery.of(context).orientation;
     return Scaffold(
       appBar: AppBar(
         title: Text('Module 3 Level 2'),
       ),
-      body: Column(
+      body: SingleChildScrollView( // Allows scrolling in case of overflow
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Shop Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(4, (index) {
-              return GestureDetector(
-                onTap: () {
-                  if (index == fruitStoreIndex) {
-                    setState(() {
-                      M3L2Point = 1; // Award point for correct selection
-                    });
-                    updateFirebaseDataM3L2();
+          // Layout based on orientation
+          orientation == Orientation.landscape
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(4, (index) {
+                    return Expanded( // Ensures equal spacing in landscape mode
+                      child: GestureDetector(
+                        onTap: () {
+                          if (index == fruitStoreIndex) {
+                            setState(() {
+                              M3L2Point = 1; // Award point for correct selection
+                            });
+                            updateFirebaseDataM3L2();
 
-                    // Navigate to the next level (M3L3)
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => M3L3()),
+                            // Navigate to the next level (M3L3)
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => M3L3()),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Wrong answer!')),
+                            );
+                          }
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 10.0,
+                                    spreadRadius: 2.0,
+                                    offset: Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: Card(
+                                child: Image.asset(
+                                  stores[index]['image']!,
+                                  width: 120, // Adjusted image size for landscape
+                                  height: 120,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              showNames ? stores[index]['name']! : '',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Wrong answer!')),
-                    );
-                  }
-                },
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10.0,
-                            spreadRadius: 2.0,
-                            offset: Offset(0, 5),
+                  }),
+                )
+              : GridView.builder( // 2x2 grid for portrait mode
+                  shrinkWrap: true, // Prevent infinite height in Column
+                  physics: NeverScrollableScrollPhysics(), // Disable inner scrolling
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // 2 columns
+                    crossAxisSpacing: 10, // Horizontal spacing
+                    mainAxisSpacing: 10, // Vertical spacing
+                    childAspectRatio: 1, // Aspect ratio for square images
+                  ),
+                  itemCount: 4,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        if (index == fruitStoreIndex) {
+                          setState(() {
+                            M3L2Point = 1; // Award point for correct selection
+                          });
+                          updateFirebaseDataM3L2();
+
+                          // Navigate to the next level (M3L3)
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => M3L3()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Wrong answer!')),
+                          );
+                        }
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10.0,
+                                  spreadRadius: 2.0,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Card(
+                              child: Image.asset(
+                                stores[index]['image']!,
+                                width: MediaQuery.of(context).size.width / 3, // Adjusted width
+                                height: MediaQuery.of(context).size.width / 3, // Adjusted height
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            showNames ? stores[index]['name']! : '',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
-                      child: Card(
-                        child: Image.asset(
-                          stores[index]['image']!,
-                          width: 150,
-                          height: 150,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      showNames ? stores[index]['name']! : '',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            }),
-          ),
           SizedBox(height: 20),
           // Show hint button after 10 seconds
           Visibility(
@@ -192,7 +258,7 @@ class _M3L2State extends State<M3L2> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

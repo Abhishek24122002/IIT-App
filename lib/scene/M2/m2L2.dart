@@ -4,6 +4,7 @@ import 'package:alzymer/scene/M2/M2L1.dart';
 import 'package:alzymer/scene/M2/m2L3.dart';
 import 'package:alzymer/scene/M2/M2L4.dart';
 import 'package:alzymer/scene/M2/m2L5.dart';
+import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -25,8 +26,10 @@ class _M2L2State extends State<M2L2> {
   final double speed = 6.0; // Speed factor to increase movement speed
   bool iceCreamReached = false; // Boolean to track if ice cream is reached
   bool lakeVisible = false; // Boolean to track if lake is visible
-  bool showHintButton = false; // Boolean to track if hint button should be shown
-  bool showHintMessage = false; // Boolean to track if hint message should be shown
+  bool showHintButton =
+      false; // Boolean to track if hint button should be shown
+  bool showHintMessage =
+      false; // Boolean to track if hint message should be shown
   String? gender;
   int M2L2Point = 0;
   List<Widget> levels = [M2L1(), M2L2(), M2L3(), M2L4(), M2L5()];
@@ -57,11 +60,13 @@ class _M2L2State extends State<M2L2> {
     if (isOnPath(newPosition)) {
       setState(() {
         characterPosition = newPosition;
-        if ((characterPosition - icecreamPosition).distance <= 10 && !iceCreamReached) {
+        if ((characterPosition - icecreamPosition).distance <= 10 &&
+            !iceCreamReached) {
           iceCreamReached = true;
           showIceCreamPopup();
-        }// Check if the character is close enough to the house and has bought ice cream
-        if ((characterPosition - housePosition).distance <= 30 && iceCreamReached) {
+        } // Check if the character is close enough to the house and has bought ice cream
+        if ((characterPosition - housePosition).distance <= 30 &&
+            iceCreamReached) {
           M2L2Point = 1;
           updateFirebaseDataM2L2();
         }
@@ -75,10 +80,30 @@ class _M2L2State extends State<M2L2> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Thank You!'),
-          content: Text('Thank you grandpa for ice cream!'),
+          content: Text('Thank you grandpa for ice cream! Now we can go home'),
           actions: [
             TextButton(
               child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showNextLevelPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Congratulations'),
+          content: Text(' Level Completed '),
+          actions: [
+            TextButton(
+              child: Text('Next Module'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -143,8 +168,6 @@ class _M2L2State extends State<M2L2> {
     return false;
   }
 
-  
-
   void showHint() {
     setState(() {
       lakeVisible = true;
@@ -158,6 +181,7 @@ class _M2L2State extends State<M2L2> {
       });
     });
   }
+
   void fetchGender() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
@@ -180,37 +204,40 @@ class _M2L2State extends State<M2L2> {
   }
 
   void updateFirebaseDataM2L2() async {
-  try {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String userUid = getCurrentUserUid();
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
 
-    if (userUid.isNotEmpty) {
-      // Reference to the user's document
-      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
-      // Reference to the 'score' document with document ID 'M2'
-      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
+        // Reference to the 'score' document with document ID 'M2'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M2');
 
-      // Check if the 'M2' document exists
-      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+        // Check if the 'M2' document exists
+        DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
 
-      if (!scoreDocSnapshot.exists) {
-        // If the document doesn't exist, create it with the initial score
-        await scoreDocRef.set({
-          'M2L2Point': M2L2Point,
-        });
-      } else {
-        // If the document exists, update the fields
-        await scoreDocRef.update({
-          'M2L2Point': M2L2Point,
-        });
+        if (!scoreDocSnapshot.exists) {
+          // If the document doesn't exist, create it with the initial score
+          await scoreDocRef.set({
+            'M2L2Point': M2L2Point,
+          });
+        } else {
+          // If the document exists, update the fields
+          await scoreDocRef.update({
+            'M2L2Point': M2L2Point,
+          });
+        }
       }
+    } catch (e) {
+      print('Error updating data: $e');
     }
-  } catch (e) {
-    print('Error updating data: $e');
   }
-}
-@override
+
+  @override
   void dispose() {
     super.dispose();
   }
@@ -234,7 +261,8 @@ class _M2L2State extends State<M2L2> {
             Positioned(
               left: characterPosition.dx - 10,
               top: characterPosition.dy - 10,
-              child: Image.asset('assets/old_circle.png', width: 25, height: 25),
+              child:
+                  Image.asset('assets/old_circle.png', width: 25, height: 25),
             ),
             Positioned(
               left: housePosition.dx - 27,
@@ -287,14 +315,18 @@ class _M2L2State extends State<M2L2> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber, // Button background color
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0), // Rounded edges
+                        borderRadius:
+                            BorderRadius.circular(18.0), // Rounded edges
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Padding inside the button
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12), // Padding inside the button
                     ),
                     onPressed: showHint,
                     child: Text(
                       'Show Hint',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -324,22 +356,48 @@ class _M2L2State extends State<M2L2> {
                 ),
               ),
             if ((characterPosition - housePosition).distance <= 30)
-            
               Align(
                 alignment: Alignment.center,
                 child: Container(
-                  color: Colors.white,
+                  // color: Colors.white,
                   padding: const EdgeInsets.all(16.0),
                   child: iceCreamReached
                       ? ElevatedButton(
                           onPressed: () {
-                            M2L2Point =1;
+                            M2L2Point = 1;
                             updateFirebaseDataM2L2();
-                            // Navigate to the next level
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => M3L1()),
+                            );
                           },
-                          child: Text('Next Level'),
+                          child: Text('Next Module'),
                         )
-                      : Text('Buy ice cream first'),
+                      : Container(
+                          padding: const EdgeInsets.all(20.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white, // White background
+                            borderRadius:
+                                BorderRadius.circular(12.0), // Rounded corners
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withOpacity(0.2), // Shadow color
+                                blurRadius: 10.0, // Spread of the shadow
+                                offset: Offset(0, 5), // Position of the shadow
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Buy ice cream first',
+                            style: TextStyle(
+                              fontSize: 20.0, // Slightly larger text
+                              fontWeight: FontWeight.bold, // Bold text
+                              color: Colors
+                                  .redAccent, // Attractive color for the text
+                            ),
+                          ),
+                        ),
                 ),
               ),
           ],

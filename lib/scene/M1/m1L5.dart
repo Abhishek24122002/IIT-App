@@ -1,3 +1,4 @@
+import 'package:alzymer/scene/M2/m2L1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,7 +10,7 @@ class M1L5 extends StatefulWidget {
 class _M1L5State extends State<M1L5> {
   List<String> selectedTasks = [];
   List<String> allTasks = [
-    'Fruit eated',
+    'Fruit eaten',
     'Helped Grandchild with Season',
     'Helped Grandchild with Date',
     'Picking Up Grandchild'
@@ -109,7 +110,7 @@ class _M1L5State extends State<M1L5> {
       'Helped Grandchild with Date',
       'Helped Grandchild with Season',
       
-      'Fruit eated',
+      'Fruit eaten',
       'Picking Up Grandchild'
     ];
     return selectedTasks.length == correctSequence.length &&
@@ -129,6 +130,11 @@ class _M1L5State extends State<M1L5> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
+                // Navigate to M2L1 when the correct answer is selected
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => M2L1()),
+         );
               },
               child: Text('OK'),
             ),

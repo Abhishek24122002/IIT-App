@@ -231,18 +231,18 @@ class _M2L1State extends State<M2L1> with SingleTickerProviderStateMixin {
             ),
           ),
           // Coordinates Display
-          Positioned(
-            top: 20,
-            left: 20,
-            child: Container(
-              color: Colors.white.withOpacity(0.7),
-              padding: EdgeInsets.all(8),
-              child: Text(
-                'x: $xPosition, y: $yPosition',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   top: 20,
+          //   left: 20,
+          //   child: Container(
+          //     color: Colors.white.withOpacity(0.7),
+          //     padding: EdgeInsets.all(8),
+          //     child: Text(
+          //       'x: $xPosition, y: $yPosition',
+          //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          //     ),
+          //   ),
+          // ),
           // Next Level Button (Show when at school)
           // if (isAtSchool)
           //   Positioned.fill(

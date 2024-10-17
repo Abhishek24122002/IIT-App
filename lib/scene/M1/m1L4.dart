@@ -434,8 +434,6 @@ Widget build(BuildContext context) {
   void dispose() {
     // Revert to original orientation when leaving this page
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);

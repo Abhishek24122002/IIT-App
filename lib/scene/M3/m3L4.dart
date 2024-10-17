@@ -3,6 +3,7 @@ import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:alzymer/scene/M3/m3L3.dart';
 import 'package:alzymer/scene/M3/m3L5.dart';
+import 'package:alzymer/scene/M3/m3L6.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,16 +19,55 @@ class _M3L4State extends State<M3L4> {
   int collectedOranges = 0;
   bool showPopup = true;
   int M3L4Point = 0;
-  List<Widget> levels = [M3L1(), M3L2(), M3L3(), M3L4(), M3L5()];
-  int currentLevelIndex = 3;
-  
-  List<List<String>> baskets = [
-    ['Apple','Apple', 'Apple', 'Apple', "Apple",'Apple', 'Apple', 'Orange', 'Orange', 'Orange'],
-    ['Mango', 'Mango', 'Mango','Mango',  'Orange', 'Orange', 'Orange', 'Orange', 'Orange','Orange'],
-    ['Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato','Orange'],
+  List<Widget> levels = [
+    M3L1(),
+    M3L6(),
+    M3L2(),
+    M3L3(),
+    M3L4(),
+    M3L5(),
   ];
-  
-  // Store random positions for each fruit
+  int currentLevelIndex = 4;
+
+  List<List<String>> baskets = [
+    [
+      'Apple',
+      'Apple',
+      'Apple',
+      'Apple',
+      "Apple",
+      'Apple',
+      'Apple',
+      'Orange',
+      'Orange',
+      'Orange'
+    ],
+    [
+      'Mango',
+      'Mango',
+      'Mango',
+      'Mango',
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange'
+    ],
+    [
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Orange'
+    ],
+  ];
+
   List<List<Offset>> fruitPositions = [[], [], []];
 
   @override
@@ -44,60 +84,51 @@ class _M3L4State extends State<M3L4> {
       showInstructionDialog();
     });
   }
- String getCurrentUserUid() {
+
+  String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
     return user?.uid ?? '';
   }
 
   void updateFirebaseDataM3L4() async {
-  try {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String userUid = getCurrentUserUid();
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
 
-    if (userUid.isNotEmpty) {
-      // Reference to the user's document
-      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
-      // Reference to the 'score' document with document ID 'M3'
-      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M3');
+        // Reference to the 'score' document with document ID 'M3'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M3');
 
-      // Check if the 'M2' document exists
-      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+        // Check if the 'M2' document exists
+        DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
 
-      if (!scoreDocSnapshot.exists) {
-        // If the document doesn't exist, create it with the initial score
-        await scoreDocRef.set({
-          'M3L4Point': M3L4Point,
-        });
-      } else {
-        // If the document exists, update the fields
-        await scoreDocRef.update({
-          'M3L4Point': M3L4Point,
-        });
+        if (!scoreDocSnapshot.exists) {
+          // If the document doesn't exist, create it with the initial score
+          await scoreDocRef.set({
+            'M3L4Point': M3L4Point,
+          });
+        } else {
+          // If the document exists, update the fields
+          await scoreDocRef.update({
+            'M3L4Point': M3L4Point,
+          });
+        }
       }
+    } catch (e) {
+      print('Error updating data: $e');
     }
-  } catch (e) {
-    print('Error updating data: $e');
   }
-}
 
-
-  // @override
-  // void dispose() {
-  //   // Reset orientation to normal when exiting this screen
-  //   SystemChrome.setPreferredOrientations([
-  //     DeviceOrientation.portraitUp,
-  //     DeviceOrientation.portraitDown,
-  //   ]);
-  //   super.dispose();
-  // }
   @override
-void dispose() {
-  // No need to reset orientation when exiting this screen
-  super.dispose();
-}
-
+  void dispose() {
+    super.dispose();
+  }
 
   // Generate random positions for the fruits in each basket
   void _generateFruitPositions() {
@@ -150,7 +181,8 @@ void dispose() {
       ),
       body: Stack(
         children: [
-          if (!showPopup) _buildGameScreen(), // Show game content only if popup is not displayed
+          if (!showPopup)
+            _buildGameScreen(), // Show game content only if popup is not displayed
           if (showPopup) _buildPopupMessage(), // Show popup message if needed
           Positioned(
             top: 20,
@@ -202,7 +234,8 @@ void dispose() {
           fit: BoxFit.cover,
         ),
         Container(
-          width: 180, // Ensure the Container has a fixed size matching the basket
+          width:
+              180, // Ensure the Container has a fixed size matching the basket
           height: 180, // Same size as the basket image
           child: _buildFruitStack(basketIndex),
         ),
@@ -228,8 +261,8 @@ void dispose() {
                   setState(() {
                     collectedOranges++;
                     baskets[basketIndex][i] = ''; // Remove the orange
-                    if (collectedOranges == 10) { 
-                      M3L4Point=1;// Example: 10 oranges in total
+                    if (collectedOranges == 10) {
+                      M3L4Point = 1; // Example: 10 oranges in total
                       showLevelCompleteDialog();
                       updateFirebaseDataM3L4();
                     }
@@ -255,11 +288,30 @@ void dispose() {
   Widget _buildCollectedOrangesCounter() {
     return Row(
       children: [
-        Image.asset('assets/Orange.png', height: 50), // Larger orange icon
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              height:50,
+              width: 70,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.8),
+                    spreadRadius: 0.2,
+                    blurRadius: 20,
+                  ),
+                ]
+              ),
+            ),
+        
+          Image.asset('assets/Orange.png', height: 60), 
+          ],),// Larger orange icon
         SizedBox(width: 10),
         Text(
           '$collectedOranges',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
+          style: TextStyle(
+              fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
         ),
       ],
     );
@@ -318,6 +370,7 @@ void dispose() {
       },
     );
   }
+
   void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {
       SystemChrome.setPreferredOrientations([

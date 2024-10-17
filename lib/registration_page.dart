@@ -260,6 +260,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.red), // Red border
                             borderRadius: BorderRadius.circular(5.0),
+                            color: Colors.white,
                           ),
                           padding: EdgeInsets.all(8.0),
                           margin: EdgeInsets.only(bottom: 20), // Added margin
@@ -274,7 +275,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           children: [
                             Text(
                               'Gender: ',
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16, color: Colors.white),
                             ),
                             SizedBox(width: 10),
                             DropdownButton<String>(
@@ -294,7 +295,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   value: value,
                                   child: Text(
                                     value,
-                                    style: TextStyle(fontSize: 16),
+                                    style: TextStyle(fontSize: 16,),
                                   ),
                                 );
                               }).toList(),

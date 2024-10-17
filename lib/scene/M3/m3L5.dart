@@ -3,6 +3,7 @@ import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:alzymer/scene/M3/m3L3.dart';
 import 'package:alzymer/scene/M3/m3L4.dart';
+import 'package:alzymer/scene/M3/m3L6.dart';
 import 'package:alzymer/scene/M4/m4L3.dart';
 import 'package:alzymer/scene/M4/m4L1.dart';
 import 'package:flutter/material.dart';
@@ -20,15 +21,55 @@ class _M3L5State extends State<M3L5> {
   int collectedApples = 0;
   bool showPopup = true;
   int M3L5Point = 0;
-  List<Widget> levels = [M3L1(), M3L2(), M3L3(), M3L4(), M3L5()];
-  int currentLevelIndex = 4;
-  
-  List<List<String>> baskets = [
-    ['Orange','Orange', 'Orange', 'Orange', "Orange",'Orange', 'Orange', 'Apple', 'Apple', 'Apple'],
-    ['Mango', 'Mango', 'Mango','Mango', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple', 'Apple'],
-    ['Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato','Apple'],
+  List<Widget> levels = [
+    M3L1(),
+    M3L6(),
+    M3L2(),
+    M3L3(),
+    M3L4(),
+    M3L5(),
   ];
-  
+  int currentLevelIndex = 5;
+
+  List<List<String>> baskets = [
+    [
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange',
+      "Orange",
+      'Orange',
+      'Orange',
+      'Apple',
+      'Apple',
+      'Apple'
+    ],
+    [
+      'Mango',
+      'Mango',
+      'Mango',
+      'Mango',
+      'Apple',
+      'Apple',
+      'Apple',
+      'Apple',
+      'Apple',
+      'Apple'
+    ],
+    [
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Apple'
+    ],
+  ];
+
   // Store random positions for each fruit
   List<List<Offset>> fruitPositions = [[], [], []];
 
@@ -46,6 +87,7 @@ class _M3L5State extends State<M3L5> {
       showInstructionDialog();
     });
   }
+
   String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
@@ -53,36 +95,38 @@ class _M3L5State extends State<M3L5> {
   }
 
   void updateFirebaseDataM3L5() async {
-  try {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String userUid = getCurrentUserUid();
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
 
-    if (userUid.isNotEmpty) {
-      // Reference to the user's document
-      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
-      // Reference to the 'score' document with document ID 'M3'
-      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M3');
+        // Reference to the 'score' document with document ID 'M3'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M3');
 
-      // Check if the 'M2' document exists
-      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+        // Check if the 'M2' document exists
+        DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
 
-      if (!scoreDocSnapshot.exists) {
-        // If the document doesn't exist, create it with the initial score
-        await scoreDocRef.set({
-          'M3L5Point': M3L5Point,
-        });
-      } else {
-        // If the document exists, update the fields
-        await scoreDocRef.update({
-          'M3L5Point': M3L5Point,
-        });
+        if (!scoreDocSnapshot.exists) {
+          // If the document doesn't exist, create it with the initial score
+          await scoreDocRef.set({
+            'M3L5Point': M3L5Point,
+          });
+        } else {
+          // If the document exists, update the fields
+          await scoreDocRef.update({
+            'M3L5Point': M3L5Point,
+          });
+        }
       }
+    } catch (e) {
+      print('Error updating data: $e');
     }
-  } catch (e) {
-    print('Error updating data: $e');
   }
-}
 
   @override
   void dispose() {
@@ -96,47 +140,46 @@ class _M3L5State extends State<M3L5> {
 
   // Generate random positions for the fruits in each basket
   void _generateFruitPositions() {
-  Random random = Random();
-  double basketSize = 180.0; // Assuming the basket container is 180x180
-  double fruitSize = 50.0; // Assuming each fruit image is 50x50
+    Random random = Random();
+    double basketSize = 180.0; // Assuming the basket container is 180x180
+    double fruitSize = 50.0; // Assuming each fruit image is 50x50
 
-  for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
-    List<Offset> usedPositions = []; // Track used positions to avoid overlap
+    for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
+      List<Offset> usedPositions = []; // Track used positions to avoid overlap
 
-    for (int i = 0; i < baskets[basketIndex].length; i++) {
-      Offset position = Offset.zero; // Initialize with a default value
-      bool positionFound = false;
+      for (int i = 0; i < baskets[basketIndex].length; i++) {
+        Offset position = Offset.zero; // Initialize with a default value
+        bool positionFound = false;
 
-      // Attempt to place the fruit without overlap
-      for (int attempt = 0; attempt < 10; attempt++) {
-        double randomTop = random.nextDouble() * (basketSize - fruitSize);
-        double randomLeft = random.nextDouble() * (basketSize - fruitSize);
-        position = Offset(randomLeft, randomTop);
+        // Attempt to place the fruit without overlap
+        for (int attempt = 0; attempt < 10; attempt++) {
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+          position = Offset(randomLeft, randomTop);
 
-        // Check for overlap
-        bool overlaps = usedPositions.any((usedPosition) {
-          return (position - usedPosition).distance < fruitSize;
-        });
+          // Check for overlap
+          bool overlaps = usedPositions.any((usedPosition) {
+            return (position - usedPosition).distance < fruitSize;
+          });
 
-        if (!overlaps) {
-          positionFound = true;
-          usedPositions.add(position);
-          break;
+          if (!overlaps) {
+            positionFound = true;
+            usedPositions.add(position);
+            break;
+          }
         }
-      }
 
-      // If a position without overlap wasn't found, allow overlap
-      if (!positionFound) {
-        double randomTop = random.nextDouble() * (basketSize - fruitSize);
-        double randomLeft = random.nextDouble() * (basketSize - fruitSize);
-        position = Offset(randomLeft, randomTop);
-      }
+        // If a position without overlap wasn't found, allow overlap
+        if (!positionFound) {
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+          position = Offset(randomLeft, randomTop);
+        }
 
-      fruitPositions[basketIndex].add(position);
+        fruitPositions[basketIndex].add(position);
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +189,8 @@ class _M3L5State extends State<M3L5> {
       ),
       body: Stack(
         children: [
-          if (!showPopup) _buildGameScreen(), // Show game content only if popup is not displayed
+          if (!showPopup)
+            _buildGameScreen(), // Show game content only if popup is not displayed
           if (showPopup) _buildPopupMessage(), // Show popup message if needed
           Positioned(
             top: 20,
@@ -198,7 +242,8 @@ class _M3L5State extends State<M3L5> {
           fit: BoxFit.cover,
         ),
         Container(
-          width: 180, // Ensure the Container has a fixed size matching the basket
+          width:
+              180, // Ensure the Container has a fixed size matching the basket
           height: 180, // Same size as the basket image
           child: _buildFruitStack(basketIndex),
         ),
@@ -224,8 +269,9 @@ class _M3L5State extends State<M3L5> {
                   setState(() {
                     collectedApples++;
                     baskets[basketIndex][i] = ''; // Remove the apple
-                    if (collectedApples == 10) { // Example: 10 apples in total
-                      M3L5Point=1;// Example: 10 oranges in total
+                    if (collectedApples == 10) {
+                      // Example: 10 apples in total
+                      M3L5Point = 1; // Example: 10 oranges in total
                       showLevelCompleteDialog();
                       updateFirebaseDataM3L5();
                     }
@@ -251,11 +297,31 @@ class _M3L5State extends State<M3L5> {
   Widget _buildCollectedApplesCounter() {
     return Row(
       children: [
-        Image.asset('assets/Apple.png', height: 50), // Larger apple icon
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Glowing effect
+            Container(
+              height: 50,
+              width: 70,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.8), // Golden glow
+                    spreadRadius: 0.2,
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
+            ),
+            Image.asset('assets/Apple.png', height: 50),
+          ],
+        ), // Larger apple icon
         SizedBox(width: 10),
         Text(
           '$collectedApples',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
+          style: TextStyle(
+              fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
         ),
       ],
     );
@@ -305,11 +371,11 @@ class _M3L5State extends State<M3L5> {
             ElevatedButton(
               child: Text('Next Task'),
               onPressed: () {
-              //  Navigator.of(context).pop(); // Close the dialog
+                //  Navigator.of(context).pop(); // Close the dialog
                 Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => M4L1()),
-                            );
+                  context,
+                  MaterialPageRoute(builder: (context) => M4L1()),
+                );
               },
             ),
           ],
@@ -317,6 +383,7 @@ class _M3L5State extends State<M3L5> {
       },
     );
   }
+
   void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {
       SystemChrome.setPreferredOrientations([
@@ -328,7 +395,6 @@ class _M3L5State extends State<M3L5> {
         MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
       );
     }
-    
   }
 }
 

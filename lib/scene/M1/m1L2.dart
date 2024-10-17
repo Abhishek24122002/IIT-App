@@ -473,8 +473,6 @@ class _M1L2State extends State<M1L2> {
   void dispose() {
     // Revert to original orientation when leaving this page
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);

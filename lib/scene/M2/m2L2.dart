@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
 import 'dart:async';
@@ -40,6 +41,10 @@ class _M2L2State extends State<M2L2> {
     super.initState();
     Firebase.initializeApp();
     fetchGender();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     // Start a timer to show the hint button after 10 seconds
     Timer(Duration(seconds: 10), () {
       setState(() {

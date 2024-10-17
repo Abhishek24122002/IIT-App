@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:alzymer/scene/M3/M3L3.dart';
 import 'package:alzymer/scene/M3/M3L4.dart';
 import 'package:alzymer/scene/M3/M3L5.dart';
+import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:alzymer/scene/M3/m3L2.dart';
-import 'package:alzymer/scene/M3/m3L6.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
@@ -14,12 +14,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-class M3L1 extends StatefulWidget {
+class M3L6 extends StatefulWidget {
   @override
-  _M3L1State createState() => _M3L1State();
+  _M3L6State createState() => _M3L6State();
 }
 
-class _M3L1State extends State<M3L1> {
+class _M3L6State extends State<M3L6> {
   Offset? characterPosition; // Initialize characterPosition as nullable
   final double speed = 20.0;
   late ScrollController _scrollController;
@@ -34,10 +34,10 @@ class _M3L1State extends State<M3L1> {
   bool islevelcompleted = false; // Flag to track level completion
   bool isPositionLoaded = false; // Flag to track if position is loaded
   String? gender;
-  int Without_timer_Point = 0;
-  // int M3L1Point = 0;
-  List<Widget> levels = [M3L1(),M3L6(), M3L2(), M3L3(), M3L4(), M3L5()];
-  int currentLevelIndex = 0;
+  // int Without_timer_Point = 0;
+  int M3L1Point = 0;
+  List<Widget> levels = [M3L1(),M3L6(), M3L2(), M3L3(), M3L4(), M3L5(),];
+  int currentLevelIndex = 1;
 
   @override
   void initState() {
@@ -116,18 +116,18 @@ class _M3L1State extends State<M3L1> {
       if (!scoreDocSnapshot.exists) {
         // If the document doesn't exist, create it with the initial score
         await scoreDocRef.set({
-          // 'M3L1Point': M3L1Point,
-          // 'M3L1_Green_Signal': points,
-          'Without_timer_Point': Without_timer_Point,
-          'Without_timer_Green_Signal': points,
+          // 'Without_timer_Point': Without_timer_Point,
+          // 'Without_timer_Green_Signal': points,
+          'M3L1Point': M3L1Point,
+          'M3L1_Green_Signal': points,
         });
       } else {
         // If the document exists, update the fields
         await scoreDocRef.update({
-          // 'M3L1Point': M3L1Point,
-          // 'M3L1_Green_Signal': points,
-          'Without_timer_Point': Without_timer_Point,
-          'Without_timer_Green_Signal': points,
+          'M3L1Point': M3L1Point,
+          'M3L1_Green_Signal': points,
+          // 'Without_timer_Point': Without_timer_Point,
+          // 'Without_timer_Green_Signal': points,
         });
       }
     }
@@ -496,8 +496,8 @@ void dispose() {
           characterPosition!.dy <= (mallPositionY + 100); // Add some buffer to ensure condition is met
 
       if (hasReachedMall) {
-        // M3L1Point=1;
-        Without_timer_Point=1;
+        // Without_timer_Point=1;
+        M3L1Point=1;
        
         updateFirebaseDataM3L1();
         Future.delayed(Duration.zero, () => showCongratulationsPopup(context));
@@ -567,17 +567,17 @@ void dispose() {
                         color: Colors.black,
                       )),
                   SizedBox(height: 10),
-                  // Row(
-                  //   children: [
-                  //     Icon(Icons.timer, size: 24, color: Colors.black),
-                  //     SizedBox(width: 5),
-                  //     Text('$signalTimerCounter',
-                  //         style: TextStyle(
-                  //           fontSize: 24,
-                  //           color: Colors.black,
-                  //         )),
-                  //   ],
-                  // ),
+                  Row(
+                    children: [
+                      Icon(Icons.timer, size: 24, color: Colors.black),
+                      SizedBox(width: 5),
+                      Text('$signalTimerCounter',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Colors.black,
+                          )),
+                    ],
+                  ),
                 ],
               ),
             ),

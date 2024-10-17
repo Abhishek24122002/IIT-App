@@ -15,37 +15,76 @@ class ModuleSelectionScreen extends StatefulWidget {
 
 class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
   late int m1Trophy;
+  late int m2Trophy;
+  late int m3Trophy;
+  late int m4Trophy;
+  // late int m5Trophy;
 
   @override
   void initState() {
     super.initState();
     m1Trophy = 0;
-    fetchTrophy();
+    m2Trophy = 0;
+    m3Trophy = 0;
+    m4Trophy = 0;
+    fetchAllTrophies();
   }
 
-  void fetchTrophy() async {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    User? user = _auth.currentUser;
-    final DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
-        .instance
-        .collection('users')
-        .doc(user!.uid)
-        .collection('score')
-        .doc('M1');
+  void fetchAllTrophies() async {
+  await fetchTrophy('M1', 'M1Trophy');
+  await fetchTrophy('M2', 'M2Trophy');
+  await fetchTrophy('M3', 'M3Trophy');
+  await fetchTrophy('M4', 'M4Trophy');
+}
+Future<void> fetchTrophy(String docId, String trophyField) async {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? user = _auth.currentUser;
+  final DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
+      .instance
+      .collection('users')
+      .doc(user!.uid)
+      .collection('score')
+      .doc(docId);
 
-    final DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
-    if (snapshot.exists) {
-      setState(() {
-        m1Trophy = snapshot.data()?['M1Trophy'] ?? 0;
-      });
-    } else {
-      // If document doesn't exist, create one with initial data
-      await docRef.set({'M1Trophy': 0});
-      setState(() {
-        m1Trophy = 0;
-      });
-    }
+  final DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
+  if (snapshot.exists) {
+    setState(() {
+      switch (trophyField) {
+        case 'M1Trophy':
+          m1Trophy = snapshot.data()?['M1Trophy'] ?? 0;
+          break;
+        case 'M2Trophy':
+          m2Trophy = snapshot.data()?['M2Trophy'] ?? 0;
+          break;
+        case 'M3Trophy':
+          m3Trophy = snapshot.data()?['M3Trophy'] ?? 0;
+          break;
+        case 'M4Trophy':
+          m4Trophy = snapshot.data()?['M4Trophy'] ?? 0;
+          break;
+      }
+    });
+  } else {
+    // If document doesn't exist, create one with initial data
+    await docRef.set({trophyField: 0});
+    setState(() {
+      switch (trophyField) {
+        case 'M1Trophy':
+          m1Trophy = 0;
+          break;
+        case 'M2Trophy':
+          m2Trophy = 0;
+          break;
+        case 'M3Trophy':
+          m3Trophy = 0;
+          break;
+        case 'M4Trophy':
+          m4Trophy = 0;
+          break;
+      }
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -65,12 +104,46 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
                   return ModuleButton(
                     module: index + 1,
                     m1Trophy: m1Trophy,
+                    m2Trophy: 0,
+                    m3Trophy: 0,
+                    m4Trophy: 0,
                   );
-                } else {
+                } 
+                else if(index == 1){
+                  return ModuleButton(
+                    module: index + 1,
+                    m1Trophy: 0,
+                    m2Trophy: m2Trophy,
+                    m3Trophy: 0,
+                    m4Trophy: 0,
+                  );
+                }
+                else if(index == 2){
+                  return ModuleButton(
+                    module: index + 1,
+                    m1Trophy: 0,
+                    m2Trophy: 0,
+                    m3Trophy: m3Trophy,
+                    m4Trophy: 0,
+                  );
+                }
+                else if(index == 3){
+                  return ModuleButton(
+                    module: index + 1,
+                    m1Trophy: 0,
+                    m2Trophy: 0,
+                    m3Trophy: 0,
+                    m4Trophy: m4Trophy,
+                  );
+                }
+                else {
                   return ModuleButton(
                     module: index + 1,
                     // For other modules, set trophy value to 0 or any default value
                     m1Trophy: 0,
+                    m2Trophy: 0,
+                    m3Trophy: 0,
+                    m4Trophy: 0,
                   );
                 }
               },
@@ -85,8 +158,11 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
 class ModuleButton extends StatelessWidget {
   final int module;
   final int m1Trophy;
+  final int m2Trophy;
+  final int m3Trophy;
+  final int m4Trophy;
 
-  ModuleButton({required this.module, required this.m1Trophy});
+  ModuleButton({required this.module, required this.m1Trophy, required this.m2Trophy, required this.m3Trophy, required this.m4Trophy});
 
   List<String> moduleNames = [
     'Module 1',
@@ -115,8 +191,9 @@ class ModuleButton extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  M2LevelSelectionScreen(module: module, userScore: 0),
+              builder: (context) =>M2LevelSelectionScreen(
+                module: module, 
+                userScore: 0),
             ),
           );
         } else if (module == 3) {
@@ -201,7 +278,7 @@ class ModuleButton extends StatelessWidget {
                   ),
                 ),
               ),
-              if (module == 1 && m1Trophy == 1) // Only show trophy for Module1
+              if (module == 1 && m1Trophy == 1|| module == 2 && m2Trophy == 1 || module == 3 && m3Trophy == 1|| module == 4 && m4Trophy == 1) // Only show trophy for Module1
                 Positioned(
                   top: 20,
                   right: 5,

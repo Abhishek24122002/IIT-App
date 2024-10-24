@@ -24,7 +24,7 @@ class _M3L1State extends State<M3L1> {
   final double speed = 20.0;
   late ScrollController _scrollController;
   late Timer signalTimer;
-  int signalTimerCounter = 10;
+  int signalTimerCounter = 0;
   bool isSignalRed = true;
   int points = 0;
   List<double> crossedSignals = [];
@@ -60,7 +60,7 @@ class _M3L1State extends State<M3L1> {
       double maxDimension = max(screenWidth, screenHeight);
 
       setState(() {
-        characterPosition = Offset(screenWidth / 2, maxDimension * 8 - 100);
+        characterPosition = Offset(screenWidth / 2, maxDimension * 13 - 100);
         previousYPosition = characterPosition!.dy;
         isPositionLoaded = true; // Mark position as loaded
       });
@@ -243,6 +243,8 @@ void dispose() {
 
 
   void startSignalTimer() {
+  final random = Random();
+
   signalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
     if (!islevelcompleted && mounted) {
       setState(() {
@@ -250,12 +252,15 @@ void dispose() {
           signalTimerCounter--;
         } else {
           isSignalRed = !isSignalRed;
-          signalTimerCounter = 10;
+
+          // Randomize the next signal duration between 6 and 12 seconds
+          signalTimerCounter = 6 + random.nextInt(7); // Random number between 6 and 12
         }
       });
     }
   });
 }
+
 
 
   void onJoystickUpdate(double x, double y) {
@@ -319,8 +324,8 @@ void dispose() {
     double signalSpacing = 500.0;
     List<double> signalPositions = [];
 
-    for (double y = maxDimension * 8 - 100; y > 0; y -= signalSpacing) {
-      if (y == maxDimension * 8 - 100) continue;
+    for (double y = maxDimension * 13 - 100; y > 0; y -= signalSpacing) {
+      if (y == maxDimension * 13 - 100) continue;
       signalPositions.add(y - 15);
     }
 
@@ -368,7 +373,7 @@ void dispose() {
     return position.dx >= minX &&
         position.dx <= maxX &&
         position.dy >= 80 &&
-        position.dy <= maxDimension * 8 - 100;
+        position.dy <= maxDimension * 13 - 100;
   }
 
   List<Widget> buildSignals(double maxDimension) {
@@ -376,8 +381,8 @@ void dispose() {
     double signalSpacing = 500.0;
     double signalX = MediaQuery.of(context).size.width / 2 - 80;
 
-    for (double y = maxDimension * 8 - 100; y > 0; y -= signalSpacing) {
-      if (y == maxDimension * 8 - 100) continue;
+    for (double y = maxDimension * 13 - 100; y > 0; y -= signalSpacing) {
+      if (y == maxDimension * 13 - 100) continue;
       signals.add(Positioned(
         left: signalX - 5,
         top: y - 15,
@@ -405,7 +410,7 @@ void dispose() {
     double rightTreeX = roadCenterX + roadWidth / 2 + 50;
     List<double> signalPositions = getSignalYPositions();
 
-    for (double y = maxDimension * 8 - 150; y > 50; y -= treeSpacing) {
+    for (double y = maxDimension * 13 - 150; y > 50; y -= treeSpacing) {
       if (signalPositions.any((signalY) => (y - signalY).abs() < 80)) {
         continue;
       }
@@ -521,20 +526,20 @@ void dispose() {
               controller: _scrollController,
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                height: maxDimension * 8,
+                height: maxDimension * 13,
                 color: Color.fromARGB(255, 167, 216, 97),
                 child: Stack(
                   children: [
                     CustomPaint(
                       size: Size(double.infinity, maxDimension * 4),
                       painter: PathPainter(
-                        startY: maxDimension * 8 - 100,
+                        startY: maxDimension * 13 - 100,
                         signalYPositions: getSignalYPositions(),
                       ),
                     ),
                     Positioned(
                       left: MediaQuery.of(context).size.width / 2 - 40,
-                      top: maxDimension * 8 - 100,
+                      top: maxDimension * 13 - 100,
                       child: Image.asset('assets/home.png', width: 80, height: 80),
                     ),
                     Positioned(

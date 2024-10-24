@@ -15,17 +15,17 @@ class ScoreManager {
     DocumentReference scoreDocRef = firestore.collection('users').doc(userUid).collection('score').doc('M2');
 
     // Initialize the score field if it does not exist
-    scoreDocRef.get().then((doc) {
-      if (!doc.exists) {
-        scoreDocRef.set({
-          level: 0,
-        });
-      } else if (!doc.data()!.containsKey(level)) {
-        scoreDocRef.update({
-          level: 0,
-        });
-      }
-    });
+    // scoreDocRef.get().then((doc) {
+    //   if (!doc.exists) {
+    //     scoreDocRef.set({
+    //       level: 0,
+    //     });
+    //   } else if (!doc.data()!.containsKey(level)) {
+    //     scoreDocRef.update({
+    //       level: 0,
+    //     });
+    //   }
+    // });
   }
 
   // Generic function to update the score for the specific level

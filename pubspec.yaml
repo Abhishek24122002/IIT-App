@@ -126,22 +126,10 @@ flutter:
     - assets/book.png
     - assets/red.png
     - assets/green.png
-    - assets/Car1_Left.png
-    - assets/Car1_Right.png
-    - assets/Car2_Left.png
-    - assets/Car2_Right.png
-    - assets/Car3_Left.png
-    - assets/Car3_Right.png
-    - assets/Truck1_Left.png
-    - assets/Truck1_Right.png
-    - assets/Truck2_Left.png
-    - assets/Truck2_Right.png
-    - assets/Truck3_Left.png
-    - assets/Truck3_Right.png
     - assets/mall.png
     - assets/Fruit_Store.png
-    - assets/Food_Store.png
-    - assets/Cloth_Store.png
+    - assets/Grocery_Store.png
+    - assets/Dairy.png
     - assets/Toy_Store.png
     - assets/Apple.png
     - assets/Banana.png
@@ -154,8 +142,13 @@ flutter:
     - assets/Onion.png
     - assets/Cabbage.png
     - assets/basket.png
-    - assets/pin.png
     - assets/boy.png
+    - assets/Bread.png
+    - assets/Milk.png
+    - assets/Flour.png
+    - assets/Eggs.png
+    - assets/cheese.png
+    - assets/yougurt.png
 
 
 

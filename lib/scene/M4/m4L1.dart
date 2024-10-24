@@ -1,6 +1,10 @@
+import 'package:alzymer/scene/M3/m3L2.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vibration/vibration.dart'; // Import the vibration package
+import 'package:vibration/vibration.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class M4L1 extends StatefulWidget {
   @override
@@ -9,6 +13,7 @@ class M4L1 extends StatefulWidget {
 
 class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
   int points = 0;
+  int M4L1Point = 0;
   List<bool> appleDropped = [
     false,
     false,
@@ -30,6 +35,7 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
       duration: const Duration(seconds: 1),
       vsync: this,
     );
+    Firebase.initializeApp();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -46,13 +52,45 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM4L1() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
+
+        // Reference to the 'score' document with document ID 'M1'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M4');
+
+        // Update the fields in the 'score' document
+        await scoreDocRef.update({
+          'M4L1Point': M4L1Point,
+        });
+      }
+    } catch (e) {
+      print('Error updating data: $e');
+    }
+  }
+
   void handleAppleDrop() {
     setState(() {
       progress = points / appleDropped.length;
       if (progress == 1.0) {
         _glowController.forward().then((_) {
           _glowController.stop();
+          M4L1Point = 1;
           _showCongratsDialog();
+          updateFirebaseDataM4L1();
           // Long vibration for level completion
           Vibration.vibrate(duration: 1000);
         });
@@ -82,17 +120,19 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
 
   bool _isAppleInMouth(DragTargetDetails<String> details) {
     // Get the position of the boy image
-    final RenderBox box = boyKey.currentContext!.findRenderObject() as RenderBox;
+    final RenderBox box =
+        boyKey.currentContext!.findRenderObject() as RenderBox;
     final position = box.localToGlobal(Offset.zero);
-    
+
     // Boy's image size and mouth position
     final boyWidth = box.size.width;
     final boyHeight = box.size.height;
-    
+
     // Define mouth area (a small rectangle in the center of the boy image)
     final double mouthCenterX = position.dx + boyWidth / 2;
-    final double mouthCenterY = position.dy + boyHeight * 0.55; // Adjust mouth position
-    
+    final double mouthCenterY =
+        position.dy + boyHeight * 0.55; // Adjust mouth position
+
     // Define acceptable range around mouth
     final double mouthRadius = 30.0;
 
@@ -159,9 +199,11 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
                                   borderRadius: BorderRadius.circular(10),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.amberAccent.withOpacity(0.7),
+                                      color:
+                                          Colors.amberAccent.withOpacity(0.7),
                                       blurRadius: 30.0 * _glowController.value,
-                                      spreadRadius: 10.0 * _glowController.value,
+                                      spreadRadius:
+                                          10.0 * _glowController.value,
                                     ),
                                   ],
                                 ),
@@ -205,7 +247,8 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
                     padding: const EdgeInsets.only(left: 10.0),
                     child: DragTarget<String>(
                       key: boyKey, // Assign the key to the boy's image
-                      builder: (BuildContext context, List<String?> candidateData,
+                      builder: (BuildContext context,
+                          List<String?> candidateData,
                           List<dynamic> rejectedData) {
                         return Image.asset(
                           'assets/boy.png',
@@ -219,10 +262,11 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
                             String data = details.data;
                             if (data.startsWith('apple')) {
                               points += 1;
-                              int index = int.parse(data.replaceAll('apple', ''));
+                              int index =
+                                  int.parse(data.replaceAll('apple', ''));
                               appleDropped[index] = true;
                               handleAppleDrop();
-                              
+
                               // Short vibration for correct apple drop
                               Vibration.vibrate(duration: 100);
                             }
@@ -254,26 +298,16 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
                   ),
                 ],
               ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    appleDropped = [
-                      false,
-                      false,
-                      false,
-                      false,
-                      false,
-                      false,
-                      false,
-                      false
-                    ];
-                    points = 0;
-                    progress = 0.0;
-                    _glowController.reset();
-                  });
-                },
-                child: Text('Reset'),
-              ),
+              if (progress == 1.0)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => M3L2()),
+                    ); // Navigate to M3L2
+                  },
+                  child: Text('Next Level'),
+                ),
             ],
           ),
         ),

@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import 'm5L3.dart';
+import '../M3/m3L2.dart';
 
 class M5L2 extends StatefulWidget {
   @override
@@ -19,13 +23,52 @@ class _M5L2State extends State<M5L2> {
   final int cheesePrice = 20;
   final int yogurtPrice = 10;
   int totalRs = 100;
+  int M5L2Point = 0;
 
   @override
   void initState() {
     super.initState();
+    Firebase.initializeApp();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
     });
+  }
+
+
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM5L2() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
+
+        // Reference to the 'score' document with document ID 'M1'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M5');
+
+        // Update the fields in the 'score' document
+        await scoreDocRef.update({
+          'M5L2Point': M5L2Point,
+        });
+      }
+    } catch (e) {
+      print('Error updating data: $e');
+    }
   }
 
   void _showInstructions() {
@@ -179,10 +222,11 @@ class _M5L2State extends State<M5L2> {
                     if (_hasBoughtAllItems())
                       ElevatedButton(
                         onPressed: () {
-                          // Navigate to M5L3 or perform the required action
+                          M5L2Point = 1;
+                          updateFirebaseDataM5L2();
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => M5L3()),
+                            MaterialPageRoute(builder: (context) => M3L2()),
                           );
                         },
                         style: ElevatedButton.styleFrom(

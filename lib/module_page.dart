@@ -18,7 +18,7 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
   late int m2Trophy;
   late int m3Trophy;
   late int m4Trophy;
-  // late int m5Trophy;
+  late int m5Trophy;
 
   @override
   void initState() {
@@ -27,6 +27,7 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
     m2Trophy = 0;
     m3Trophy = 0;
     m4Trophy = 0;
+    m5Trophy = 0;
     fetchAllTrophies();
   }
 
@@ -35,6 +36,7 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
   await fetchTrophy('M2', 'M2Trophy');
   await fetchTrophy('M3', 'M3Trophy');
   await fetchTrophy('M4', 'M4Trophy');
+  await fetchTrophy('M5', 'M5Trophy');
 }
 Future<void> fetchTrophy(String docId, String trophyField) async {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -62,6 +64,9 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
         case 'M4Trophy':
           m4Trophy = snapshot.data()?['M4Trophy'] ?? 0;
           break;
+        case 'M5Trophy':
+          m4Trophy = snapshot.data()?['M5Trophy'] ?? 0;
+          break;
       }
     });
   } else {
@@ -80,6 +85,9 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
           break;
         case 'M4Trophy':
           m4Trophy = 0;
+          break;
+        case 'M5Trophy':
+          m5Trophy = 0;
           break;
       }
     });
@@ -107,6 +115,7 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
                     m2Trophy: 0,
                     m3Trophy: 0,
                     m4Trophy: 0,
+                    m5Trophy: 0,
                   );
                 } 
                 else if(index == 1){
@@ -116,6 +125,7 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
                     m2Trophy: m2Trophy,
                     m3Trophy: 0,
                     m4Trophy: 0,
+                    m5Trophy: 0,
                   );
                 }
                 else if(index == 2){
@@ -125,6 +135,7 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
                     m2Trophy: 0,
                     m3Trophy: m3Trophy,
                     m4Trophy: 0,
+                    m5Trophy: 0,
                   );
                 }
                 else if(index == 3){
@@ -134,6 +145,17 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
                     m2Trophy: 0,
                     m3Trophy: 0,
                     m4Trophy: m4Trophy,
+                    m5Trophy: 0,
+                  );
+                }
+                else if(index == 3){
+                  return ModuleButton(
+                    module: index + 1,
+                    m1Trophy: 0,
+                    m2Trophy: 0,
+                    m3Trophy: 0,
+                    m4Trophy: 0,
+                    m5Trophy: m5Trophy,
                   );
                 }
                 else {
@@ -143,7 +165,8 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
                     m1Trophy: 0,
                     m2Trophy: 0,
                     m3Trophy: 0,
-                    m4Trophy: 0,
+                    m4Trophy: 0, 
+                    m5Trophy: 0,
                   );
                 }
               },
@@ -161,8 +184,9 @@ class ModuleButton extends StatelessWidget {
   final int m2Trophy;
   final int m3Trophy;
   final int m4Trophy;
+  final int m5Trophy;
 
-  ModuleButton({required this.module, required this.m1Trophy, required this.m2Trophy, required this.m3Trophy, required this.m4Trophy});
+  ModuleButton({required this.module, required this.m1Trophy, required this.m2Trophy, required this.m3Trophy, required this.m4Trophy, required this.m5Trophy});
 
   List<String> moduleNames = [
     'Module 1',
@@ -278,7 +302,7 @@ class ModuleButton extends StatelessWidget {
                   ),
                 ),
               ),
-              if (module == 1 && m1Trophy == 1|| module == 2 && m2Trophy == 1 || module == 3 && m3Trophy == 1|| module == 4 && m4Trophy == 1) // Only show trophy for Module1
+              if (module == 1 && m1Trophy == 1|| module == 2 && m2Trophy == 1 || module == 3 && m3Trophy == 1|| module == 4 && m4Trophy == 1|| module == 5 && m5Trophy == 1) // Only show trophy for Module1
                 Positioned(
                   top: 20,
                   right: 5,

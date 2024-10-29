@@ -373,7 +373,7 @@ class _M2L2State extends State<M2L2> {
                             updateFirebaseDataM2L2();
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => M3L1()),
+                              MaterialPageRoute(builder: (context) => M2L3()),
                             );
                           },
                           child: Text('Next Module'),

@@ -6,7 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:alzymer/scene/M3/m3L3.dart';
 import 'package:alzymer/scene/M4/m4L1.dart'; // Add import for M4L1
-import 'package:alzymer/scene/M5/m5L2.dart'; // Add import for M5L2
+import 'package:alzymer/scene/M5/m5L2.dart';
+
+import '../M5/M5L3.dart';
 
 class M3L2 extends StatefulWidget {
   @override
@@ -16,32 +18,31 @@ class M3L2 extends StatefulWidget {
 class _M3L2State extends State<M3L2> {
   List<Map<String, dynamic>> stores = [
     {
-      'image': 'assets/Dairy.png',
-      'name': 'Milk Products',
-      'navigateTo': 'M5L2',
-      'locked': false
-    },
-    {
       'image': 'assets/Fruit_Store.png',
       'name': 'Vegetable Store',
       'navigateTo': 'M3L3',
-      'locked': false
+      'locked': false // Unlock the first store
     },
     {
-      'image': 'assets/Toy_Store.png',
-      'name': 'Toy Store',
-      'navigateTo': null,
-      'locked': false
-    }, // Toy Store is for distraction
+      'image': 'assets/Dairy.png',
+      'name': 'Milk Products',
+      'navigateTo': 'M5L2',
+      'locked': true // Locked initially
+    },
     {
       'image': 'assets/Grocery_Store.png',
       'name': 'Grocery Store',
-      'navigateTo': 'M4L1',
-      'locked': false
+      'navigateTo': 'M5L3',
+      'locked': true // Locked initially
+    },
+    {
+      'image': 'assets/Sweets_Store.png',
+      'name': 'Sweet Shop',
+      'navigateTo': 'M4L1', // No navigation yet, placeholder store
+      'locked': true // Locked initially
     },
   ];
 
-  int fruitStoreIndex = 0;
   bool showNames = false;
   bool showHintButton = false;
   int M3L2Point = 0;
@@ -53,9 +54,6 @@ class _M3L2State extends State<M3L2> {
   void initState() {
     super.initState();
     Firebase.initializeApp();
-    stores.shuffle();
-    fruitStoreIndex =
-        stores.indexWhere((store) => store['name'] == 'Vegetable Store');
 
     // Force landscape orientation
     SystemChrome.setPreferredOrientations([
@@ -69,7 +67,7 @@ class _M3L2State extends State<M3L2> {
     });
 
     // Show hint button after 10 seconds
-    Timer(Duration(seconds: 10), () {
+    Timer(Duration(seconds: 5), () {
       setState(() {
         showHintButton = true;
       });
@@ -117,27 +115,22 @@ class _M3L2State extends State<M3L2> {
         Map<String, dynamic>? m5Data = m5Doc.data() as Map<String, dynamic>?;
 
         setState(() {
-          // Update lock status based on points in M3, M4, M5 levels
-          stores.forEach((store) {
-            if (store['name'] == 'Vegetable Store' &&
-                m3Data != null &&
-                m3Data['M3L3Point'] == 1) {
-              store['locked'] = true; // Lock if M3L3Point is 1
-            } else if (store['name'] == 'Milk Products' &&
-                m5Data != null &&
-                m5Data['M5L2Point'] == 1) {
-              store['locked'] = true; // Lock if M5L2Point is 1
-            } else if (store['name'] == 'Grocery Store' &&
-                m4Data != null &&
-                m4Data['M4L1Point'] == 1) {
-              store['locked'] = true; // Lock if M4L1Point is 1
-            }
-          });
+          // Unlock stores based on previous completion
+          if (m3Data != null && m3Data['M3L5Point'] == 1) {
+            stores[1]['locked'] = false; // Unlock Milk Products
+          }
+          if (m5Data != null && m5Data['M5L2Point'] == 1) {
+            stores[2]['locked'] = false; // Unlock Grocery Store
+          }
+          if (m5Data != null && m5Data['M5L3Point'] == 1) {
+            stores[3]['locked'] = false; // Unlock Sweet Shop
+          }
 
           // Check if all levels are completed
-          allLevelsCompleted = (m3Data != null && m3Data['M3L3Point'] == 1) &&
+          allLevelsCompleted = (m3Data != null && m3Data['M3L5Point'] == 1) &&
               (m4Data != null && m4Data['M4L1Point'] == 1) &&
-              (m5Data != null && m5Data['M5L2Point'] == 1);
+              (m5Data != null && m5Data['M5L2Point'] == 1) &&
+              (m5Data['M5L3Point'] == 1);
         });
       }
     } catch (e) {
@@ -228,8 +221,7 @@ class _M3L2State extends State<M3L2> {
                                   : () {
                                       String selectedStore =
                                           stores[index]['name']!;
-                                      if (selectedStore ==
-                                          'Vegetable Store') {
+                                      if (selectedStore == 'Vegetable Store') {
                                         setState(() {
                                           M3L2Point = 1;
                                         });
@@ -241,6 +233,7 @@ class _M3L2State extends State<M3L2> {
                                         );
                                       } else if (selectedStore ==
                                           'Milk Products') {
+                                        setState(() {});
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -248,6 +241,15 @@ class _M3L2State extends State<M3L2> {
                                         );
                                       } else if (selectedStore ==
                                           'Grocery Store') {
+                                        setState(() {});
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => M5L3()),
+                                        );
+                                      } else if (selectedStore ==
+                                          'Sweet Shop') {
+                                        setState(() {});
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -305,8 +307,7 @@ class _M3L2State extends State<M3L2> {
                     : GridView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
@@ -332,6 +333,7 @@ class _M3L2State extends State<M3L2> {
                                       );
                                     } else if (selectedStore ==
                                         'Milk Products') {
+                                      setState(() {});
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -339,6 +341,7 @@ class _M3L2State extends State<M3L2> {
                                       );
                                     } else if (selectedStore ==
                                         'Grocery Store') {
+                                      setState(() {});
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -385,14 +388,13 @@ class _M3L2State extends State<M3L2> {
                     onPressed: _revealNames,
                     child: Text('Show Hint'),
                   ),
-                  if (allLevelsCompleted)
-            ElevatedButton(
-                onPressed: () {
-                  // Handle next module navigation
-                },
-                child: Text('Next Module'),
-              ),
-            
+                if (allLevelsCompleted)
+                  ElevatedButton(
+                    onPressed: () {
+                      // Handle next module navigation
+                    },
+                    child: Text('Next Module'),
+                  ),
               ],
             ),
           ),

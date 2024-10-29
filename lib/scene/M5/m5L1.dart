@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:alzymer/scene/M5/m5L2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class M5L1 extends StatefulWidget {
   @override
@@ -23,6 +24,10 @@ class _M5L1State extends State<M5L1> {
   void initState() {
     super.initState();
     // Show instructions when the level opens
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructionsDialog();
     });

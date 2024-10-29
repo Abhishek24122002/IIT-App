@@ -185,18 +185,25 @@ class _M3L5State extends State<M3L5> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Find the Apples - Level 5'),
+        toolbarHeight: 80,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Find the Potatoes - Level 3'),
+          _buildCollectedApplesCounter(),
+        ],
       ),
+    ),
       body: Stack(
         children: [
           if (!showPopup)
             _buildGameScreen(), // Show game content only if popup is not displayed
           if (showPopup) _buildPopupMessage(), // Show popup message if needed
-          Positioned(
-            top: 20,
-            right: 20,
-            child: _buildCollectedApplesCounter(),
-          ),
+          // Positioned(
+          //   top: 20,
+          //   right: 20,
+          //   child: _buildCollectedApplesCounter(),
+          // ),
         ],
       ),
     );
@@ -335,7 +342,7 @@ class _M3L5State extends State<M3L5> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Apple.png', height: 80),
+              Image.asset('assets/Apple.png', height: 60),
             ],
           ),
         ),

@@ -177,18 +177,25 @@ class _M3L4State extends State<M3L4> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Find the Oranges - Level 4'),
+        toolbarHeight: 80,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Find the Oranges - Level 4'),
+          _buildCollectedOrangesCounter(),
+        ],
       ),
+    ),
       body: Stack(
         children: [
           if (!showPopup)
             _buildGameScreen(), // Show game content only if popup is not displayed
           if (showPopup) _buildPopupMessage(), // Show popup message if needed
-          Positioned(
-            top: 20,
-            right: 20,
-            child: _buildCollectedOrangesCounter(),
-          ),
+          // Positioned(
+          //   top: 20,
+          //   right: 20,
+          //   child: _buildCollectedOrangesCounter(),
+          // ),
         ],
       ),
     );
@@ -325,7 +332,7 @@ class _M3L4State extends State<M3L4> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Orange.png', height: 80),
+              Image.asset('assets/Orange.png', height: 60),
             ],
           ),
         ),

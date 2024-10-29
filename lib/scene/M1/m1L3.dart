@@ -62,21 +62,10 @@ class _M1L3State extends State<M1L3> {
   bool showBoyImage = true;
   bool showfruitbasket = false;
   bool showFruit = false;
-  List<String> fruits = [
-    'Apple',
-    'Banana',
-    'Orange',
-    'Grapes',
-    'Strawberry',
-    'Watermelon',
-    'Pineapple',
-    'Mango',
-    'Kiwi',
-    'Peach'
-  ];
+  List<String> fruits = ['Apple', 'Banana', 'Orange', 'Pineapple', 'Mango'];
+
   List<String> selectedFruits = [];
   List<String> displayedFruits = [];
-  String userAnswer = '';
   TextEditingController answerController = TextEditingController();
   List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
   int currentLevelIndex = 2;
@@ -117,6 +106,12 @@ class _M1L3State extends State<M1L3> {
     User? user = auth.currentUser;
     return user?.uid ?? '';
   }
+  void showAllFruits() {
+  setState(() {
+    displayedFruits = List.from(fruits); // Display all available fruits
+    showFruit = true;
+  });
+}
 
   void updateFirebaseDataM1L3() async {
     try {
@@ -138,9 +133,11 @@ class _M1L3State extends State<M1L3> {
         // Update the fields in the 'score' document
         await scoreDocRef.update({
           'M1L3Point': M1L3Point,
+          'Fruit_Selected':selectedFruits,
         });
         await attemptDocRef.update({
           'M1L3Attempts': M1L3Attempts,
+          
         });
       }
     } catch (e) {
@@ -214,45 +211,24 @@ class _M1L3State extends State<M1L3> {
     );
   }
 
-  void updateFirebaseUserAnswer(String selectedFruit) async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
+  // Firebase update function for storing only the selected fruit
+void updateFirebaseUserAnswer(String selectedFruit) async {
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userUid = getCurrentUserUid();
 
-      if (userUid.isNotEmpty) {
-        // Reference to the user's document
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userUid);
+    if (userUid.isNotEmpty) {
+      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M1');
 
-        // Reference to the 'Score-M1' document within the user document
-        DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M1');
-
-        // Get the current userAnswer array from Firestore
-        DocumentSnapshot<Map<String, dynamic>> snapshot =
-            await scoreDocRef.get() as DocumentSnapshot<Map<String, dynamic>>;
-        Map<String, dynamic> userAnswerMap =
-            snapshot.data()?['userAnswer'] ?? {};
-
-        // Update the value of the selected fruit in 'L3' level
-        if (userAnswerMap.containsKey('L3') &&
-            userAnswerMap['L3'].containsKey(selectedFruit)) {
-          userAnswerMap['L3'][selectedFruit] =
-              (userAnswerMap['L3'][selectedFruit] ?? 0) + 1;
-        } else {
-          // If 'L3' level or selected fruit doesn't exist, create/update accordingly
-          userAnswerMap['L3'] = {selectedFruit: 1};
-        }
-
-        // Update the 'userAnswer' field in the 'Score-M1' document with the modified map
-        await scoreDocRef.update({
-          'userAnswer': userAnswerMap,
-        });
-      }
-    } catch (e) {
-      print('Error updating user answer in Firestore: $e');
+      await scoreDocRef.update({
+        'Fruit_Selected': selectedFruit, // Storing only the selected fruit
+      });
     }
+  } catch (e) {
+    print('Error updating user answer in Firestore: $e');
   }
+}
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
@@ -351,32 +327,16 @@ class _M1L3State extends State<M1L3> {
     );
   }
 
-  void displayRandomFruits() {
-    List<String> remainingFruits = List.from(fruits);
-    Random random = Random();
-    while (selectedFruits.length < 5) {
-      int index = random.nextInt(remainingFruits.length);
-      selectedFruits.add(remainingFruits[index]);
-      remainingFruits.removeAt(index);
-    }
-    setState(() {
-      showFruit = true;
-      showSelectFruitButton = false;
-      displayedFruits = List.from(selectedFruits);
-    });
-  }
 
   void onFruitSelected(String fruit) {
-    setState(() {
-      userAnswer = fruit;
-      fruitSelected = true;
-      showSelectedFruitDialog(fruit);
-      displayedFruits.clear();
-
-      // Hide the "Sure" button when fruit is selected
-    });
-    updateFirebaseUserAnswer(fruit);
-  }
+  setState(() {
+    fruitSelected = true;
+    showSelectedFruitDialog(fruit);
+    // Clear the fruit display since we only need to select one
+    displayedFruits.clear();
+  });
+  updateFirebaseUserAnswer(fruit);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -490,7 +450,7 @@ class _M1L3State extends State<M1L3> {
                       Visibility(
                         visible: showSpeechBubble,
                         child: SpeechBubble(
-                          text: userAnswer.isNotEmpty
+                          text: selectedFruits.isNotEmpty
                               ? 'Thank You'
                               : getSpeechBubbleText(),
                         ),
@@ -527,7 +487,7 @@ class _M1L3State extends State<M1L3> {
                               showfruitbasket = true;
 
                               showInstruction();
-                              displayRandomFruits();
+                              showAllFruits();
                             });
                           },
                           child: Text('Sure'),

@@ -53,6 +53,7 @@ dependencies:
   font_awesome_flutter: ^10.3.0
   shared_preferences: ^2.1.0
   vibration: ^2.0.0
+  audioplayers: ^6.1.0
   
   
 
@@ -130,7 +131,7 @@ flutter:
     - assets/Fruit_Store.png
     - assets/Grocery_Store.png
     - assets/Dairy.png
-    - assets/Toy_Store.png
+    - assets/Sweets_Store.png
     - assets/Apple.png
     - assets/Banana.png
     - assets/Mango.png
@@ -149,6 +150,7 @@ flutter:
     - assets/Eggs.png
     - assets/cheese.png
     - assets/yougurt.png
+    - assets/announcement.mp3
 
 
 

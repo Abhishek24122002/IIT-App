@@ -50,7 +50,7 @@ class M1LevelSelectionScreen extends StatelessWidget {
 
         await M1TrophyDocRef.update({
           'M1Trophy': m1Trophy,
-          'userAnswer': [],
+  
         });
       }
     } catch (e) {

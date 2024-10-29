@@ -188,17 +188,24 @@ class _M3L3State extends State<M3L3> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Find the Potatoes - Level 3'),
+        toolbarHeight: 80,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Find the Potatoes - Level 3'),
+          _buildCollectedPotatoesCounter(), // Add the counter here
+        ],
       ),
+    ),
       body: Stack(
         children: [
           if (!showPopup) _buildGameScreen(),
           if (showPopup) _buildPopupMessage(),
-          Positioned(
-            top: 20,
-            right: 20,
-            child: _buildCollectedPotatoesCounter(),
-          ),
+          // Positioned(
+          //   top: 20,
+          //   right: 20,
+          //   child: _buildCollectedPotatoesCounter(),
+          // ),
         ],
       ),
     );
@@ -341,7 +348,7 @@ Widget _buildCollectedPotatoesCounter() {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Potato.png', height: 80),
+              Image.asset('assets/Potato.png', height: 60),
             ],
           ),
         ),

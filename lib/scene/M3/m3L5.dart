@@ -128,15 +128,7 @@ class _M3L5State extends State<M3L5> {
     }
   }
 
-  @override
-  void dispose() {
-    // Reset orientation to normal when exiting this screen
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    super.dispose();
-  }
+  
 
   // Generate random positions for the fruits in each basket
   void _generateFruitPositions() {
@@ -189,7 +181,7 @@ class _M3L5State extends State<M3L5> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Find the Potatoes - Level 3'),
+          Text('Find the Apples - Level 3'),
           _buildCollectedApplesCounter(),
         ],
       ),
@@ -379,7 +371,7 @@ class _M3L5State extends State<M3L5> {
               child: Text('Next Task'),
               onPressed: () {
                 //  Navigator.of(context).pop(); // Close the dialog
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => M3L2()),
                 );

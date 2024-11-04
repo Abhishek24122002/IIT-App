@@ -17,6 +17,7 @@ class _M2L3State extends State<M2L3> {
   Timer? _timer;
   String selectedFruit = ''; // Fruit fetched from Firebase
   List<String> hintFruits = [];
+  int M2L3Point = 0;
 
   @override
   void initState() {
@@ -50,6 +51,45 @@ class _M2L3State extends State<M2L3> {
       }
     } catch (e) {
       print('Error fetching Fruit_Selected: $e');
+    }
+  }
+   String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM2L3() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
+
+        // Reference to the 'score' document with document ID 'M2'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M2');
+
+        // Check if the 'M2' document exists
+        DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+
+        if (!scoreDocSnapshot.exists) {
+          // If the document doesn't exist, create it with the initial score
+          await scoreDocRef.set({
+            'M2L3Point': M2L3Point,
+          });
+        } else {
+          // If the document exists, update the fields
+          await scoreDocRef.update({
+            'M2L3Point': M2L3Point,
+          });
+        }
+      }
+    } catch (e) {
+      print('Error updating data: $e');
     }
   }
 
@@ -175,7 +215,11 @@ class _M2L3State extends State<M2L3> {
                     backgroundColor: Colors.green,
                   ),
                   onPressed: () {
-                    Navigator.push(
+                    setState(() {
+                      M2L3Point =1;
+                      updateFirebaseDataM2L3();
+                    });
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) => M3L1(),

@@ -301,7 +301,7 @@ class _M4L1State extends State<M4L1> with SingleTickerProviderStateMixin {
               if (progress == 1.0)
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => M3L2()),
                     ); // Navigate to M3L2

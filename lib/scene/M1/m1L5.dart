@@ -131,7 +131,7 @@ class _M1L5State extends State<M1L5> {
               onPressed: () {
                 Navigator.pop(context);
                 // Navigate to M2L1 when the correct answer is selected
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => M2L1()),
          );

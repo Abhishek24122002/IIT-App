@@ -371,7 +371,7 @@ class _M2L2State extends State<M2L2> {
                           onPressed: () {
                             M2L2Point = 1;
                             updateFirebaseDataM2L2();
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => M2L3()),
                             );

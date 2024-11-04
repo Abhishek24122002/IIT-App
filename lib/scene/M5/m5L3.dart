@@ -122,6 +122,101 @@ class _M5L3State extends State<M5L3> {
       },
     );
   }
+void onAudioComplete() {
+  showConversationDialog();
+}
+
+void showConversationDialog() {
+  List<Map<String, String>> conversation = [
+    {'speaker': 'Friend', 'message': 'How are you'},
+    {'speaker': 'Grandpa', 'message': 'I am fine just buying some grocery and dairy products'},
+    
+  ];
+
+  int currentMessageIndex = 0;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Prevent closing the dialog by tapping outside
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          if (currentMessageIndex == 0) {
+            Future.delayed(Duration(seconds: 1), () {
+              setState(() {
+                currentMessageIndex++;
+              });
+            });
+          }
+
+          return AlertDialog(
+            title: Text('Conversation With Old Friend in Mall'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[100],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(conversation[0]['message']!),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Image.asset(
+                      'assets/Friend_Basket.png',
+                      width: 60,
+                      height: 60,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/Grandpa_Basket.png',
+                      width: 60,
+                      height: 60,
+                    ),
+                    SizedBox(width: 10),
+                    Flexible(
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          currentMessageIndex > 0 ? conversation[1]['message']! : '                      ',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  
+                  setState(() {
+                    
+                  });
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
   void _showAnnouncement() async {
   showDialog(
@@ -160,6 +255,7 @@ class _M5L3State extends State<M5L3> {
 
   _audioPlayer.stop();
   Navigator.of(context).pop();
+  onAudioComplete();
 }
 
 
@@ -313,7 +409,7 @@ int remainingUniqueItemsToBuy() {
                         onPressed: () {
                           M5L3Point = 1;
                           updateFirebaseDataM5L3();
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => M3L2()),
                           );

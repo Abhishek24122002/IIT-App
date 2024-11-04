@@ -50,6 +50,9 @@ class _M3L2State extends State<M3L2> {
   // Variable to track if all levels are completed
   bool allLevelsCompleted = false;
 
+  int currentUnlockedIndex = 0; // Track the currently unlocked shop
+
+
   @override
   void initState() {
     super.initState();
@@ -115,15 +118,17 @@ class _M3L2State extends State<M3L2> {
         Map<String, dynamic>? m5Data = m5Doc.data() as Map<String, dynamic>?;
 
         setState(() {
-          // Unlock stores based on previous completion
           if (m3Data != null && m3Data['M3L5Point'] == 1) {
-            stores[1]['locked'] = false; // Unlock Milk Products
+            stores[1]['locked'] = false;
+            currentUnlockedIndex = 1;
           }
           if (m5Data != null && m5Data['M5L2Point'] == 1) {
-            stores[2]['locked'] = false; // Unlock Grocery Store
+            stores[2]['locked'] = false;
+            currentUnlockedIndex = 2;
           }
           if (m5Data != null && m5Data['M5L3Point'] == 1) {
-            stores[3]['locked'] = false; // Unlock Sweet Shop
+            stores[3]['locked'] = false;
+            currentUnlockedIndex = 3;
           }
 
           // Check if all levels are completed
@@ -156,15 +161,6 @@ class _M3L2State extends State<M3L2> {
     } catch (e) {
       print('Error updating data: $e');
     }
-  }
-
-  @override
-  void dispose() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    super.dispose();
   }
 
   void _showInstructions() {
@@ -222,10 +218,7 @@ class _M3L2State extends State<M3L2> {
                                       String selectedStore =
                                           stores[index]['name']!;
                                       if (selectedStore == 'Vegetable Store') {
-                                        setState(() {
-                                          M3L2Point = 1;
-                                        });
-                                        updateFirebaseDataM3L2();
+
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -233,24 +226,21 @@ class _M3L2State extends State<M3L2> {
                                         );
                                       } else if (selectedStore ==
                                           'Milk Products') {
-                                        setState(() {});
-                                        Navigator.push(
+                                        Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => M5L2()),
                                         );
                                       } else if (selectedStore ==
                                           'Grocery Store') {
-                                        setState(() {});
-                                        Navigator.push(
+                                        Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => M5L3()),
                                         );
                                       } else if (selectedStore ==
                                           'Sweet Shop') {
-                                        setState(() {});
-                                        Navigator.push(
+                                        Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => M4L1()),
@@ -315,6 +305,7 @@ class _M3L2State extends State<M3L2> {
                         itemCount: stores.length,
                         itemBuilder: (context, index) {
                           bool isLocked = stores[index]['locked'];
+                          bool hasGoldenBorder = (index == currentUnlockedIndex);
                           return GestureDetector(
                             onTap: isLocked
                                 ? null
@@ -322,10 +313,6 @@ class _M3L2State extends State<M3L2> {
                                     String selectedStore =
                                         stores[index]['name']!;
                                     if (selectedStore == 'Vegetable Store') {
-                                      setState(() {
-                                        M3L2Point = 1;
-                                      });
-                                      updateFirebaseDataM3L2();
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -333,7 +320,6 @@ class _M3L2State extends State<M3L2> {
                                       );
                                     } else if (selectedStore ==
                                         'Milk Products') {
-                                      setState(() {});
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -341,7 +327,6 @@ class _M3L2State extends State<M3L2> {
                                       );
                                     } else if (selectedStore ==
                                         'Grocery Store') {
-                                      setState(() {});
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -391,6 +376,10 @@ class _M3L2State extends State<M3L2> {
                 if (allLevelsCompleted)
                   ElevatedButton(
                     onPressed: () {
+                      setState(() {
+                        M3L2Point = 1;
+                      });
+                      updateFirebaseDataM3L2();
                       // Handle next module navigation
                     },
                     child: Text('Next Module'),

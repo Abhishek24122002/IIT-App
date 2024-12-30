@@ -361,6 +361,7 @@ class _M2L2State extends State<M2L2> {
                 ),
               ),
             if ((characterPosition - housePosition).distance <= 30)
+            
               Align(
                 alignment: Alignment.center,
                 child: Container(
@@ -371,12 +372,14 @@ class _M2L2State extends State<M2L2> {
                           onPressed: () {
                             M2L2Point = 1;
                             updateFirebaseDataM2L2();
+                            
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => M2L3()),
                             );
                           },
                           child: Text('Next Module'),
+                          
                         )
                       : Container(
                           padding: const EdgeInsets.all(20.0),

@@ -232,19 +232,28 @@ void updateFirebaseUserAnswer(String selectedFruit) async {
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
-      return "Hey Grandpa, I have to go to school now. It will finish by 3:00 today.";
+      return "Hey Grandpa, I need to go to school now. It will finish at 3:00 today.";
     } else if (gender == 'Female') {
-      return "Hey Grandma, I have to go to school now. It will finish by 3:00 today.";
+      return "I need to go to school now. It will finish at 3:00 today.";
     } else {
-      return "Hey, I have to go to school now. It will finish by 3:00 today.";
+      return "I need to go to school now. It will finish at 3:00 today.";
     }
   }
 
+  // String getSpeechBubbleImage() {
+  //   if (gender == 'Male') {
+  //     return 'assets/old1.png';
+  //   } else if (gender == 'Female') {
+  //     return 'assets/old1-lady.png';
+  //   } else {
+  //     return 'assets/old1.png';
+  //   }
+  // }
   String getSpeechBubbleImage() {
     if (gender == 'Male') {
       return 'assets/old1.png';
     } else if (gender == 'Female') {
-      return 'assets/old1-lady.png';
+      return 'assets/old1.png';
     } else {
       return 'assets/old1.png';
     }

@@ -128,7 +128,7 @@ class _TwoState extends State<Two> {
     if (gender == 'Male') {
       return "Hey Grandpa, do you know what season it is right now?";
     } else if (gender == 'Female') {
-      return "Hey Grandma, do you know what season it is right now?";
+      return "Hey , do you know what season it is right now?";
     } else {
       return "Hey, do you know what season it is right now?";
     }

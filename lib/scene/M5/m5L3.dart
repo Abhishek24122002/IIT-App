@@ -54,8 +54,10 @@ class _M5L3State extends State<M5L3> {
       String userUid = getCurrentUserUid();
 
       if (userUid.isNotEmpty) {
-        DocumentReference userDocRef = firestore.collection('users').doc(userUid);
-        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M5');
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M5');
 
         await scoreDocRef.update({
           'M5L3Point': M5L3Point,
@@ -122,142 +124,278 @@ class _M5L3State extends State<M5L3> {
       },
     );
   }
-void onAudioComplete() {
-  showConversationDialog();
-}
 
-void showConversationDialog() {
-  List<Map<String, String>> conversation = [
-    {'speaker': 'Friend', 'message': 'How are you'},
-    {'speaker': 'Grandpa', 'message': 'I am fine just buying some grocery and dairy products'},
-    
-  ];
+  void onAudioComplete() {
+    showConversationDialog();
+  }
 
-  int currentMessageIndex = 0;
+  void showConversationDialog() {
+    List<Map<String, String>> conversation = [
+      {'speaker': 'Friend', 'message': 'How are you'},
+    ];
 
-  showDialog(
-    context: context,
-    barrierDismissible: false, // Prevent closing the dialog by tapping outside
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          if (currentMessageIndex == 0) {
-            Future.delayed(Duration(seconds: 1), () {
-              setState(() {
-                currentMessageIndex++;
+    String userResponse = "";
+    String friendResponse = "";
+    bool showItemSelection = false;
+    List<String> selectedItems = [];
+    List<String> items = [
+      'Milk',
+      'Eggs',
+      'Bread',
+      'Butter',
+      'Cheese',
+      'Juice',
+      'Fruits',
+      'Vegetables',
+      'Cereal',
+      'Snacks',
+      'Coffee',
+      'Tea'
+    ];
+
+    ScrollController _scrollController = ScrollController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // Scroll to the latest message
+            void scrollToBottom() {
+              Future.delayed(Duration(milliseconds: 100), () {
+                _scrollController.animateTo(
+                  _scrollController.position.maxScrollExtent,
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
               });
-            });
-          }
+            }
 
-          return AlertDialog(
-            title: Text('Conversation With Old Friend in Mall'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[100],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(conversation[0]['message']!),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Image.asset(
-                      'assets/Friend_Basket.png',
-                      width: 60,
-                      height: 60,
-                    ),
-                  ],
+            // Update conversation and move to next response
+            void addConversation(String response, String friendReply) {
+              setState(() {
+                userResponse = response;
+                friendResponse = friendReply;
+
+                // Add user and friend's response to the conversation
+                conversation.add({'speaker': 'User', 'message': response});
+                conversation.add({'speaker': 'Friend', 'message': friendReply});
+
+                // Branch logic for next steps
+                if (friendReply == "What are you doing here?") {
+                  // User's reply after "How are you?"
+                  userResponse = ""; // Reset for new options
+                } else if (friendReply == "Oh! What things are you getting?") {
+                  // Show item selection UI
+                  showItemSelection = true;
+                } else if (friendReply.contains("Well, take care!")) {
+                  // End conversation
+                  userResponse = ""; // No further options
+                }
+              });
+              scrollToBottom(); // Scroll to the latest message
+            }
+
+            // Confirm the selected items
+            void confirmItems() {
+              setState(() {
+                conversation.add({
+                  'speaker': 'User', 
+                  'message': 'I am getting: ' + selectedItems.join(', ')
+                });
+                conversation.add({
+                  'speaker': 'Friend',
+                  'message':
+                      "Oh wow, you remember everything! I forget sometimes what I’m supposed to buy."
+                });
+                conversation
+                    .add({'speaker': 'User', 'message': 'Thank You, Goodbye!'});
+                conversation.add({'speaker': 'Friend', 'message': 'Goodbye!'});
+                showItemSelection = false; // Hide item selection UI
+              });
+              scrollToBottom();
+            }
+
+            return AlertDialog(
+              title: Text(
+                'Conversation With Old Friend in Mall',
+                style: TextStyle(
+                  fontSize: 18, // Set the font size to a smaller value
+                  fontWeight:
+                      FontWeight.bold, // Optional: Adjust font weight if needed
+                  color:
+                      Colors.black, // Optional: Adjust the text color if needed
                 ),
-                SizedBox(height: 20),
-                Row(
-                  children: [
-                    Image.asset(
-                      'assets/Grandpa_Basket.png',
-                      width: 60,
-                      height: 60,
-                    ),
-                    SizedBox(width: 10),
-                    Flexible(
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          currentMessageIndex > 0 ? conversation[1]['message']! : '                      ',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  
-                  setState(() {
-                    
-                  });
-                },
-                child: Text('OK'),
               ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
+              content: SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var message in conversation)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
+                          children: [
+                            if (message['speaker'] == 'Friend') ...[
+                              Expanded(
+                                child: Container(
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[100],
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(message['message']!),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Image.asset(
+                                'assets/Friend_Basket.png',
+                                width: 60,
+                                height: 60,
+                              ),
+                            ] else ...[
+                              Image.asset(
+                                'assets/Grandpa_Basket.png',
+                                width: 60,
+                                height: 60,
+                              ),
+                              SizedBox(width: 10),
+                              Flexible(
+                                child: Container(
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green[100],
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(message['message']!),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    if (showItemSelection)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Wrap(
+                          spacing: 10,
+                          children: items.map((item) {
+                            return ChoiceChip(
+                              label: Text(item),
+                              selected: selectedItems.contains(item),
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    if (selectedItems.length < 9) {
+                                      selectedItems.add(item);
+                                    }
+                                  } else {
+                                    selectedItems.remove(item);
+                                  }
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                if (userResponse.isEmpty) ...[
+                  TextButton(
+                    onPressed: () {
+                      addConversation("How are you?",
+                          "I am also fine! What are you doing here?");
+                    },
+                    child: Text('Ask "How are you?"'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      addConversation("Who are you?",
+                          "I am your school friend, just came here for shopping. What are you doing here?");
+                    },
+                    child: Text('Ask "Who are you?"'),
+                  ),
+                ] else if (friendResponse ==
+                        "I am also fine! What are you doing here?" ||
+                    friendResponse ==
+                        "I am your school friend, just came here for shopping. What are you doing here?") ...[
+                  TextButton(
+                    onPressed: () {
+                      addConversation("I am here for shopping.",
+                          "Oh! What things are you getting?");
+                    },
+                    child: Text('Reply "I am here for shopping."'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      addConversation(
+                          "Just passing time.", "Oh, okay. Well, take care!");
+                    },
+                    child: Text('Reply "Just passing time."'),
+                  ),
+                ] else if (showItemSelection) ...[
+                  TextButton(
+                    onPressed: selectedItems.length == 9 ? confirmItems : null,
+                    child: Text("Confirm Selection"),
+                  ),
+                ] else
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void _showAnnouncement() async {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.volume_up, size: 80, color: Colors.blue),
-            SizedBox(height: 10),
-            Text(
-              'Attention please! Today we have 10% off on branded clothes and footwear.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-  // Function to show hint overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.volume_up, size: 80, color: Colors.blue),
+              SizedBox(height: 10),
+              Text(
+                'Attention please! Today we have 10% off on branded clothes and footwear.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    // Function to show hint overlay
 
-  await _audioPlayer.setSource(AssetSource('announcement.mp3'));
-  _audioPlayer.setReleaseMode(ReleaseMode.stop);
+    await _audioPlayer.setSource(AssetSource('announcement.mp3'));
+    _audioPlayer.setReleaseMode(ReleaseMode.stop);
 
-  // First playback
-  await _audioPlayer.play(AssetSource('announcement.mp3'));
-  await Future.delayed(Duration(seconds: 5));
+    // First playback
+    await _audioPlayer.play(AssetSource('announcement.mp3'));
+    await Future.delayed(Duration(seconds: 5));
 
-  // Stop and replay
-  await _audioPlayer.stop();
-  await _audioPlayer.play(AssetSource('announcement.mp3'));
-  await Future.delayed(Duration(seconds: 5));
+    // Stop and replay
+    await _audioPlayer.stop();
+    await _audioPlayer.play(AssetSource('announcement.mp3'));
+    await Future.delayed(Duration(seconds: 5));
 
-  _audioPlayer.stop();
-  Navigator.of(context).pop();
-  onAudioComplete();
-}
-
+    _audioPlayer.stop();
+    Navigator.of(context).pop();
+    onAudioComplete();
+  }
 
   void _resetCart() {
     setState(() {
@@ -304,6 +442,7 @@ void showConversationDialog() {
   bool _hasBoughtAllItems() {
     return eggsCounter > 0 && breadCounter > 0 && flourCounter > 0;
   }
+
   void _showHintOverlay(String hintText) {
     showDialog(
       context: context,
@@ -323,25 +462,25 @@ void showConversationDialog() {
       },
     );
   }
- int totalUniqueItemsInCart() {
-  int uniqueItemCount = 0;
-  
-  // Count unique items in cart
-  if (eggsCounter > 0) uniqueItemCount++;
-  if (breadCounter > 0) uniqueItemCount++;
-  if (flourCounter > 0) uniqueItemCount++;
 
-  // Add logic here if there is a fourth unique item to track
-  // e.g., `if (anotherCounter > 0) uniqueItemCount++;`
-  
-  return uniqueItemCount;
-}
+  int totalUniqueItemsInCart() {
+    int uniqueItemCount = 0;
+
+    // Count unique items in cart
+    if (eggsCounter > 0) uniqueItemCount++;
+    if (breadCounter > 0) uniqueItemCount++;
+    if (flourCounter > 0) uniqueItemCount++;
+
+    // Add logic here if there is a fourth unique item to track
+    // e.g., `if (anotherCounter > 0) uniqueItemCount++;`
+
+    return uniqueItemCount;
+  }
 
 // To show the remaining unique items in the hint
-int remainingUniqueItemsToBuy() {
-  return 3 - totalUniqueItemsInCart();
-}
-
+  int remainingUniqueItemsToBuy() {
+    return 3 - totalUniqueItemsInCart();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -359,7 +498,8 @@ int remainingUniqueItemsToBuy() {
               } else if (hintStep == 1) {
                 // Second hint: Show how many items are left to buy
                 int remainingItemsToBuy = itemsToBuy - totalUniqueItemsInCart();
-                _showHintOverlay('You need to buy $remainingItemsToBuy more items.');
+                _showHintOverlay(
+                    'You need to buy $remainingItemsToBuy more items.');
               }
               hintStep = (hintStep + 1) % 2; // Cycle between two hints
             },
@@ -388,13 +528,15 @@ int remainingUniqueItemsToBuy() {
                   children: [
                     Text(
                       'Collected Items:',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 10),
                     Text('Eggs: $eggsCounter', style: TextStyle(fontSize: 16)),
-                    Text('Bread: $breadCounter', style: TextStyle(fontSize: 16)),
-                    Text('Flour: $flourCounter', style: TextStyle(fontSize: 16)),
-                    
+                    Text('Bread: $breadCounter',
+                        style: TextStyle(fontSize: 16)),
+                    Text('Flour: $flourCounter',
+                        style: TextStyle(fontSize: 16)),
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _resetCart,
@@ -457,7 +599,8 @@ int remainingUniqueItemsToBuy() {
                             height: 70,
                             child: GridView.builder(
                               padding: EdgeInsets.all(0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 6,
                                 crossAxisSpacing: 2,
                                 mainAxisSpacing: 0,
@@ -491,7 +634,8 @@ int remainingUniqueItemsToBuy() {
                             height: 70,
                             child: GridView.builder(
                               padding: EdgeInsets.all(0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 6,
                                 crossAxisSpacing: 2,
                                 mainAxisSpacing: 0,
@@ -525,7 +669,8 @@ int remainingUniqueItemsToBuy() {
                             height: 70,
                             child: GridView.builder(
                               padding: EdgeInsets.all(0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 6,
                                 crossAxisSpacing: 2,
                                 mainAxisSpacing: 0,

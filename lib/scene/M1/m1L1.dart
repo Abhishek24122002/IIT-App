@@ -145,17 +145,26 @@ class _M1L1State extends State<M1L1> {
     if (gender == 'Male') {
       return "Hello Grandpa!! what is Today's Date?";
     } else if (gender == 'Female') {
-      return "Hello grandma !! what is Today's Date?";
+      return "Hello !! what is Today's Date?";
     } else {
       return "Hello !! what is Today's Date?";
     }
   }
 
+  // String getSpeechBubbleImage() {
+  //   if (gender == 'Male') {
+  //     return 'assets/old1.png';
+  //   } else if (gender == 'Female') {
+  //     return 'assets/old1-lady.png';
+  //   } else {
+  //     return 'assets/old1.png';
+  //   }
+  // }
   String getSpeechBubbleImage() {
     if (gender == 'Male') {
       return 'assets/old1.png';
     } else if (gender == 'Female') {
-      return 'assets/old1-lady.png';
+      return 'assets/old1.png';
     } else {
       return 'assets/old1.png';
     }
@@ -166,7 +175,7 @@ class _M1L1State extends State<M1L1> {
     bool correctAnswer = isAnswerCorrect(userAnswer);
 
     if (correctAnswer) {
-      showCelebrationDialog();
+      // showCelebrationDialog();
       setState(() {
         showAnswerButton = false;
         nextLevelButton = true;
@@ -241,23 +250,23 @@ class _M1L1State extends State<M1L1> {
   void showHint() {
     String formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Hint'),
-          content: Text('The current date is $formattedDate'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+    // showDialog(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    //     return AlertDialog(
+    //       title: Text('Hint'),
+    //       content: Text('The current date is $formattedDate'),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () {
+    //             Navigator.pop(context);
+    //           },
+    //           child: Text('OK'),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
   }
 
   void showCelebrationDialog() {

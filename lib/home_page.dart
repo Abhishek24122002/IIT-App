@@ -209,46 +209,6 @@ class HomePage extends StatelessWidget {
                               style: TextStyle(fontSize: 18),
                             ),
                           ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Attempts',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Column(
-                            children: [
-                              for (int level = 1; level <= userScore; level++)
-                                Row(
-                                  children: [
-                                    SizedBox(width: 20),
-                                    Text(
-                                      'Level $level: ',
-                                      style: TextStyle(
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(width: 10),
-                                    Text(
-                                      '${userData['level${level}Attempts'] ?? 0}',
-                                      style: TextStyle(
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            (userData['level${level}Attempts'] ??
-                                                        0) <=
-                                                    3
-                                                ? Colors.amber
-                                                : Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                            ],
-                          ),
                         ],
                       ),
                     ),

@@ -134,19 +134,28 @@ class _M1L4State extends State<M1L4> {
 
   String getSpeechBubbleText() {
     if (gender == 'Male') {
-      return "Hello Dad !! What is today's school pickup time of Chintu?";
+      return "Hello Dad !! What is the school pickup time today?";
     } else if (gender == 'Female') {
-      return "Hello mom !! What is today's school pickup time of Chintu?";
+      return "Hello !! What is the school pickup time today?";
     } else {
-      return "Hello!! What is today's school pickup time of Chintu?";
+      return "Hello!! What is the school pickup time today?";
     }
   }
 
+  // String getSpeechBubbleImage() {
+  //   if (gender == 'Male') {
+  //     return 'assets/old1.png';
+  //   } else if (gender == 'Female') {
+  //     return 'assets/old1-lady.png';
+  //   } else {
+  //     return 'assets/old1.png';
+  //   }
+  // }
   String getSpeechBubbleImage() {
     if (gender == 'Male') {
       return 'assets/old1.png';
     } else if (gender == 'Female') {
-      return 'assets/old1-lady.png';
+      return 'assets/old1.png';
     } else {
       return 'assets/old1.png';
     }

@@ -82,6 +82,9 @@ class _M1L2State extends State<M1L2> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
+    Future.delayed(Duration.zero, () {
+      initialPopup();
+    });
   }
 
   void fetchGender() async {
@@ -143,17 +146,26 @@ class _M1L2State extends State<M1L2> {
     if (gender == 'Male') {
       return "Hey Grandpa, do you know what season it is right now?";
     } else if (gender == 'Female') {
-      return "Hey Grandma, do you know what season it is right now?";
+      return "hey, do you know what season it is right now?";
     } else {
       return "Hey, do you know what season it is right now?";
     }
   }
 
+  // String getSpeechBubbleImage() {
+  //   if (gender == 'Male') {
+  //     return 'assets/old1.png';
+  //   } else if (gender == 'Female') {
+  //     return 'assets/old1-lady.png';
+  //   } else {
+  //     return 'assets/old1.png';
+  //   }
+  // }
   String getSpeechBubbleImage() {
     if (gender == 'Male') {
       return 'assets/old1.png';
     } else if (gender == 'Female') {
-      return 'assets/old1-lady.png';
+      return 'assets/old1.png';
     } else {
       return 'assets/old1.png';
     }
@@ -477,5 +489,71 @@ class _M1L2State extends State<M1L2> {
       DeviceOrientation.landscapeRight,
     ]);
     super.dispose();
+  }
+  
+  void initialPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                ' Task 2 ',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24.0,
+                  color: Color.fromARGB(255, 94, 114, 228), // Title color
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Instructions:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  color: Color.fromARGB(
+                      255, 158, 124, 193), // Instruction title color
+                ),
+              ),
+              SizedBox(height: 10.0),
+              Text(
+                'In this task, Observe the  Game Environment to Complete the Task.',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black87, // Content color
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text(
+                'Got it!',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  color: Color.fromARGB(255, 94, 114, 228), // Button color
+                ),
+              ),
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          elevation: 10.0,
+          backgroundColor: Colors.white, // Background color
+        );
+      },
+    );
   }
 }

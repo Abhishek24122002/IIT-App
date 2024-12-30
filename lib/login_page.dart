@@ -71,13 +71,14 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(34, 255, 255, 255),
+                      color: Color.fromARGB(33, 255, 255, 255),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: TextField(
                         controller: emailController,
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
                           hintText: 'Email',
                           hintStyle: TextStyle(color: Colors.white54),
@@ -102,6 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                           child: TextField(
                             controller: passwordController,
                             obscureText: _isObscure,
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               hintText: 'Password',
                               hintStyle: TextStyle(color: Colors.white54),

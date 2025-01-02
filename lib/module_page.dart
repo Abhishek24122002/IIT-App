@@ -1,12 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:alzymer/scene/M1/m1LevelSelection.dart';
 import 'package:alzymer/scene/M2/m2LevelSelection.dart';
 import 'package:alzymer/scene/M3/m3LevelSelection.dart';
 import 'package:alzymer/scene/M4/m4LevelSelection.dart';
 import 'package:alzymer/scene/M5/m5LevelSelection.dart';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'level_selection.dart';
-import 'scene/M1/m1LevelSelection.dart';
 
 class ModuleSelectionScreen extends StatefulWidget {
   @override
@@ -14,86 +11,6 @@ class ModuleSelectionScreen extends StatefulWidget {
 }
 
 class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
-  late int m1Trophy;
-  late int m2Trophy;
-  late int m3Trophy;
-  late int m4Trophy;
-  late int m5Trophy;
-
-  @override
-  void initState() {
-    super.initState();
-    m1Trophy = 0;
-    m2Trophy = 0;
-    m3Trophy = 0;
-    m4Trophy = 0;
-    m5Trophy = 0;
-    fetchAllTrophies();
-  }
-
-  void fetchAllTrophies() async {
-  await fetchTrophy('M1', 'M1Trophy');
-  await fetchTrophy('M2', 'M2Trophy');
-  await fetchTrophy('M3', 'M3Trophy');
-  await fetchTrophy('M4', 'M4Trophy');
-  await fetchTrophy('M5', 'M5Trophy');
-}
-Future<void> fetchTrophy(String docId, String trophyField) async {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  User? user = _auth.currentUser;
-  final DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
-      .instance
-      .collection('users')
-      .doc(user!.uid)
-      .collection('score')
-      .doc(docId);
-
-  final DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
-  if (snapshot.exists) {
-    setState(() {
-      switch (trophyField) {
-        case 'M1Trophy':
-          m1Trophy = snapshot.data()?['M1Trophy'] ?? 0;
-          break;
-        case 'M2Trophy':
-          m2Trophy = snapshot.data()?['M2Trophy'] ?? 0;
-          break;
-        case 'M3Trophy':
-          m3Trophy = snapshot.data()?['M3Trophy'] ?? 0;
-          break;
-        case 'M4Trophy':
-          m4Trophy = snapshot.data()?['M4Trophy'] ?? 0;
-          break;
-        case 'M5Trophy':
-          m4Trophy = snapshot.data()?['M5Trophy'] ?? 0;
-          break;
-      }
-    });
-  } else {
-    // If document doesn't exist, create one with initial data
-    await docRef.set({trophyField: 0});
-    setState(() {
-      switch (trophyField) {
-        case 'M1Trophy':
-          m1Trophy = 0;
-          break;
-        case 'M2Trophy':
-          m2Trophy = 0;
-          break;
-        case 'M3Trophy':
-          m3Trophy = 0;
-          break;
-        case 'M4Trophy':
-          m4Trophy = 0;
-          break;
-        case 'M5Trophy':
-          m5Trophy = 0;
-          break;
-      }
-    });
-  }
-}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,73 +21,7 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-              5, // Number of modules
-              (index) {
-                if (index == 0) {
-                  // For Module1, display M1Trophy value
-                  return ModuleButton(
-                    module: index + 1,
-                    m1Trophy: m1Trophy,
-                    m2Trophy: 0,
-                    m3Trophy: 0,
-                    m4Trophy: 0,
-                    m5Trophy: 0,
-                  );
-                } 
-                else if(index == 1){
-                  return ModuleButton(
-                    module: index + 1,
-                    m1Trophy: 0,
-                    m2Trophy: m2Trophy,
-                    m3Trophy: 0,
-                    m4Trophy: 0,
-                    m5Trophy: 0,
-                  );
-                }
-                else if(index == 2){
-                  return ModuleButton(
-                    module: index + 1,
-                    m1Trophy: 0,
-                    m2Trophy: 0,
-                    m3Trophy: m3Trophy,
-                    m4Trophy: 0,
-                    m5Trophy: 0,
-                  );
-                }
-                else if(index == 3){
-                  return ModuleButton(
-                    module: index + 1,
-                    m1Trophy: 0,
-                    m2Trophy: 0,
-                    m3Trophy: 0,
-                    m4Trophy: m4Trophy,
-                    m5Trophy: 0,
-                  );
-                }
-                else if(index == 3){
-                  return ModuleButton(
-                    module: index + 1,
-                    m1Trophy: 0,
-                    m2Trophy: 0,
-                    m3Trophy: 0,
-                    m4Trophy: 0,
-                    m5Trophy: m5Trophy,
-                  );
-                }
-                else {
-                  return ModuleButton(
-                    module: index + 1,
-                    // For other modules, set trophy value to 0 or any default value
-                    m1Trophy: 0,
-                    m2Trophy: 0,
-                    m3Trophy: 0,
-                    m4Trophy: 0, 
-                    m5Trophy: 0,
-                  );
-                }
-              },
-            ),
+            children: List.generate(5, (index) => ModuleButton(module: index + 1)),
           ),
         ),
       ),
@@ -180,15 +31,7 @@ Future<void> fetchTrophy(String docId, String trophyField) async {
 
 class ModuleButton extends StatelessWidget {
   final int module;
-  final int m1Trophy;
-  final int m2Trophy;
-  final int m3Trophy;
-  final int m4Trophy;
-  final int m5Trophy;
-
-  ModuleButton({required this.module, required this.m1Trophy, required this.m2Trophy, required this.m3Trophy, required this.m4Trophy, required this.m5Trophy});
-
-  List<String> moduleNames = [
+  final List<String> moduleNames = [
     'Module 1',
     'Module 2',
     'Module 3',
@@ -196,67 +39,31 @@ class ModuleButton extends StatelessWidget {
     'Module 5',
   ];
 
+  ModuleButton({required this.module});
+
+  void navigateToModule(BuildContext context) {
+    final Map<int, Widget Function()> moduleScreens = {
+      1: () => M1LevelSelectionScreen(module: module, userScore: 0),
+      2: () => M2LevelSelectionScreen(module: module, userScore: 0),
+      3: () => M3LevelSelectionScreen(module: module, userScore: 0),
+      4: () => M4LevelSelectionScreen(module: module, userScore: 0),
+      5: () => M5LevelSelectionScreen(module: module, userScore: 0),
+    };
+
+    if (moduleScreens.containsKey(module)) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => moduleScreens[module]!()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        // Navigate to respective level selection screens based on module number
-        if (module == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => M1LevelSelectionScreen(
-                module: module,
-                userScore: 0,
-              ),
-            ),
-          );
-        } else if (module == 2) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>M2LevelSelectionScreen(
-                module: module, 
-                userScore: 0),
-            ),
-          );
-        } else if (module == 3) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  M3LevelSelectionScreen(module: module, userScore: 0),
-            ),
-          );
-        } else if (module == 4) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  M4LevelSelectionScreen(module: module, userScore: 0),
-            ),
-          );
-        } else if (module == 5) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  M5LevelSelectionScreen(module: module, userScore: 0),
-            ),
-          );
-        } else {
-          // For other modules, navigate to LevelSelectionScreen
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  LevelSelectionScreen(module: module, userScore: 0),
-            ),
-          );
-        }
-      },
+      onTap: () => navigateToModule(context),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         child: Container(
           width: double.infinity,
           height: 100.0,
@@ -264,8 +71,8 @@ class ModuleButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.0),
             gradient: LinearGradient(
               colors: [
-                Color(0xFF7F00FF).withOpacity(0.7), // Semi-transparent purple
-                Color(0xFFE100FF).withOpacity(0.7), // Semi-transparent purple
+                Color(0xFF7F00FF).withOpacity(0.7),
+                Color(0xFFE100FF).withOpacity(0.7),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -283,7 +90,7 @@ class ModuleButton extends StatelessWidget {
             children: [
               Center(
                 child: Text(
-                  moduleNames[module - 1], // Adjusted to use custom names
+                  moduleNames[module - 1],
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -302,21 +109,6 @@ class ModuleButton extends StatelessWidget {
                   ),
                 ),
               ),
-              if (module == 1 && m1Trophy == 1|| module == 2 && m2Trophy == 1 || module == 3 && m3Trophy == 1|| module == 4 && m4Trophy == 1|| module == 5 && m5Trophy == 1) // Only show trophy for Module1
-                Positioned(
-                  top: 20,
-                  right: 5,
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'assets/trophy.png',
-                        width: 60,
-                        height: 60,
-                      ),
-                      SizedBox(width: 10),
-                    ],
-                  ),
-                ),
             ],
           ),
         ),

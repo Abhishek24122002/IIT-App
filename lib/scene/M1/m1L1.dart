@@ -250,23 +250,7 @@ class _M1L1State extends State<M1L1> {
   void showHint() {
     String formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
-    // showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return AlertDialog(
-    //       title: Text('Hint'),
-    //       content: Text('The current date is $formattedDate'),
-    //       actions: [
-    //         TextButton(
-    //           onPressed: () {
-    //             Navigator.pop(context);
-    //           },
-    //           child: Text('OK'),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // );
+    
   }
 
   void showCelebrationDialog() {

@@ -131,23 +131,6 @@ class M1LevelSelectionScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Positioned(
-                //   top: 5,
-                //   left: 16,
-                //   child: Row(
-                //     children: [
-                //       Text(
-                //         'Attempts: $M1L1Attempts',
-                //         style: TextStyle(
-                //           fontSize: 18,
-                //           fontWeight: FontWeight.bold,
-                //           color: Colors.green,
-                //         ),
-                //       ),
-                //       SizedBox(width: 10),
-                //     ],
-                //   ),
-                // ),
               ],
             );
           },

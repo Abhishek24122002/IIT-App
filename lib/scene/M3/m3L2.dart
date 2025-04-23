@@ -157,7 +157,7 @@ class _M3L2State extends State<M3L2> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Which fruit did you eat?',
+                  'You need to buy the fruit that you ate',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

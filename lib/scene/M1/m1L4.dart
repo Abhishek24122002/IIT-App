@@ -18,6 +18,7 @@ class _M1L4State extends State<M1L4> {
   @override
   void initState() {
     super.initState();
+    allTasks.shuffle();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,

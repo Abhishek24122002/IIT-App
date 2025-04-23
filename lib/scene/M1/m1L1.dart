@@ -14,37 +14,36 @@ import 'package:flutter/cupertino.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
+  final bool isFromGrandchild;
 
-  SpeechBubble({required this.text});
+  SpeechBubble({required this.text, required this.isFromGrandchild});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      constraints: BoxConstraints(
-        maxWidth: 300,
-      ),
-      child: Wrap(
-        children: [
-          Text(
-            text,
-            style: TextStyle(fontSize: 16.0),
-            textAlign: TextAlign.center,
-          ),
-        ],
+    return Align(
+      alignment:
+          isFromGrandchild ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        padding: EdgeInsets.all(16.0),
+        margin: EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        constraints: BoxConstraints(maxWidth: 300),
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 16.0),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
@@ -66,6 +65,9 @@ class _M1L1State extends State<M1L1> {
   int M1L1Point = 0;
 
   String userAnswer = '';
+  String grandchildMessage = '';
+  String grandpaMessage = '';
+
   TextEditingController answerController = TextEditingController();
 
   List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4()];
@@ -81,6 +83,7 @@ class _M1L1State extends State<M1L1> {
   void initState() {
     super.initState();
     Firebase.initializeApp();
+
     fetchGender();
     // Set landscape orientation when entering this page
     SystemChrome.setPreferredOrientations([
@@ -181,6 +184,11 @@ class _M1L1State extends State<M1L1> {
         showHintButton = false;
         showSpeechBubble = false;
         M1L1Point = 1;
+        grandchildMessage = ''; // <-- Hide grandchild bubble
+        grandpaMessage =
+            "Today's date is ${DateFormat('dd/MM/yyyy').format(DateTime.now())}";
+        showSpeechBubble =
+            true; // Optional: can be removed if you use message strings
       });
 
       updateFirebaseDataM1L1();
@@ -199,6 +207,8 @@ class _M1L1State extends State<M1L1> {
     setState(() {
       showSpeechBubble = true;
       userAnswer = grandpaResponse;
+      grandpaMessage =
+          "Today's date is ${DateFormat('dd/MM/yyyy').format(DateTime.now())}";
     });
 
     Future.delayed(Duration(seconds: 2), () {
@@ -311,7 +321,7 @@ class _M1L1State extends State<M1L1> {
                   height: MediaQuery.of(context).size.height,
                 ),
                 Positioned(
-                  top: 50.0,
+                  top: 60.0,
                   left: -130.0,
                   child: Image.asset(
                     getSpeechBubbleImage(),
@@ -340,6 +350,8 @@ class _M1L1State extends State<M1L1> {
                               showStartButton = false;
                               showAnswerButton = true;
                               showSpeechBubble = true;
+                              grandchildMessage = getSpeechBubbleText();
+                              grandpaMessage = '';
                             });
                           },
                           child: Text('Start'),
@@ -368,12 +380,22 @@ class _M1L1State extends State<M1L1> {
                     ],
                   ),
                 ),
-                if (showSpeechBubble)
+                if (grandchildMessage.isNotEmpty)
                   Positioned(
-                    top: 120.0,
-                    left: 160.0,
+                    top: 100.0,
+                    right: 200.0, // Grandchild on right
                     child: SpeechBubble(
-                      text: getSpeechBubbleText(),
+                      text: grandchildMessage,
+                      isFromGrandchild: true,
+                    ),
+                  ),
+                if (grandpaMessage.isNotEmpty)
+                  Positioned(
+                    top: 100.0,
+                    left: 160.0, // Grandpa on left
+                    child: SpeechBubble(
+                      text: grandpaMessage,
+                      isFromGrandchild: false,
                     ),
                   ),
               ],

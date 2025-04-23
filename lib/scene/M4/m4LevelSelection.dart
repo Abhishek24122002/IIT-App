@@ -1,14 +1,16 @@
 import 'package:alzymer/scene/M4/M4L3.dart';
 import 'package:alzymer/scene/M4/M4L4.dart';
-import 'package:alzymer/scene/M4/m4L1.dart';
+import 'package:alzymer/scene/M2/m2L4.dart';
 import 'package:alzymer/scene/M4/m4L2.dart';
 import 'package:alzymer/scene/M4/m4L5.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'm4L1.dart';
+
 class M4LevelSelectionScreen extends StatelessWidget {
-  final int totalLevels = 5;
+  final int totalLevels = 4;
   final int levelsPerRow = 2;
   final int module;
   int m4Trophy = 0;
@@ -79,14 +81,14 @@ class M4LevelSelectionScreen extends StatelessWidget {
             int M4L2Point = data?['M4L2Point'] ?? 0;
             int M4L3Point = data?['M4L3Point'] ?? 0;
             int M4L4Point = data?['M4L4Point'] ?? 0;
-            int M4L5Point = data?['M4L5Point'] ?? 0;
+            // int M4L5Point = data?['M4L5Point'] ?? 0;
 
             // int M1L1Attempts = data?['M1L1Attempts'] ?? 0;
             // int M1L2Attempts = data?['M1L2Attempts'] ?? 0;
 
             int TotalPoints =
-                M4L1Point + M4L2Point + M4L3Point + M4L4Point + M4L5Point;
-            if (TotalPoints == 5) {
+                M4L1Point + M4L2Point + M4L3Point + M4L4Point;
+            if (TotalPoints == 4) {
               m4Trophy = 1;
               updateFirebaseData();
             }
@@ -204,12 +206,7 @@ class LevelButton extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => M4L4()),
               );
               break;
-            case 5:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => M4L5()),
-              );
-              break;
+           
             default:
               break;
           }

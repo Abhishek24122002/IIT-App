@@ -3,7 +3,6 @@ import 'package:alzymer/ScoreManager.dart';
 import 'package:alzymer/scene/M1/M1L1.dart';
 import 'package:alzymer/scene/M1/M1L3.dart';
 import 'package:alzymer/scene/M1/M1L4.dart';
-import 'package:alzymer/scene/M1/M1L5.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -64,7 +63,7 @@ class _M1L2State extends State<M1L2> {
   String? gender;
   String userAnswer = '';
   String weather = '';
-  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
+  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4()];
   int currentLevelIndex = 1;
   String sceneImage = 'assets/bg1.jpg';
   int M1L2Attempts = 0;

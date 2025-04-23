@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:alzymer/scene/M1/m1L1.dart';
 import 'package:alzymer/scene/M1/m1L2.dart';
 import 'package:alzymer/scene/M1/m1L4.dart';
-import 'package:alzymer/scene/M1/m1L5.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -67,7 +66,7 @@ class _M1L3State extends State<M1L3> {
   List<String> selectedFruits = [];
   List<String> displayedFruits = [];
   TextEditingController answerController = TextEditingController();
-  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
+  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4()];
   int currentLevelIndex = 2;
   bool fruitSelected = false;
 

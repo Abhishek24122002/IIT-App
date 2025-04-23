@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:alzymer/scene/M3/M3L3.dart';
 import 'package:alzymer/scene/M3/M3L4.dart';
-import 'package:alzymer/scene/M3/M3L5.dart';
-import 'package:alzymer/scene/M3/m3L2.dart';
-import 'package:alzymer/scene/M3/m3L6.dart';
+import 'package:alzymer/scene/M3/m3L2_old.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
@@ -13,6 +11,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import 'm3L1_2.dart';
+import 'm3L2.dart';
+import 'm3L3_2.dart';
+import 'm3L3_3.dart';
+import 'm3L4_2.dart';
 
 class M3L1 extends StatefulWidget {
   @override
@@ -36,7 +40,7 @@ class _M3L1State extends State<M3L1> {
   String? gender;
   int Without_timer_Point = 0;
   // int M3L1Point = 0;
-  List<Widget> levels = [M3L1(),M3L6(), M3L2(), M3L3(), M3L4(), M3L5()];
+  List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
   int currentLevelIndex = 0;
 
   @override

@@ -21,7 +21,7 @@ class _ModuleSelectionScreenState extends State<ModuleSelectionScreen> {
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(5, (index) => ModuleButton(module: index + 1)),
+            children: List.generate(4, (index) => ModuleButton(module: index + 1)),
           ),
         ),
       ),
@@ -36,7 +36,7 @@ class ModuleButton extends StatelessWidget {
     'Module 2',
     'Module 3',
     'Module 4',
-    'Module 5',
+    // 'Module 5',
   ];
 
   ModuleButton({required this.module});
@@ -47,7 +47,7 @@ class ModuleButton extends StatelessWidget {
       2: () => M2LevelSelectionScreen(module: module, userScore: 0),
       3: () => M3LevelSelectionScreen(module: module, userScore: 0),
       4: () => M4LevelSelectionScreen(module: module, userScore: 0),
-      5: () => M5LevelSelectionScreen(module: module, userScore: 0),
+      // 5: () => M5LevelSelectionScreen(module: module, userScore: 0),
     };
 
     if (moduleScreens.containsKey(module)) {

@@ -1,54 +1,6 @@
-import 'package:alzymer/scene/M1/M1L5.dart';
-import 'package:alzymer/scene/M1/m1L1.dart';
-import 'package:alzymer/scene/M1/m1L2.dart';
-import 'package:alzymer/scene/M1/m1L3.dart';
+import 'package:alzymer/scene/M2/m2L1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-
-import 'package:alzymer/ScoreManager.dart';
-
-class SpeechBubble extends StatelessWidget {
-  final String text;
-
-  SpeechBubble({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      constraints: BoxConstraints(
-        maxWidth: 300,
-      ),
-      child: Wrap(
-        children: [
-          Text(
-            text,
-            style: TextStyle(fontSize: 16.0),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class M1L4 extends StatefulWidget {
   @override
@@ -56,214 +8,116 @@ class M1L4 extends StatefulWidget {
 }
 
 class _M1L4State extends State<M1L4> {
-  bool showStartButton = true;
-  bool showAnswerButtons = false;
-  bool showSpeechBubble = false;
-  bool nextLevelButton = false;
-  int M1L4Attempts = 0;
-  bool showHintButton = true;
-  String? gender;
-  int M1L4Point = 0;
-
-  String userAnswer = '';
-
-  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
-  int currentLevelIndex = 3;
+  List<String> selectedTasks = [];
+  List<String> allTasks = [
+    'Fruit eaten',
+    'Helped Grandchild with Season',
+    'Helped Grandchild with Date'
+  ];
 
   @override
   void initState() {
     super.initState();
-    Firebase.initializeApp();
-    fetchGender();
-    // Set landscape orientation when entering this page
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-  }
-
-  void fetchGender() async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? user = auth.currentUser;
-
-    if (user != null) {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      DocumentSnapshot<Map<String, dynamic>> snapshot =
-          await firestore.collection('users').doc(user.uid).get();
-
-      setState(() {
-        gender = snapshot.get('gender');
-      });
-    }
-  }
-
-  String getCurrentUserUid() {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? user = auth.currentUser;
-    return user?.uid ?? '';
-  }
-
-  void updateFirebaseDataM1L4() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
-
-      if (userUid.isNotEmpty) {
-        // Reference to the user's document
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userUid);
-
-        // Reference to the 'score' document with document ID 'M1'
-        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M1');
-
-        DocumentReference attemptDocRef =
-            userDocRef.collection('attempt').doc('M1');
-
-        // Update the fields in the 'score' document
-        await scoreDocRef.update({
-          'M1L4Point': M1L4Point,
-        });
-        await attemptDocRef.update({
-          'M1L4Attempts': M1L4Attempts,
-        });
-      }
-    } catch (e) {
-      print('Error updating data: $e');
-    }
-  }
-
-  String getSpeechBubbleText() {
-    if (gender == 'Male') {
-      return "Hello Dad !! What is the school pickup time today?";
-    } else if (gender == 'Female') {
-      return "Hello !! What is the school pickup time today?";
-    } else {
-      return "Hello!! What is the school pickup time today?";
-    }
-  }
-
-  // String getSpeechBubbleImage() {
-  //   if (gender == 'Male') {
-  //     return 'assets/old1.png';
-  //   } else if (gender == 'Female') {
-  //     return 'assets/old1-lady.png';
-  //   } else {
-  //     return 'assets/old1.png';
-  //   }
-  // }
-  String getSpeechBubbleImage() {
-    if (gender == 'Male') {
-      return 'assets/old1.png';
-    } else if (gender == 'Female') {
-      return 'assets/old1.png';
-    } else {
-      return 'assets/old1.png';
-    }
-  }
-
-  void submitAnswer(String time) {
-  M1L4Attempts++;
-
-  String pickupTime = "3:00 PM";
-
-  if (time == pickupTime) {
-    showCelebrationDialog();
-    setState(() {
-      showAnswerButtons = false;
-      nextLevelButton = true;
-      showHintButton = false;
-      showSpeechBubble = false;
-      M1L4Point = 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initialPopup(); // Call the initialPopup function after the frame has been built
     });
-
-    updateFirebaseDataM1L4();
-    ScoreManager.updateUserScore(1);
-  } else {
-    showTryAgainDialog();
   }
 
-  setState(() {
-    showSpeechBubble = true;
-    userAnswer = 'Today\'s pickup time is $pickupTime';
-  });
-}
-
-
-     
-
-  void _showInputDialog() {
+  void initialPopup() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Select Pickup Time'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  submitAnswer('1:00 PM');
-                },
-                child: Text('1:00 PM'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  submitAnswer('2:00 PM');
-                },
-                child: Text('2:00 PM'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  submitAnswer('3:00 PM');
-                },
-                child: Text('3:00 PM'),
+              Text(
+                ' Task 5 ',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24.0,
+                  color: Color.fromARGB(255, 94, 114, 228), // Title color
+                ),
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  void navigateToNextLevel() {
-    if (currentLevelIndex < levels.length - 1) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ]);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => levels[currentLevelIndex + 1]),
-      );
-    }
-  }
-
-  void showHint() {
-    
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Hint'),
-          content: Text('Today\'s pickup time is 3 PM'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Instructions:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  color: Color.fromARGB(
+                      255, 158, 124, 193), // Instruction title color
+                ),
+              ),
+              SizedBox(height: 10.0),
+              Text(
+                'For this task, your objective is to choose the tasks you have completed in the previous level in the accurate order .',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black87, // Content color
+                ),
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Close the dialog
               },
-              child: Text('OK'),
+              child: Text(
+                'Got it!',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                  color: Color.fromARGB(255, 94, 114, 228), // Button color
+                ),
+              ),
             ),
           ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          elevation: 10.0,
+          backgroundColor: Colors.white, // Background color
         );
       },
     );
   }
 
-  void showCelebrationDialog() {
+  void onSavePressed() {
+    setState(() {
+      // Compare selectedTasks with correct sequence
+      if (_checkSequence()) {
+        _showCorrectDialog();
+      } else {
+        _showIncorrectDialog();
+      }
+    });
+  }
+
+  bool _checkSequence() {
+    List<String> correctSequence = [
+      'Helped Grandchild with Date',
+      'Helped Grandchild with Season',
+      
+      'Fruit eaten'
+    ];
+    return selectedTasks.length == correctSequence.length &&
+        List.generate(selectedTasks.length,
+            (index) => selectedTasks[index] == correctSequence[index])
+            .every((element) => element);
+  }
+
+  void _showCorrectDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -274,6 +128,11 @@ class _M1L4State extends State<M1L4> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
+                // Navigate to M2L1 when the correct answer is selected
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => M2L1()),
+         );
               },
               child: Text('OK'),
             ),
@@ -283,13 +142,13 @@ class _M1L4State extends State<M1L4> {
     );
   }
 
-  void showTryAgainDialog() {
+  void _showIncorrectDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Oops!'),
-          content: Text('Please try again.'),
+          content: Text('Your answer is incorrect. Please try again.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -303,149 +162,154 @@ class _M1L4State extends State<M1L4> {
     );
   }
 
+  void moveToAllTasks(String task) {
+    setState(() {
+      selectedTasks.remove(task);
+      allTasks.add(task);
+    });
+  }
+
+  void moveToSelectedTasks(String task) {
+    setState(() {
+      selectedTasks.add(task);
+      allTasks.remove(task);
+    });
+  }
+
   @override
-Widget build(BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      FocusScope.of(context).requestFocus(new FocusNode());
-    },
-    child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: SingleChildScrollView(
-          child: Stack(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Task Done Sequence'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                'assets/bg1.jpg',
-                fit: BoxFit.cover,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-              ),
-              Positioned(
-                top: 50.0,
-                left: -130.0,
-                child: Image.asset(
-                  getSpeechBubbleImage(),
-                  width: 500.0,
-                  height: 500.0,
+              Text(
+                'Selected Tasks:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
                 ),
               ),
-              Positioned(
-                  top: 12.0,
-                  right: 130.0,
-                  child: Image.asset(
-                    'assets/clock3.png',
-                    width: 90.0,
-                    height: 90.0,
-                  ),
-                ),
-              Positioned(
-                bottom: -50.0,
-                right: 20.0,
-                child: Image.asset(
-                  'assets/man2.png',
-                  width: 200.0,
-                  height: 400.0,
-                ),
-              ),
-              Positioned(
-                top: 150.0,
-                right: 200,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Visibility(
-                      visible: showSpeechBubble,
-                      child: SpeechBubble(
-                        text: userAnswer.isNotEmpty
-                            ? 'Please pick him from school. I have some urgent office work now' // Change the text here
-                            : getSpeechBubbleText(),
+              SizedBox(height: 10.0),
+              Wrap(
+                spacing: 10.0,
+                runSpacing: 10.0,
+                children: selectedTasks
+                    .map(
+                      (task) => GestureDetector(
+                        onTap: () => moveToAllTasks(task),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 12.0,
+                            horizontal: 16.0,
+                          ),
+                          margin: EdgeInsets.all(4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(30.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 4,
+                                offset:
+                                    Offset(0, 3), // changes position of shadow
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            task,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    )
+                    .toList(),
+              ),
+              SizedBox(height: 20.0),
+              Text(
+                'All Tasks:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
                 ),
               ),
-              Positioned(
-                top: 80.0,
-                left: 150.0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Visibility(
-                      visible: userAnswer.isNotEmpty,
-                      child: SpeechBubble(
-                        text: userAnswer,
+              SizedBox(height: 10.0),
+              Wrap(
+                spacing: 10.0,
+                runSpacing: 10.0,
+                children: allTasks
+                    .map(
+                      (task) => GestureDetector(
+                        onTap: () => moveToSelectedTasks(task),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 12.0,
+                            horizontal: 16.0,
+                          ),
+                          margin: EdgeInsets.all(4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(30.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 4,
+                                offset:
+                                    Offset(0, 3), // changes position of shadow
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            task,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    )
+                    .toList(),
               ),
-              Positioned(
-                bottom: 20.0,
-                left: 30.0,
-                child: Row(
-                  children: [
-                    Visibility(
-                      visible: showStartButton,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            showSpeechBubble = true;
-                            showStartButton = false;
-                            showAnswerButtons = true;
-                          });
-                        },
-                        child: Text('Start'),
-                      ),
-                    ),
-                    if (showAnswerButtons)
-                      ElevatedButton(
-                        onPressed: () {
-                          _showInputDialog();
-                        },
-                        child: Text('Select Pickup Time'),
-                      ),
-                  ],
-                ),
-              ),
-              if (nextLevelButton)
-                Positioned(
-                  bottom: 20.0,
-                  right: 30.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      navigateToNextLevel();
-                    },
-                    child: Text('Next Level'),
-                  ),
-                ),
-              if (M1L4Attempts >= 1 && showHintButton)
-                Positioned(
-                  bottom: 20.0,
-                  right: 30.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showHint();
-                    },
-                    child: Text('Show Hint'),
-                  ),
-                ),
             ],
           ),
         ),
       ),
-    ),
-  );
-}
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        onPressed: onSavePressed,
+        child: Text('Save'),
+      ),
+    );
+  }
 
   @override
   void dispose() {
-    // Revert to original orientation when leaving this page
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
     super.dispose();
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: M1L4(),
+    theme: ThemeData(
+      primaryColor: Color.fromARGB(255, 94, 114, 228),
+      colorScheme: ColorScheme.fromSwatch(
+        primarySwatch: Colors.indigo,
+      ),
+    ),
+  ));
 }

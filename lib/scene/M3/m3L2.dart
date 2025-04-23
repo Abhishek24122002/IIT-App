@@ -1,14 +1,9 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // For screen orientation
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:alzymer/scene/M3/M3L3.dart';
+import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:alzymer/scene/M3/m3L3.dart';
-import 'package:alzymer/scene/M4/m4L1.dart'; // Add import for M4L1
-import 'package:alzymer/scene/M5/m5L2.dart';
-
-import '../M5/M5L3.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'dart:async';
 
 class M3L2 extends StatefulWidget {
   @override
@@ -16,131 +11,53 @@ class M3L2 extends StatefulWidget {
 }
 
 class _M3L2State extends State<M3L2> {
-  List<Map<String, dynamic>> stores = [
-    {
-      'image': 'assets/Fruit_Store.png',
-      'name': 'Vegetable Store',
-      'navigateTo': 'M3L3',
-      'locked': false // Unlock the first store
-    },
-    {
-      'image': 'assets/Dairy.png',
-      'name': 'Milk Products',
-      'navigateTo': 'M5L2',
-      'locked': true // Locked initially
-    },
-    {
-      'image': 'assets/Grocery_Store.png',
-      'name': 'Grocery Store',
-      'navigateTo': 'M5L3',
-      'locked': true // Locked initially
-    },
-    {
-      'image': 'assets/Sweets_Store.png',
-      'name': 'Sweet Shop',
-      'navigateTo': 'M4L1', // No navigation yet, placeholder store
-      'locked': true // Locked initially
-    },
-  ];
-
-  bool showNames = false;
+  TextEditingController answerController = TextEditingController();
   bool showHintButton = false;
+  bool showHintOptions = false;
+  bool isAnswerCorrect = false;
+  Timer? _timer;
+  String selectedFruit = ''; // Fruit fetched from Firebase
+  List<String> hintFruits = [];
   int M3L2Point = 0;
-
-  // Variable to track if all levels are completed
-  bool allLevelsCompleted = false;
-
-  int currentUnlockedIndex = 0; // Track the currently unlocked shop
-
 
   @override
   void initState() {
     super.initState();
-    Firebase.initializeApp();
-
-    // Force landscape orientation
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    // Show instructions when the screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showInstructions();
-    });
-
-    // Show hint button after 10 seconds
-    Timer(Duration(seconds: 5), () {
-      setState(() {
-        showHintButton = true;
-      });
-    });
-
-    // Fetch lock status from Firestore
-    _fetchStoreLockStatus();
+    fetchSelectedFruit();
+    startAnswerTimer();
   }
 
-  String getCurrentUserUid() {
+  void fetchSelectedFruit() async {
+    try {
+      FirebaseAuth auth = FirebaseAuth.instance;
+      User? user = auth.currentUser;
+
+      if (user != null) {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+        DocumentSnapshot snapshot = await firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('score')
+            .doc('M1')
+            .get();
+
+        if (snapshot.exists) {
+          setState(() {
+            selectedFruit = snapshot.get('Fruit_Selected') ?? '';
+          });
+        } else {
+          print('No Fruit_Selected found for M1');
+        }
+      }
+    } catch (e) {
+      print('Error fetching Fruit_Selected: $e');
+    }
+  }
+   String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
     return user?.uid ?? '';
-  }
-
-  void _fetchStoreLockStatus() async {
-    try {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      String userUid = getCurrentUserUid();
-
-      if (userUid.isNotEmpty) {
-        // Fetch the scores from the respective modules (M3, M4, M5)
-        DocumentSnapshot m3Doc = await firestore
-            .collection('users')
-            .doc(userUid)
-            .collection('score')
-            .doc('M3')
-            .get();
-        DocumentSnapshot m4Doc = await firestore
-            .collection('users')
-            .doc(userUid)
-            .collection('score')
-            .doc('M4')
-            .get();
-        DocumentSnapshot m5Doc = await firestore
-            .collection('users')
-            .doc(userUid)
-            .collection('score')
-            .doc('M5')
-            .get();
-
-        // Get the points for each module and level
-        Map<String, dynamic>? m3Data = m3Doc.data() as Map<String, dynamic>?;
-        Map<String, dynamic>? m4Data = m4Doc.data() as Map<String, dynamic>?;
-        Map<String, dynamic>? m5Data = m5Doc.data() as Map<String, dynamic>?;
-
-        setState(() {
-          if (m3Data != null && m3Data['M3L5Point'] == 1) {
-            stores[1]['locked'] = false;
-            currentUnlockedIndex = 1;
-          }
-          if (m5Data != null && m5Data['M5L2Point'] == 1) {
-            stores[2]['locked'] = false;
-            currentUnlockedIndex = 2;
-          }
-          if (m5Data != null && m5Data['M5L3Point'] == 1) {
-            stores[3]['locked'] = false;
-            currentUnlockedIndex = 3;
-          }
-
-          // Check if all levels are completed
-          allLevelsCompleted = (m3Data != null && m3Data['M3L5Point'] == 1) &&
-              (m4Data != null && m4Data['M4L1Point'] == 1) &&
-              (m5Data != null && m5Data['M5L2Point'] == 1) &&
-              (m5Data['M5L3Point'] == 1);
-        });
-      }
-    } catch (e) {
-      print('Error fetching store lock status: $e');
-    }
   }
 
   void updateFirebaseDataM3L2() async {
@@ -149,246 +66,179 @@ class _M3L2State extends State<M3L2> {
       String userUid = getCurrentUserUid();
 
       if (userUid.isNotEmpty) {
-        DocumentReference scoreDocRef = firestore
-            .collection('users')
-            .doc(userUid)
-            .collection('score')
-            .doc('M3');
-        await scoreDocRef.set({
-          'M3L2Point': M3L2Point,
-        }, SetOptions(merge: true));
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
+
+        // Reference to the 'score' document with document ID 'M2'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M2');
+
+        // Check if the 'M2' document exists
+        DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+
+        if (!scoreDocSnapshot.exists) {
+          // If the document doesn't exist, create it with the initial score
+          await scoreDocRef.set({
+            'M3L2Point': M3L2Point,
+          });
+        } else {
+          // If the document exists, update the fields
+          await scoreDocRef.update({
+            'M3L2Point': M3L2Point,
+          });
+        }
       }
     } catch (e) {
       print('Error updating data: $e');
     }
   }
 
-  void _showInstructions() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Instructions to complete level'),
-          content: Text(
-              'You are asked to bring Fruits and Vegetables. \n\nSelect the correct vendor to buy the items. \n\nFor correct selection, you will be rewarded with a point.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+  void startAnswerTimer() {
+    _timer = Timer(Duration(seconds: 10), () {
+      setState(() {
+        showHintButton = true;
+      });
+    });
   }
 
-  void _revealNames() {
+  void showHint() {
     setState(() {
-      showNames = true;
-      showHintButton = false;
+      showHintOptions = true;
+      hintFruits = generateHintOptions(selectedFruit);
     });
+  }
+
+  List<String> generateHintOptions(String correctFruit) {
+    List<String> fruits = ['Apple', 'Banana', 'Orange', 'Pineapple', 'Mango'];
+    fruits.remove(correctFruit);
+    fruits.shuffle();
+    return [correctFruit, ...fruits.take(4)]..shuffle();
+  }
+
+  void checkAnswer(String answer) {
+    if (answer.trim().toLowerCase() == selectedFruit.toLowerCase()) {
+      setState(() {
+        isAnswerCorrect = true;
+        showHintButton = false;
+        showHintOptions = false;
+      });
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Incorrect'),
+            content: Text('Try again!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    var orientation = MediaQuery.of(context).orientation;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Module 3 Level 2'),
+        title: Text("Module 2 Level 3"),
+        centerTitle: true,
       ),
       body: Stack(
         children: [
           SingleChildScrollView(
+            padding: EdgeInsets.all(16),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Layout based on orientation
-                orientation == Orientation.landscape
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: List.generate(4, (index) {
-                          bool isLocked = stores[index]['locked'];
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: isLocked
-                                  ? null // Disable tap if the store is locked
-                                  : () {
-                                      String selectedStore =
-                                          stores[index]['name']!;
-                                      if (selectedStore == 'Vegetable Store') {
-
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => M3L3()),
-                                        );
-                                      } else if (selectedStore ==
-                                          'Milk Products') {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => M5L2()),
-                                        );
-                                      } else if (selectedStore ==
-                                          'Grocery Store') {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => M5L3()),
-                                        );
-                                      } else if (selectedStore ==
-                                          'Sweet Shop') {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => M4L1()),
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content: Text(
-                                                  'Wrong answer! You entered the wrong shop.')),
-                                        );
-                                      }
-                                    },
-                              child: Column(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 10.0,
-                                          spreadRadius: 2.0,
-                                          offset: Offset(0, 5),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Card(
-                                      child: Image.asset(
-                                        stores[index]['image']!,
-                                        width: 140, // Increased image size
-                                        height: 140,
-                                        color: isLocked
-                                            ? Colors.black.withOpacity(0.3)
-                                            : null, // Apply opacity if locked
-                                        colorBlendMode: isLocked
-                                            ? BlendMode.dstIn
-                                            : null, // Blend mode to apply opacity
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 4), // Reduced spacing
-                                  Text(
-                                    showNames ? stores[index]['name']! : '',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      )
-                    : GridView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                        ),
-                        itemCount: stores.length,
-                        itemBuilder: (context, index) {
-                          bool isLocked = stores[index]['locked'];
-                          bool hasGoldenBorder = (index == currentUnlockedIndex);
-                          return GestureDetector(
-                            onTap: isLocked
-                                ? null
-                                : () {
-                                    String selectedStore =
-                                        stores[index]['name']!;
-                                    if (selectedStore == 'Vegetable Store') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => M3L3()),
-                                      );
-                                    } else if (selectedStore ==
-                                        'Milk Products') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => M5L2()),
-                                      );
-                                    } else if (selectedStore ==
-                                        'Grocery Store') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => M4L1()),
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                'Wrong answer! You entered the wrong shop.')),
-                                      );
-                                    }
-                                  },
-                            child: Column(
-                              children: [
-                                Card(
-                                  child: Image.asset(
-                                    stores[index]['image']!,
-                                    width: 120,
-                                    height: 120,
-                                    color: isLocked
-                                        ? Colors.black.withOpacity(0.3)
-                                        : null, // Apply opacity if locked
-                                    colorBlendMode: isLocked
-                                        ? BlendMode.dstIn
-                                        : null, // Blend mode to apply opacity
-                                  ),
-                                ),
-                                Text(
-                                  showNames ? stores[index]['name']! : '',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                SizedBox(height: 20), // Added spacing for visual clarity
-                if (showHintButton && !allLevelsCompleted)
+                Text(
+                  'Which fruit did you eat?',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                TextField(
+                  controller: answerController,
+                  decoration: InputDecoration(
+                    labelText: 'Your Answer',
+                    border: OutlineInputBorder(),
+                    hintText: 'Type the fruit name here',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                if (!isAnswerCorrect)
                   ElevatedButton(
-                    onPressed: _revealNames,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.lightGreen,
+                    ),
+                    onPressed: () => checkAnswer(answerController.text),
+                    child: Text('Submit'),
+                  ),
+                  if (!isAnswerCorrect)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amberAccent,
+                    ),
+                    onPressed: showHint,
                     child: Text('Show Hint'),
                   ),
-                if (allLevelsCompleted)
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        M3L2Point = 1;
-                      });
-                      updateFirebaseDataM3L2();
-                      // Handle next module navigation
-                    },
-                    child: Text('Next Module'),
+                  Wrap(
+                    spacing: 10,
+                    children: hintFruits.map((fruit) {
+                      return ElevatedButton(
+                        onPressed: () => checkAnswer(fruit),
+                        child: Text(fruit),
+                      );
+                    }).toList(),
                   ),
               ],
             ),
           ),
+          if (isAnswerCorrect)
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      M3L2Point =1;
+                      updateFirebaseDataM3L2();
+                    });
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => M3L3(),
+                      ),
+                    );
+                  },
+                  child: Text('Next Level'),
+                ),
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }

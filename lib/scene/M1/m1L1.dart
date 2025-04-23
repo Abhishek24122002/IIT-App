@@ -9,7 +9,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:alzymer/scene/M1/M1L2.dart';
 import 'package:alzymer/scene/M1/M1L3.dart';
 import 'package:alzymer/scene/M1/M1L4.dart';
-import 'package:alzymer/scene/M1/M1L5.dart';
 import 'package:alzymer/ScoreManager.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -69,7 +68,7 @@ class _M1L1State extends State<M1L1> {
   String userAnswer = '';
   TextEditingController answerController = TextEditingController();
 
-  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4(), M1L5()];
+  List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4()];
   int currentLevelIndex = 0;
 
   bool isAnswerCorrect(String input) {
@@ -214,6 +213,7 @@ class _M1L1State extends State<M1L1> {
   Future<void> _showDatePickerDialog() async {
     showDialog(
       context: context,
+      barrierDismissible: false, // prevent tap outside to close
       builder: (BuildContext context) {
         return CustomDatePicker(
           onDateSelected: (selectedDate) {
@@ -249,8 +249,6 @@ class _M1L1State extends State<M1L1> {
 
   void showHint() {
     String formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
-
-    
   }
 
   void showCelebrationDialog() {
@@ -397,115 +395,98 @@ class CustomDatePicker extends StatefulWidget {
 }
 
 class _CustomDatePickerState extends State<CustomDatePicker> {
-   int selectedDay = 1;  // Set to 1 for January 1st
-  int selectedMonth = 1;  // Set to 1 for January
-  int selectedYear = DateTime.now().year;
+  int selectedDay = 0;
+  int selectedMonth = 0;
+  int selectedYear = 2000;
 
-  List<int> getDaysInMonth(int month, int year) {
-    return List.generate(
-      DateTime(year, month + 1, 0).day,
-      (index) => index + 1,
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+      child: Container(
+        width: 400, // wider popup
+        height: 300,
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Select Date',
+                    style:
+                        TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: Icon(Icons.close),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                )
+              ],
+            ),
+            SizedBox(height: 10),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLabeledPicker('Date', 0, 31, selectedDay,
+                      (val) => setState(() => selectedDay = val)),
+                  _buildLabeledPicker('Month', 0, 12, selectedMonth,
+                      (val) => setState(() => selectedMonth = val)),
+                  _buildLabeledPicker('Year', 1900, 2100, selectedYear,
+                      (val) => setState(() => selectedYear = val)),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (selectedDay == 0 || selectedMonth == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Date and Month cannot be zero.")),
+                  );
+                  return;
+                }
+
+                try {
+                  final selected =
+                      DateTime(selectedYear, selectedMonth, selectedDay);
+                  widget.onDateSelected(selected);
+                } catch (e) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("Invalid date")));
+                }
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
- @override
-Widget build(BuildContext context) {
-  return AlertDialog(
-    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15.0),
-    ),
-    title: Center(
-        child: Text('Select Date',
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
-    content: Container(
-      height: 160,  // Adjusted height to accommodate headings
+  Widget _buildLabeledPicker(String label, int start, int end, int selected,
+      Function(int) onSelected) {
+    return Expanded(
       child: Column(
         children: [
-          // Add a row for the headings
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: Center(child: Text('Day', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-              ),
-              Expanded(
-                child: Center(child: Text('Month', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-              ),
-              Expanded(
-                child: Center(child: Text('Year', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),  // Add spacing between headings and pickers
-          // Row for the pickers
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: CupertinoPicker(
-                  itemExtent: 60,
-                  onSelectedItemChanged: (index) {
-                    setState(() {
-                      selectedDay = index + 1;
-                    });
-                  },
-                  children: getDaysInMonth(selectedMonth, selectedYear)
-                      .map((day) => Center(child: Text(day.toString())))
-                      .toList(),
-                  scrollController: FixedExtentScrollController(
-                    initialItem: selectedDay - 1,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CupertinoPicker(
-                  itemExtent: 60,
-                  onSelectedItemChanged: (index) {
-                    setState(() {
-                      selectedMonth = index + 1;
-                    });
-                  },
-                  children: List.generate(12, (index) => index + 1)
-                      .map((month) => Center(child: Text(month.toString())))
-                      .toList(),
-                  scrollController: FixedExtentScrollController(
-                    initialItem: selectedMonth - 1,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CupertinoPicker(
-                  itemExtent: 60,
-                  onSelectedItemChanged: (index) {
-                    setState(() {
-                      selectedYear = DateTime.now().year - index;
-                    });
-                  },
-                  children: List.generate(
-                          100, (index) => DateTime.now().year - index)
-                      .map((year) => Center(child: Text(year.toString())))
-                      .toList(),
-                  scrollController: FixedExtentScrollController(
-                    initialItem: 0,
-                  ),
-                ),
-              ),
-            ],
+          Text(label,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Expanded(
+            child: CupertinoPicker(
+              scrollController:
+                  FixedExtentScrollController(initialItem: selected - start),
+              itemExtent: 40,
+              onSelectedItemChanged: (index) => onSelected(start + index),
+              children: List.generate(end - start + 1, (index) {
+                final val = start + index;
+                return Center(
+                    child:
+                        Text(val.toString(), style: TextStyle(fontSize: 20)));
+              }),
+            ),
           ),
         ],
       ),
-    ),
-    actions: [
-      TextButton(
-        onPressed: () {
-          DateTime selectedDate =
-              DateTime(selectedYear, selectedMonth, selectedDay);
-          widget.onDateSelected(selectedDate);
-        },
-        child: Text('OK', style: TextStyle(color: Colors.blue, fontSize: 16)),
-      ),
-    ],
-  );
-}
+    );
+  }
 }

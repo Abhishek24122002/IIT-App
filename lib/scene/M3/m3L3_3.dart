@@ -1,79 +1,72 @@
 import 'dart:math';
 import 'package:alzymer/scene/M3/m3L1.dart';
-import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 import 'm3L1_2.dart';
+import 'm3L2.dart';
+import 'm3L3.dart';
 import 'm3L3_2.dart';
-import 'm3L3_3.dart';
 import 'm3L4.dart';
 import 'm3L4_2.dart';
 
-class M3L3 extends StatefulWidget {
+class M3L3_3 extends StatefulWidget {
   @override
-  _M3L3State createState() => _M3L3State();
+  _M3L3_3State createState() => _M3L3_3State();
 }
 
-class _M3L3State extends State<M3L3> {
-  int collectedPotatoes = 0;
+class _M3L3_3State extends State<M3L3_3> {
+  int collectedApples = 0;
   bool showPopup = true;
-  int M3L3Point = 0;
+  int M3L3_3Point = 0;
   List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
-  int currentLevelIndex = 3;
+  int currentLevelIndex = 5;
 
   List<List<String>> baskets = [
     [
-      'Cabbage',
-      'Cabbage',
-      'Cabbage',
-      'Cabbage',
-      'Carrot',
-      'Carrot',
-      'Onion',
-      'Onion',
-      'Cabbage',
-      'Carrot',
-      'Potato',
-      'Potato',
-      'Potato'
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange',
+      "Orange",
+      'Orange',
+      'Orange',
+      'Apple',
+      'Apple',
+      'Apple'
     ],
     [
-      'Carrot',
-      'Carrot',
-      'Carrot',
-      'Cabbage',
-      'Onion',
-      'Onion',
-      'Onion',
-      'Cabbage',
-      'Carrot',
-      'Carrot',
-      'Potato',
-      'Potato',
-      'Potato'
+      'Mango',
+      'Mango',
+      'Mango',
+      'Mango',
+      'Apple',
+      'Apple',
+      'Apple',
+      'Apple',
+      'Apple',
+      'Apple'
     ],
     [
-      'Onion',
-      'Onion',
-      'Cabbage',
-      'Cabbage',
-      'Cabbage',
-      'Cabbage',
-      'Carrot',
-      'Onion',
-      'Onion',
-      'Potato',
-      'Potato',
-      'Potato',
-      'Potato'
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Tomato',
+      'Apple'
     ],
   ];
 
-  List<List<Offset>> vegetablePositions = [[], [], []];
+  // Store random positions for each fruit
+  List<List<Offset>> fruitPositions = [[], [], []];
 
   @override
   void initState() {
@@ -85,7 +78,7 @@ class _M3L3State extends State<M3L3> {
     ]);
     // Generate random positions only once when the screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _generateVegetablePositions();
+      _generateFruitPositions();
       showInstructionDialog();
     });
   }
@@ -96,7 +89,7 @@ class _M3L3State extends State<M3L3> {
     return user?.uid ?? '';
   }
 
-  void updateFirebaseDataM3L3() async {
+  void updateFirebaseDataM3L3_3() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       String userUid = getCurrentUserUid();
@@ -116,12 +109,12 @@ class _M3L3State extends State<M3L3> {
         if (!scoreDocSnapshot.exists) {
           // If the document doesn't exist, create it with the initial score
           await scoreDocRef.set({
-            'M3L3Point': M3L3Point,
+            'M3L3_3Point': M3L3_3Point,
           });
         } else {
           // If the document exists, update the fields
           await scoreDocRef.update({
-            'M3L3Point': M3L3Point,
+            'M3L3_3Point': M3L3_3Point,
           });
         }
       }
@@ -130,16 +123,13 @@ class _M3L3State extends State<M3L3> {
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  
 
-  // Generate random positions for the vegetables in each basket
-  void _generateVegetablePositions() {
+  // Generate random positions for the fruits in each basket
+  void _generateFruitPositions() {
     Random random = Random();
-    double basketSize = 180.0; // Increased basket size
-    double vegetableSize = 50.0; // Increased vegetable size
+    double basketSize = 180.0; // Assuming the basket container is 180x180
+    double fruitSize = 50.0; // Assuming each fruit image is 50x50
 
     for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
       List<Offset> usedPositions = []; // Track used positions to avoid overlap
@@ -148,16 +138,15 @@ class _M3L3State extends State<M3L3> {
         Offset position = Offset.zero; // Initialize with a default value
         bool positionFound = false;
 
-        // Attempt to place the vegetable without overlap
+        // Attempt to place the fruit without overlap
         for (int attempt = 0; attempt < 10; attempt++) {
-          double randomTop = random.nextDouble() * (basketSize - vegetableSize);
-          double randomLeft =
-              random.nextDouble() * (basketSize - vegetableSize);
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
           position = Offset(randomLeft, randomTop);
 
           // Check for overlap
           bool overlaps = usedPositions.any((usedPosition) {
-            return (position - usedPosition).distance < vegetableSize;
+            return (position - usedPosition).distance < fruitSize;
           });
 
           if (!overlaps) {
@@ -169,13 +158,12 @@ class _M3L3State extends State<M3L3> {
 
         // If a position without overlap wasn't found, allow overlap
         if (!positionFound) {
-          double randomTop = random.nextDouble() * (basketSize - vegetableSize);
-          double randomLeft =
-              random.nextDouble() * (basketSize - vegetableSize);
+          double randomTop = random.nextDouble() * (basketSize - fruitSize);
+          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
           position = Offset(randomLeft, randomTop);
         }
 
-        vegetablePositions[basketIndex].add(position);
+        fruitPositions[basketIndex].add(position);
       }
     }
   }
@@ -188,19 +176,20 @@ class _M3L3State extends State<M3L3> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Find the Potatoes - Level 3'),
-          _buildCollectedPotatoesCounter(), // Add the counter here
+          Text('Find the Apples - Level 3'),
+          _buildCollectedApplesCounter(),
         ],
       ),
     ),
       body: Stack(
         children: [
-          if (!showPopup) _buildGameScreen(),
-          if (showPopup) _buildPopupMessage(),
+          if (!showPopup)
+            _buildGameScreen(), // Show game content only if popup is not displayed
+          if (showPopup) _buildPopupMessage(), // Show popup message if needed
           // Positioned(
           //   top: 20,
           //   right: 20,
-          //   child: _buildCollectedPotatoesCounter(),
+          //   child: _buildCollectedApplesCounter(),
           // ),
         ],
       ),
@@ -214,7 +203,7 @@ class _M3L3State extends State<M3L3> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Find and collect all the potatoes!',
+              'Find and collect all apples!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -247,44 +236,45 @@ class _M3L3State extends State<M3L3> {
           fit: BoxFit.cover,
         ),
         Container(
-          width: 180,
-          height: 180,
-          child: _buildVegetableStack(basketIndex),
+          width:
+              180, // Ensure the Container has a fixed size matching the basket
+          height: 180, // Same size as the basket image
+          child: _buildFruitStack(basketIndex),
         ),
       ],
     );
   }
 
-  Widget _buildVegetableStack(int basketIndex) {
-    List<Widget> vegetableWidgets = [];
+  Widget _buildFruitStack(int basketIndex) {
+    List<Widget> fruitWidgets = [];
 
     for (int i = 0; i < baskets[basketIndex].length; i++) {
-      String vegetable = baskets[basketIndex][i];
-      Offset position = vegetablePositions[basketIndex][i];
+      String fruit = baskets[basketIndex][i];
+      Offset position = fruitPositions[basketIndex][i];
 
-      if (vegetable.isNotEmpty) {
-        vegetableWidgets.add(
+      if (fruit.isNotEmpty) {
+        fruitWidgets.add(
           Positioned(
             top: position.dy,
             left: position.dx,
             child: GestureDetector(
               onTap: () {
-                if (vegetable == 'Potato') {
+                if (fruit == 'Apple') {
                   setState(() {
-                    collectedPotatoes++;
-                    baskets[basketIndex][i] = ''; // Remove the potato
-                    if (collectedPotatoes == 10) {
-                      // 10 potatoes in total
-                      M3L3Point = 1;
+                    collectedApples++;
+                    baskets[basketIndex][i] = ''; // Remove the apple
+                    if (collectedApples == 10) {
+                      // Example: 10 apples in total
+                      M3L3_3Point = 1; // Example: 10 oranges in total
                       showLevelCompleteDialog();
-                      updateFirebaseDataM3L3();
+                      updateFirebaseDataM3L3_3();
                     }
                   });
                 }
               },
               child: Image.asset(
-                'assets/$vegetable.png',
-                height: 50, // Increased size
+                'assets/$fruit.png',
+                height: 50,
                 width: 50,
               ),
             ),
@@ -294,57 +284,52 @@ class _M3L3State extends State<M3L3> {
     }
 
     return Stack(
-      children: vegetableWidgets,
+      children: fruitWidgets,
     );
   }
 
-
-Widget _buildCollectedPotatoesCounter() {
-  return Row(
-    children: [
-      Stack(
-        alignment: Alignment.center,
-        children: [
-          // Glowing effect
-          Container(
-            height: 50,
-            width: 70,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.amber.withOpacity(0.8), // Golden glow
-                  spreadRadius: 0.2,
-                  blurRadius: 20,
-                ),
-              ],
+  Widget _buildCollectedApplesCounter() {
+    return Row(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Glowing effect
+            Container(
+              height: 50,
+              width: 70,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.8), // Golden glow
+                    spreadRadius: 0.2,
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Actual image
-          Image.asset(
-            'assets/Potato.png',
-            height: 60, // Size of the image
-          ),
-        ],
-      ),
-      SizedBox(width: 10),
-      Text(
-        '$collectedPotatoes',
-        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-      ),
-    ],
-  );
-}
-
+            Image.asset('assets/Apple.png', height: 50),
+          ],
+        ), // Larger apple icon
+        SizedBox(width: 10),
+        Text(
+          '$collectedApples',
+          style: TextStyle(
+              fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
+        ),
+      ],
+    );
+  }
 
   Widget _buildPopupMessage() {
     return Center(
       child: AlertDialog(
-        title: Text('Collect All Potatoes To Complete Level'),
+        title: Text('Collect All Apples To Complete Level'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Potato.png', height: 60),
+              Image.asset('assets/Apple.png', height: 60),
             ],
           ),
         ),
@@ -353,7 +338,7 @@ Widget _buildCollectedPotatoesCounter() {
             child: Text('OK'),
             onPressed: () {
               setState(() {
-                showPopup = false;
+                showPopup = false; // Close the popup and show the game screen
               });
             },
           ),
@@ -374,14 +359,17 @@ Widget _buildCollectedPotatoesCounter() {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Level Complete!'),
-          content: Text('Congratulations! You collected all the potatoes.'),
+          title: Text('Task Completed !'),
+          content: Text('Congratulations! You collected all the apples.'),
           actions: <Widget>[
             ElevatedButton(
-              child: Text('Next Level'),
+              child: Text('Next Task'),
               onPressed: () {
-                Navigator.of(context).pop();
-                navigateToNextLevel();
+                //  Navigator.of(context).pop(); // Close the dialog
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => M3L4()),
+                );
               },
             ),
           ],
@@ -406,6 +394,6 @@ Widget _buildCollectedPotatoesCounter() {
 
 void main() {
   runApp(MaterialApp(
-    home: M3L3(),
+    home: M3L3_3(),
   ));
 }

@@ -1,60 +1,56 @@
 import 'dart:math';
+
 import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:alzymer/scene/M3/m3L3.dart';
-import 'package:alzymer/scene/M3/m3L4.dart';
-import 'package:alzymer/scene/M3/m3L6.dart';
-import 'package:alzymer/scene/M4/m4L3.dart';
-import 'package:alzymer/scene/M4/m4L1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class M3L5 extends StatefulWidget {
+
+import 'm3L1_2.dart';
+import 'm3L3_3.dart';
+import 'm3L4.dart';
+import 'm3L4_2.dart';
+
+class M3L3_2 extends StatefulWidget {
   @override
-  _M3L5State createState() => _M3L5State();
+  _M3L3_2State createState() => _M3L3_2State();
 }
 
-class _M3L5State extends State<M3L5> {
-  int collectedApples = 0;
+class _M3L3_2State extends State<M3L3_2> {
+  int collectedOranges = 0;
   bool showPopup = true;
-  int M3L5Point = 0;
-  List<Widget> levels = [
-    M3L1(),
-    M3L6(),
-    M3L2(),
-    M3L3(),
-    M3L4(),
-    M3L5(),
-  ];
-  int currentLevelIndex = 5;
+  int M3L3_2Point = 0;
+  List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
+  int currentLevelIndex = 4;
 
   List<List<String>> baskets = [
     [
-      'Orange',
-      'Orange',
-      'Orange',
-      'Orange',
-      "Orange",
-      'Orange',
-      'Orange',
       'Apple',
       'Apple',
-      'Apple'
+      'Apple',
+      'Apple',
+      "Apple",
+      'Apple',
+      'Apple',
+      'Orange',
+      'Orange',
+      'Orange'
     ],
     [
       'Mango',
       'Mango',
       'Mango',
       'Mango',
-      'Apple',
-      'Apple',
-      'Apple',
-      'Apple',
-      'Apple',
-      'Apple'
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange',
+      'Orange'
     ],
     [
       'Tomato',
@@ -66,11 +62,10 @@ class _M3L5State extends State<M3L5> {
       'Tomato',
       'Tomato',
       'Tomato',
-      'Apple'
+      'Orange'
     ],
   ];
 
-  // Store random positions for each fruit
   List<List<Offset>> fruitPositions = [[], [], []];
 
   @override
@@ -94,7 +89,7 @@ class _M3L5State extends State<M3L5> {
     return user?.uid ?? '';
   }
 
-  void updateFirebaseDataM3L5() async {
+  void updateFirebaseDataM3L3_2() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       String userUid = getCurrentUserUid();
@@ -114,12 +109,12 @@ class _M3L5State extends State<M3L5> {
         if (!scoreDocSnapshot.exists) {
           // If the document doesn't exist, create it with the initial score
           await scoreDocRef.set({
-            'M3L5Point': M3L5Point,
+            'M3L3_2Point': M3L3_2Point,
           });
         } else {
           // If the document exists, update the fields
           await scoreDocRef.update({
-            'M3L5Point': M3L5Point,
+            'M3L3_2Point': M3L3_2Point,
           });
         }
       }
@@ -128,7 +123,10 @@ class _M3L5State extends State<M3L5> {
     }
   }
 
-  
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   // Generate random positions for the fruits in each basket
   void _generateFruitPositions() {
@@ -181,8 +179,8 @@ class _M3L5State extends State<M3L5> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Find the Apples - Level 3'),
-          _buildCollectedApplesCounter(),
+          Text('Find the Oranges - Level 4'),
+          _buildCollectedOrangesCounter(),
         ],
       ),
     ),
@@ -194,7 +192,7 @@ class _M3L5State extends State<M3L5> {
           // Positioned(
           //   top: 20,
           //   right: 20,
-          //   child: _buildCollectedApplesCounter(),
+          //   child: _buildCollectedOrangesCounter(),
           // ),
         ],
       ),
@@ -208,7 +206,7 @@ class _M3L5State extends State<M3L5> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Find and collect all apples!',
+              'Find and collect all oranges!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -264,15 +262,14 @@ class _M3L5State extends State<M3L5> {
             left: position.dx,
             child: GestureDetector(
               onTap: () {
-                if (fruit == 'Apple') {
+                if (fruit == 'Orange') {
                   setState(() {
-                    collectedApples++;
-                    baskets[basketIndex][i] = ''; // Remove the apple
-                    if (collectedApples == 10) {
-                      // Example: 10 apples in total
-                      M3L5Point = 1; // Example: 10 oranges in total
+                    collectedOranges++;
+                    baskets[basketIndex][i] = ''; // Remove the orange
+                    if (collectedOranges == 10) {
+                      M3L3_2Point = 1; // Example: 10 oranges in total
                       showLevelCompleteDialog();
-                      updateFirebaseDataM3L5();
+                      updateFirebaseDataM3L3_2();
                     }
                   });
                 }
@@ -293,32 +290,31 @@ class _M3L5State extends State<M3L5> {
     );
   }
 
-  Widget _buildCollectedApplesCounter() {
+  Widget _buildCollectedOrangesCounter() {
     return Row(
       children: [
         Stack(
           alignment: Alignment.center,
           children: [
-            // Glowing effect
             Container(
-              height: 50,
+              height:50,
               width: 70,
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.amber.withOpacity(0.8), // Golden glow
+                    color: Colors.amber.withOpacity(0.8),
                     spreadRadius: 0.2,
                     blurRadius: 20,
                   ),
-                ],
+                ]
               ),
             ),
-            Image.asset('assets/Apple.png', height: 50),
-          ],
-        ), // Larger apple icon
+        
+          Image.asset('assets/Orange.png', height: 60), 
+          ],),// Larger orange icon
         SizedBox(width: 10),
         Text(
-          '$collectedApples',
+          '$collectedOranges',
           style: TextStyle(
               fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
         ),
@@ -329,12 +325,12 @@ class _M3L5State extends State<M3L5> {
   Widget _buildPopupMessage() {
     return Center(
       child: AlertDialog(
-        title: Text('Collect All Apples To Complete Level'),
+        title: Text('Collect All Oranges To Complete Level'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Apple.png', height: 60),
+              Image.asset('assets/Orange.png', height: 60),
             ],
           ),
         ),
@@ -364,17 +360,14 @@ class _M3L5State extends State<M3L5> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Task Completed !'),
-          content: Text('Congratulations! You collected all the apples.'),
+          title: Text('Level Complete!'),
+          content: Text('Congratulations! You collected all the oranges.'),
           actions: <Widget>[
             ElevatedButton(
-              child: Text('Next Task'),
+              child: Text('Next Level'),
               onPressed: () {
-                //  Navigator.of(context).pop(); // Close the dialog
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => M3L2()),
-                );
+                Navigator.of(context).pop(); // Close the dialog
+                navigateToNextLevel();
               },
             ),
           ],
@@ -399,6 +392,6 @@ class _M3L5State extends State<M3L5> {
 
 void main() {
   runApp(MaterialApp(
-    home: M3L5(),
+    home: M3L3_2(),
   ));
 }

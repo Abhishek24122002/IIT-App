@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:alzymer/scene/M3/M3L3.dart';
-import 'package:alzymer/scene/M3/M3L4.dart';
-import 'package:alzymer/scene/M3/M3L5.dart';
+
 import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:alzymer/scene/M3/m3L2.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +13,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-class M3L6 extends StatefulWidget {
+import 'm3L3_2.dart';
+import 'm3L3_3.dart';
+import 'm3L4.dart';
+import 'm3L4_2.dart';
+
+class M3L1_2 extends StatefulWidget {
   @override
-  _M3L6State createState() => _M3L6State();
+  _M3L1_2State createState() => _M3L1_2State();
 }
 
-class _M3L6State extends State<M3L6> {
+class _M3L1_2State extends State<M3L1_2> {
   Offset? characterPosition; // Initialize characterPosition as nullable
   final double speed = 20.0;
   late ScrollController _scrollController;
@@ -36,7 +40,7 @@ class _M3L6State extends State<M3L6> {
   String? gender;
   // int Without_timer_Point = 0;
   int M3L1Point = 0;
-  List<Widget> levels = [M3L1(),M3L6(), M3L2(), M3L3(), M3L4(), M3L5(),];
+  List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
   int currentLevelIndex = 1;
 
   @override
@@ -461,7 +465,7 @@ void dispose() {
                 Navigator.of(context).pop();
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => M3L6()),
+                  MaterialPageRoute(builder: (context) => M3L1_2()),
                 );
               },
             ),

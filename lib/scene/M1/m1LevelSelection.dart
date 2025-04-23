@@ -2,13 +2,13 @@ import 'package:alzymer/scene/M1/m1L1.dart';
 import 'package:alzymer/scene/M1/m1L2.dart';
 import 'package:alzymer/scene/M1/m1L3.dart';
 import 'package:alzymer/scene/M1/m1L4.dart';
-import 'package:alzymer/scene/M1/m1L5.dart';
+import 'package:alzymer/scene/M1/m1L4.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class M1LevelSelectionScreen extends StatelessWidget {
-  final int totalLevels = 5;
+  final int totalLevels = 4;
   final int levelsPerRow = 2;
   final int module;
   int m1Trophy = 0;
@@ -80,14 +80,14 @@ class M1LevelSelectionScreen extends StatelessWidget {
             int M1L2Point = data?['M1L2Point'] ?? 0;
             int M1L3Point = data?['M1L3Point'] ?? 0;
             int M1L4Point = data?['M1L4Point'] ?? 0;
-            int M1L5Point = data?['M1L5Point'] ?? 0;
+            // int M1L5Point = data?['M1L5Point'] ?? 0;
 
             // int M1L1Attempts = data?['M1L1Attempts'] ?? 0;
             // int M1L2Attempts = data?['M1L2Attempts'] ?? 0;
 
             int TotalPoints =
-                M1L1Point + M1L2Point + M1L3Point + M1L4Point + M1L5Point;
-            if (TotalPoints == 5) {
+                M1L1Point + M1L2Point + M1L3Point + M1L4Point;
+            if (TotalPoints == 4) {
               m1Trophy = 1;
               updateFirebaseData();
             }
@@ -188,12 +188,12 @@ class LevelButton extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => M1L4()),
               );
               break;
-            case 5:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => M1L5()),
-              );
-              break;
+            // case 5:
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => M1L5()),
+            //   );
+            //   break;
             default:
               break;
           }

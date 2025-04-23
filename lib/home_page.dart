@@ -77,10 +77,10 @@ class HomePage extends StatelessWidget {
               int M1L2Point = data['M1L2Point'] ?? 0;
               int M1L3Point = data['M1L3Point'] ?? 0;
               int M1L4Point = data['M1L4Point'] ?? 0;
-              int M1L5Point = data['M1L5Point'] ?? 0;
+              // int M1L5Point = data['M1L5Point'] ?? 0;
 
               int TotalPoints =
-                  M1L1Point + M1L2Point + M1L3Point + M1L4Point + M1L5Point;
+                  M1L1Point + M1L2Point + M1L3Point + M1L4Point;
 
               return Stack(
                 children: [

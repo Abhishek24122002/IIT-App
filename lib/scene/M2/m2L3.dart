@@ -279,7 +279,7 @@ class _M2L3State extends State<M2L3> {
             Positioned(
               left: icecreamPosition.dx - 27,
               top: icecreamPosition.dy - 40,
-              child: Image.asset('assets/icecream.png', width: 60, height: 60),
+              child: Image.asset('assets/Sweets_Store.png', width: 60, height: 60),
             ),
             if (lakeVisible)
               Positioned(

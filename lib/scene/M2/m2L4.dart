@@ -152,7 +152,7 @@ class _M2L4State extends State<M2L4> with SingleTickerProviderStateMixin {
         return AlertDialog(
           title: Text('Instructions to complete level'),
           content: Text(
-              'Grandchild is Hungry, Feed The Fruits to the Child. \n\nFruit Need To Be Picked From Right and Dropped in Mouth of Child. For Every Correct Fruit Drop, you will be rewarded with a point.'),
+              'Grandchild is Hungry, Feed The Sweets to the Child. \n\nSweet Need To Be Picked From Right and Dropped in Mouth of Child. For Every Correct Sweet Drop, you will be rewarded with a point.'),
           actions: [
             TextButton(
               onPressed: () {

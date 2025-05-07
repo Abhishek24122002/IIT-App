@@ -357,7 +357,7 @@ class _M2L3State extends State<M2L3> {
                     ],
                   ),
                   child: Text(
-                    'Take Left From The Lake For Icecream Shop',
+                    'Take Left From The Lake For Sweet Shop',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -399,7 +399,7 @@ class _M2L3State extends State<M2L3> {
                             ],
                           ),
                           child: Text(
-                            'Buy ice cream first',
+                            'Buy Sweet first',
                             style: TextStyle(
                               fontSize: 20.0, // Slightly larger text
                               fontWeight: FontWeight.bold, // Bold text

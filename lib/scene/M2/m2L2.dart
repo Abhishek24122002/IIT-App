@@ -483,8 +483,8 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   
  void showConversationDialog() {
   List<Map<String, String>> conversation = [
-    {'speaker': 'Grandchild', 'message': 'Grandpa, I want ice cream!'},
-    {'speaker': 'Grandpa', 'message': 'Ok, we will first go to the ice cream shop and then home.'},
+    {'speaker': 'Grandchild', 'message': 'Grandpa, I want Sweet!'},
+    {'speaker': 'Grandpa', 'message': 'Ok, we will first go to the Sweet shop and then home.'},
   ];
 
   int currentMessageIndex = 0;

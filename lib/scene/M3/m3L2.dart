@@ -146,7 +146,7 @@ class _M3L2State extends State<M3L2> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Module 2 Level 3"),
+        title: Text("Module 3 Level 2"),
         centerTitle: true,
       ),
       body: Stack(

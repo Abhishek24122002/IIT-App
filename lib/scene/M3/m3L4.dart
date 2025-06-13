@@ -58,9 +58,9 @@ class _M3L4State extends State<M3L4> {
         DocumentReference userDocRef =
             firestore.collection('users').doc(userUid);
 
-        // Reference to the 'score' document with document ID 'M1'
+        // Reference to the 'score' document with document ID 'M3'
         DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M5');
+            userDocRef.collection('score').doc('M3');
 
         // Update the fields in the 'score' document
         await scoreDocRef.update({

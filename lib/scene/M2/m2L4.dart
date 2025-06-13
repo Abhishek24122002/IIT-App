@@ -69,9 +69,9 @@ class _M2L4State extends State<M2L4> with SingleTickerProviderStateMixin {
         DocumentReference userDocRef =
             firestore.collection('users').doc(userUid);
 
-        // Reference to the 'score' document with document ID 'M1'
+        // Reference to the 'score' document with document ID 'M2'
         DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M4');
+            userDocRef.collection('score').doc('M2');
 
         // Update the fields in the 'score' document
         await scoreDocRef.update({

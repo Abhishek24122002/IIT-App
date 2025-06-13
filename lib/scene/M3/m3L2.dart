@@ -70,9 +70,9 @@ class _M3L2State extends State<M3L2> {
         DocumentReference userDocRef =
             firestore.collection('users').doc(userUid);
 
-        // Reference to the 'score' document with document ID 'M2'
+        // Reference to the 'score' document with document ID 'M3'
         DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M2');
+            userDocRef.collection('score').doc('M3');
 
         // Check if the 'M2' document exists
         DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();

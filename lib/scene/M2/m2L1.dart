@@ -118,11 +118,11 @@ class _M2L1State extends State<M2L1> {
         DocumentReference userDocRef =
             firestore.collection('users').doc(userUid);
 
-        // Reference to the 'score' document with document ID 'M1'
-        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M1');
+        // Reference to the 'score' document with document ID 'M2'
+        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
 
         DocumentReference attemptDocRef =
-            userDocRef.collection('attempt').doc('M1');
+            userDocRef.collection('attempt').doc('M2');
 
         // Update the fields in the 'score' document
         await scoreDocRef.update({

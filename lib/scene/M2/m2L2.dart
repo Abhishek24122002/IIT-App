@@ -14,7 +14,6 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'M2L1.dart';
 
-
 void main() {
   runApp(MaterialApp(
     home: M2L2(),
@@ -44,6 +43,10 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   List<Widget> levels = [M2L1(), M2L2(), M2L3(), M2L4()];
   int currentLevelIndex = 1;
 
+  final ScrollController _horizontalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
+
+
   @override
   void initState() {
     super.initState();
@@ -65,7 +68,6 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
         showHintButton = true;
       });
     });
-
   }
 
   void fetchGender() async {
@@ -90,36 +92,38 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   }
 
   void updateFirebaseDataM2L2() async {
-  try {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String userUid = getCurrentUserUid();
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
 
-    if (userUid.isNotEmpty) {
-      // Reference to the user's document
-      DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
 
-      // Reference to the 'score' document with document ID 'M2'
-      DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
+        // Reference to the 'score' document with document ID 'M2'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M2');
 
-      // Check if the 'M2' document exists
-      DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+        // Check if the 'M2' document exists
+        DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
 
-      if (!scoreDocSnapshot.exists) {
-        // If the document doesn't exist, create it with the initial score
-        await scoreDocRef.set({
-          'M2L2Point': M2L2Point,
-        });
-      } else {
-        // If the document exists, update the fields
-        await scoreDocRef.update({
-          'M2L2Point': M2L2Point,
-        });
+        if (!scoreDocSnapshot.exists) {
+          // If the document doesn't exist, create it with the initial score
+          await scoreDocRef.set({
+            'M2L2Point': M2L2Point,
+          });
+        } else {
+          // If the document exists, update the fields
+          await scoreDocRef.update({
+            'M2L2Point': M2L2Point,
+          });
+        }
       }
+    } catch (e) {
+      print('Error updating data: $e');
     }
-  } catch (e) {
-    print('Error updating data: $e');
   }
-}
 
   @override
   void dispose() {
@@ -132,231 +136,209 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Module 2 level 2'),
-        toolbarHeight: 30,
-      ),
-      backgroundColor: const Color.fromARGB(255, 110, 238, 117),
-      body: Stack(
-        children: [
-          // Road (Path)
-          Positioned.fill(
-            child: CustomPaint(
-              painter: RoadPainter(showHintPath),
+        appBar: AppBar(
+          title: Text('Module 2 level 2'),
+          toolbarHeight: 30,
+        ),
+        backgroundColor: const Color.fromARGB(255, 110, 238, 117),
+        body: Stack(
+          children: [
+            // Scrollable map
+            SingleChildScrollView(
+  controller: _horizontalController,
+  scrollDirection: Axis.horizontal,
+  child: SingleChildScrollView(
+    controller: _verticalController,
+    scrollDirection: Axis.vertical,
+    child: SizedBox(
+      width: 800,
+      height: 600,
+                  child: Stack(
+                    children: [
+                      // Map background
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: RoadPainter(showHintPath),
+                        ),
+                      ),
+                      // Static assets
+                      Positioned(
+                        left: 0,
+                        top: 25,
+                        child: Image.asset('assets/home.png',
+                            width: 80, height: 80),
+                      ),
+                      Positioned(
+                        left: 710,
+                        top: 30,
+                        child: Image.asset('assets/hospital.png',
+                            width: 70, height: 70),
+                      ),
+                      Positioned(
+                        left: 700,
+                        top: 100,
+                        child: Image.asset('assets/book.png',
+                            width: 100, height: 100),
+                      ),
+                      Positioned(
+                        top: 260,
+                        left: 700,
+                        child: Image.asset('assets/boy2_circle.png',
+                            width: 30, height: 30),
+                      ),
+
+                      // Hint overlays
+                      if (showHintPath) ...[
+                        Positioned(
+                          left: 262,
+                          top: 135,
+                          child: Image.asset('assets/lake.png',
+                              width: 130, height: 120),
+                        ),
+                        Positioned(
+                          top: 215,
+                          left: 720,
+                          child: Image.asset('assets/school.png',
+                              width: 80, height: 80),
+                        ),
+                        Positioned(
+                          right: 210,
+                          top: 85,
+                          child: Image.asset('assets/post.png',
+                              width: 70, height: 70),
+                        ),
+                      ],
+
+                      // Animated character
+                      AnimatedPositioned(
+                        left: xPosition,
+                        top: yPosition,
+                        duration: Duration(milliseconds: 200),
+                        child: Image.asset('assets/old1.png',
+                            width: 80, height: 70),
+                      ),
+
+                      // Hint button
+
+                      // Hint message
+                      if (showHintMessage)
+                        Positioned(
+                          top: 20,
+                          right: 20,
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            color: Color.fromARGB(245, 226, 224, 224),
+                            child: Text(
+                              'Take Right from Post Box',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
-          // House Image
-          Positioned(
-            left: 0,
-            top: 25,
-            child: Image.asset(
-              'assets/home.png', // Path to the house image
-              width: 80,
-              height: 80,
-            ),
-          ),
-          Positioned(
-            left:710,
-            top: 30,
-            child: Image.asset(
-              'assets/hospital.png', // Path to the hospital image
-              width: 70,
-              height: 70,
-            ),
-          ),
-          Positioned(
-            left:700,
-            top: 100,
-            child: Image.asset(
-              'assets/book.png', // Path to the hospital image
-              width: 100,
-              height: 100,
-            ),
-          ),
-          Positioned(
-            top: 260,
-            left: 700,
-            child: Image.asset(
-              'assets/boy2_circle.png', // Path to the school image
-              width: 30,
-              height: 30,
-            ),
-          ),
-          // Show additional images when hint is enabled
-          if (showHintPath) ...[
+
+            // Control buttons floating at bottom of screen
             Positioned(
-              left: 262,
-              top: 135,
-              child: Image.asset(
-                'assets/lake.png', // Path to the lake image
-                width: 130,
-                height: 120,
+              bottom: 65,
+              left: 10,
+              child: GestureDetector(
+                onLongPressStart: (_) => moveContinuously(moveLeft),
+                onLongPressEnd: (_) => stopMovement(),
+                child: FloatingActionButton(
+                  onPressed: moveLeft,
+                  child: Icon(Icons.arrow_left),
+                  backgroundColor: Colors.lightBlueAccent,
+                  elevation: 5,
+                ),
               ),
             ),
             Positioned(
-              top: 215,
-              left: 720,
-              child: Image.asset(
-                'assets/school.png', // Path to the school image
-                width: 80,
-                height: 80,
+              bottom: 120,
+              left: 65,
+              child: GestureDetector(
+                onLongPressStart: (_) => moveContinuously(moveUp),
+                onLongPressEnd: (_) => stopMovement(),
+                child: FloatingActionButton(
+                  onPressed: moveUp,
+                  child: Icon(Icons.arrow_upward),
+                  backgroundColor: Colors.lightBlueAccent,
+                  elevation: 5,
+                ),
               ),
             ),
             Positioned(
-              right: 210,
-              top: 85,
-              child: Image.asset(
-                'assets/post.png', // Path to the tree image
-                width: 70,
-                height: 70,
+              bottom: 65,
+              left: 120,
+              child: GestureDetector(
+                onLongPressStart: (_) => moveContinuously(moveRight),
+                onLongPressEnd: (_) => stopMovement(),
+                child: FloatingActionButton(
+                  onPressed: moveRight,
+                  child: Icon(Icons.arrow_right),
+                  backgroundColor: Colors.lightBlueAccent,
+                  elevation: 5,
+                ),
               ),
             ),
-            // Positioned(
-            //   right: 330,
-            //   top: 85,
-            //   child: Image.asset(
-            //     'assets/post.png', // Path to the tree image
-            //     width: 70,
-            //     height: 70,
-            //   ),
-            // ),
+            Positioned(
+              bottom: 10,
+              left: 65,
+              child: GestureDetector(
+                onLongPressStart: (_) => moveContinuously(moveDown),
+                onLongPressEnd: (_) => stopMovement(),
+                child: FloatingActionButton(
+                  onPressed: moveDown,
+                  child: Icon(Icons.arrow_downward),
+                  backgroundColor: Colors.lightBlueAccent,
+                  elevation: 5,
+                ),
+              ),
+            ),
+
+            if (showHintButton && !isAtSchool)
+              Positioned(
+                bottom: 20,
+                right: 100,
+                child: ElevatedButton(
+                  onPressed: showHint,
+                  child: Text('Show Hint'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
           ],
-          // Character
-          AnimatedPositioned(
-            left: xPosition,
-            top: yPosition,
-            duration: Duration(milliseconds: 200),
-            child: Image.asset(
-              'assets/old1.png', // Path to the character image
-              width: 80,
-              height: 70,
-            ),
-          ),
-          // Coordinates Display
-          // Positioned(
-          //   top: 20,
-          //   left: 20,
-          //   child: Container(
-          //     color: Colors.white.withOpacity(0.7),
-          //     padding: EdgeInsets.all(8),
-          //     child: Text(
-          //       'x: $xPosition, y: $yPosition',
-          //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          //     ),
-          //   ),
-          // ),
-          // Next Level Button (Show when at school)
-          // if (isAtSchool)
-          //   Positioned.fill(
-          //     child: Container(
-          //       color: Colors.black.withOpacity(0.5),
-          //       child: Center(
-          //         child: ElevatedButton(
-          //           onPressed: () {
-          //             navigateToNextLevel();
-          //             print('Next level action here');
-          //           },
-          //           child: Text('Next Level'),
-          //           style: ElevatedButton.styleFrom(
-          //             backgroundColor: Colors.amber,
-          //             padding:
-          //                 EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          //             textStyle: TextStyle(fontSize: 24),
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // Hint Button (Show when hint conditions are met)
-          if (showHintButton && !isAtSchool)
-            Positioned(
-              bottom: 20,
-              left: 460,
-              child: ElevatedButton(
-                onPressed: showHint,
-                child: Text('Show Hint'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
-          // Control Buttons
-          Positioned(
-            bottom: 65,
-            left: 10,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveLeft),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveLeft,
-                child: Icon(Icons.arrow_left),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 120,
-            left: 65,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveUp),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveUp,
-                child: Icon(Icons.arrow_upward),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 65,
-            left: 120,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveRight),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveRight,
-                child: Icon(Icons.arrow_right),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 10,
-            left: 65,
-            child: GestureDetector(
-              onLongPressStart: (_) => moveContinuously(moveDown),
-              onLongPressEnd: (_) => stopMovement(),
-              child: FloatingActionButton(
-                onPressed: moveDown,
-                child: Icon(Icons.arrow_downward),
-                backgroundColor: Colors.lightBlueAccent,
-                elevation: 5,
-              ),
-            ),
-          ),
-          // Hint Message (Show for 5 seconds when hint button is pressed)
-          if (showHintMessage)
-            Positioned(
-              top: 20,
-              right: 20,
-              child: Container(
-                padding: EdgeInsets.all(10),
-                color: Color.fromARGB(245, 226, 224, 224),
-                child: Text(
-                  'Take Right from Post Box',
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+        ));
   }
+
+  void ensureCharacterIsVisible() {
+  const double viewWidth = 400;  // screen width
+  const double viewHeight = 300; // screen height
+  const double charWidth = 80;
+  const double charHeight = 70;
+
+  double targetX = xPosition - viewWidth / 2 + charWidth / 2;
+  double targetY = yPosition - viewHeight / 2 + charHeight / 2;
+
+  _horizontalController.animateTo(
+    targetX.clamp(0, _horizontalController.position.maxScrollExtent),
+    duration: Duration(milliseconds: 300),
+    curve: Curves.easeOut,
+  );
+
+  _verticalController.animateTo(
+    targetY.clamp(0, _verticalController.position.maxScrollExtent),
+    duration: Duration(milliseconds: 300),
+    curve: Curves.easeOut,
+  );
+}
+
 
   void moveUp() {
     setState(() {
@@ -366,6 +348,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
         incrementMoveCount();
       }
     });
+    ensureCharacterIsVisible();
   }
 
   void moveDown() {
@@ -376,6 +359,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
         incrementMoveCount();
       }
     });
+    ensureCharacterIsVisible();
   }
 
   void moveLeft() {
@@ -386,6 +370,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
         incrementMoveCount();
       }
     });
+    ensureCharacterIsVisible();
   }
 
   void moveRight() {
@@ -396,6 +381,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
         incrementMoveCount();
       }
     });
+    ensureCharacterIsVisible();
   }
 
   void incrementMoveCount() {
@@ -413,14 +399,12 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
       setState(() {
         isAtSchool = true;
         M2L2Point = 1;
-        
       });
       // ScoreManager().updateUserScore('M2L2Point', 1); // Update Firebase score
-    showConversationDialog(); // Show next level dialog
+      showConversationDialog(); // Show next level dialog
     }
     updateFirebaseDataM2L2();
     // ScoreManager.updateUserScore(1);
-    
   }
 
   bool isOutOfBounds(double x, double y) {
@@ -446,6 +430,7 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
     setState(() {
       showHintPath = true;
       showHintMessage = true;
+      showHintButton = false;
     });
 
     // Hide hint message after 5 seconds
@@ -467,8 +452,8 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
   void stopMovement() {
     movementTimer?.cancel();
   }
-  
-   void navigateToNextLevel() {
+
+  void navigateToNextLevel() {
     if (currentLevelIndex < levels.length - 1) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeRight,
@@ -480,104 +465,106 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
       );
     }
   }
-  
- void showConversationDialog() {
-  List<Map<String, String>> conversation = [
-    {'speaker': 'Grandchild', 'message': 'Grandpa, I want Sweet!'},
-    {'speaker': 'Grandpa', 'message': 'Ok, we will first go to the Sweet shop and then home.'},
-  ];
 
-  int currentMessageIndex = 0;
+  void showConversationDialog() {
+    List<Map<String, String>> conversation = [
+      {'speaker': 'Grandchild', 'message': 'Grandpa, I want Sweet!'},
+      {
+        'speaker': 'Grandpa',
+        'message': 'Ok, we will first go to the Sweet shop and then home.'
+      },
+    ];
 
-  showDialog(
-    context: context,
-    barrierDismissible: false, // Prevent closing the dialog by tapping outside
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          if (currentMessageIndex == 0) {
-            Future.delayed(Duration(seconds: 1), () {
-              setState(() {
-                currentMessageIndex++;
+    int currentMessageIndex = 0;
+
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, // Prevent closing the dialog by tapping outside
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            if (currentMessageIndex == 0) {
+              Future.delayed(Duration(seconds: 1), () {
+                setState(() {
+                  currentMessageIndex++;
+                });
               });
-            });
-          }
+            }
 
-          return AlertDialog(
-            title: Text('Conversation'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Child's message and image (always shown initially)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[100],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(conversation[0]['message']!),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Image.asset(
-                      'assets/boy2_circle.png',
-                      width: 50,
-                      height: 50,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20), // Add some space between the two messages
-                // Grandpa's image (always shown initially) and text (shown after delay)
-                Row(
-                  children: [
-                    Image.asset(
-                      'assets/old1.png',
-                      width: 50,
-                      height: 50,
-                    ),
-                    SizedBox(width: 10),
-                    Flexible(
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          currentMessageIndex > 0 ? conversation[1]['message']! : '                      ',
+            return AlertDialog(
+              title: Text('Conversation'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Child's message and image (always shown initially)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(conversation[0]['message']!),
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 10),
+                      Image.asset(
+                        'assets/boy2_circle.png',
+                        width: 50,
+                        height: 50,
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                      height: 20), // Add some space between the two messages
+                  // Grandpa's image (always shown initially) and text (shown after delay)
+                  Row(
+                    children: [
+                      Image.asset(
+                        'assets/old1.png',
+                        width: 50,
+                        height: 50,
+                      ),
+                      SizedBox(width: 10),
+                      Flexible(
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.green[100],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            currentMessageIndex > 0
+                                ? conversation[1]['message']!
+                                : '                      ',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    navigateToNextLevel(); // Close the dialog
+                    setState(() {
+                      isAtSchool = true; // Show the Next Level button
+                    });
+                  },
+                  child: Text('OK'),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  navigateToNextLevel(); // Close the dialog
-                  setState(() {
-                    isAtSchool = true; // Show the Next Level button
-                  });
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-
-
-
-
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class RoadPainter extends CustomPainter {
@@ -602,13 +589,13 @@ class RoadPainter extends CustomPainter {
     path1.lineTo(400, 265);
     path1.lineTo(400, 165);
     path1.lineTo(500, 165);
-    path1.lineTo(500,80);
+    path1.lineTo(500, 80);
     path1.lineTo(640, 80);
     path1.lineTo(640, 275);
     path1.lineTo(730, 275);
 
     final path3 = Path();
-    path3.moveTo(650,80);
+    path3.moveTo(650, 80);
     path3.lineTo(730, 80);
 
     final path2 = Path();

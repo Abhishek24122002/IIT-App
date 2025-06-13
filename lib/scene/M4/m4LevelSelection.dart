@@ -17,17 +17,31 @@ class M4LevelSelectionScreen extends StatelessWidget {
   late Stream<DocumentSnapshot> userDataStream;
 
   M4LevelSelectionScreen({required this.module, required int userScore}) {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    User? user = _auth.currentUser;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? user = _auth.currentUser;
 
-    userDataStream = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user!.uid)
-        // .collection('attempt') //to access attempt collection only 1 is working now need to access both in future
-        .collection('score')
-        .doc('M4')
-        .snapshots();
-  }
+  final docRef = FirebaseFirestore.instance
+      .collection('users')
+      .doc(user!.uid)
+      .collection('score')
+      .doc('M4');
+
+  // Check and initialize the M4 score document if it doesn't exist
+  docRef.get().then((docSnapshot) {
+    if (!docSnapshot.exists) {
+      docRef.set({
+        'M4L1Point': 0,
+        'M4L2Point': 0,
+        'M4L3Point': 0,
+        'M4L4Point': 0,
+        'M4Trophy': 0,
+      });
+    }
+  });
+
+  userDataStream = docRef.snapshots();
+}
+
   String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;

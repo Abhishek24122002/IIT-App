@@ -1,4 +1,7 @@
 import 'package:alzymer/scene/M2/m2L1.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,6 +12,7 @@ class M1L4 extends StatefulWidget {
 
 class _M1L4State extends State<M1L4> {
   List<String> selectedTasks = [];
+  int M1L4Point = 0;
   List<String> allTasks = [
     'Fruit eaten',
     'Helped Grandchild with Season',
@@ -18,6 +22,7 @@ class _M1L4State extends State<M1L4> {
   @override
   void initState() {
     super.initState();
+    Firebase.initializeApp();
     allTasks.shuffle();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
@@ -26,6 +31,35 @@ class _M1L4State extends State<M1L4> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialPopup(); // Call the initialPopup function after the frame has been built
     });
+  }
+  String getCurrentUserUid() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+    return user?.uid ?? '';
+  }
+
+  void updateFirebaseDataM1L4() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      String userUid = getCurrentUserUid();
+
+      if (userUid.isNotEmpty) {
+        // Reference to the user's document
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userUid);
+
+        // Reference to the 'score' document with document ID 'M1'
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M1');
+        // Update the fields in the 'score' document
+        await scoreDocRef.update({
+          'M1L4Point': M1L4Point,
+        });
+       
+      }
+    } catch (e) {
+      print('Error updating data: $e');
+    }
   }
 
   void initialPopup() {
@@ -98,6 +132,8 @@ class _M1L4State extends State<M1L4> {
     setState(() {
       // Compare selectedTasks with correct sequence
       if (_checkSequence()) {
+        M1L4Point = 1;
+        updateFirebaseDataM1L4();
         _showCorrectDialog();
       } else {
         _showIncorrectDialog();

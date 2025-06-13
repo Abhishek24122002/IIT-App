@@ -2,7 +2,6 @@ import 'package:alzymer/scene/M1/m1L1.dart';
 import 'package:alzymer/scene/M1/m1L2.dart';
 import 'package:alzymer/scene/M1/m1L3.dart';
 import 'package:alzymer/scene/M1/m1L4.dart';
-import 'package:alzymer/scene/M1/m1L4.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

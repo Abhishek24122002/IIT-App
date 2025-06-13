@@ -15,17 +15,30 @@ class M3LevelSelectionScreen extends StatelessWidget {
   int m3Trophy = 0;
   late Stream<DocumentSnapshot> userDataStream;
 
-  M3LevelSelectionScreen({required this.module, required int userScore}) {
+   M3LevelSelectionScreen({required this.module, required int userScore}) {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     User? user = _auth.currentUser;
 
-    userDataStream = FirebaseFirestore.instance
+    final docRef = FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
-        // .collection('attempt') //to access attempt collection only 1 is working now need to access both in future
         .collection('score')
-        .doc('M3')
-        .snapshots();
+        .doc('M3');
+
+    // Check and create the document if it doesn't exist
+    docRef.get().then((docSnapshot) {
+      if (!docSnapshot.exists) {
+        docRef.set({
+          'M3L1Point': 0,
+          'M3L2Point': 0,
+          'M3L3Point': 0,
+          'M3L4Point': 0,
+          'M3Trophy': 0,
+        });
+      }
+    });
+
+    userDataStream = docRef.snapshots();
   }
   String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;

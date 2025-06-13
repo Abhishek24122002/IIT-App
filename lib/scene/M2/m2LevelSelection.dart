@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'm2L2.dart';
+
 
 class M2LevelSelectionScreen extends StatelessWidget {
   final int totalLevels = 4;
@@ -25,17 +25,32 @@ class M2LevelSelectionScreen extends StatelessWidget {
   // }
 
   M2LevelSelectionScreen({required this.module, required int userScore}) {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    User? user = _auth.currentUser;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? user = _auth.currentUser;
 
-    userDataStream = FirebaseFirestore.instance
+  if (user != null) {
+    DocumentReference docRef = FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
-        // .collection('attempt') //to access attempt collection only 1 is working now need to access both in future
+        .doc(user.uid)
         .collection('score')
-        .doc('M2')
-        .snapshots();
+        .doc('M2');
+
+    docRef.get().then((docSnapshot) {
+      if (!docSnapshot.exists) {
+        docRef.set({
+          'M2L1Point': 0,
+          'M2L2Point': 0,
+          'M2L3Point': 0,
+          'M2L4Point': 0,
+          'M2Trophy': 0,
+        });
+      }
+    });
+
+    userDataStream = docRef.snapshots();
   }
+}
+
   String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;

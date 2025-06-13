@@ -9,6 +9,47 @@ class HomePage extends StatelessWidget {
 
   const HomePage({Key? key, this.user}) : super(key: key);
 
+  // Fetch all trophy and point data
+  Future<Map<String, dynamic>> fetchAllScores(String uid) async {
+    final firestore = FirebaseFirestore.instance;
+    final modules = ['M1', 'M2', 'M3', 'M4'];
+    int totalTrophies = 0;
+int totalPoints = 0;
+
+for (String module in modules) {
+  final doc = await firestore
+      .collection('users')
+      .doc(uid)
+      .collection('score')
+      .doc(module)
+      .get();
+
+  final data = doc.data();
+  if (data != null) {
+    // Add trophy after ensuring it's casted to int
+    final trophy = data['${module}Trophy'];
+    if (trophy is num) {
+      totalTrophies += trophy.toInt();
+    }
+
+    // Sum all MxLxPoint fields safely
+    data.forEach((key, value) {
+      if (key.startsWith('${module}L') && key.endsWith('Point')) {
+        if (value is num) {
+          totalPoints += value.toInt();
+        }
+      }
+    });
+  }
+}
+
+
+    return {
+      'totalTrophies': totalTrophies,
+      'totalPoints': totalPoints,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,52 +76,37 @@ class HomePage extends StatelessWidget {
             .collection('users')
             .doc(user!.uid)
             .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+        builder: (context, userSnapshot) {
+          if (userSnapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+          if (userSnapshot.hasError) {
+            return Center(child: Text('Error: ${userSnapshot.error}'));
           }
 
-          var userData = snapshot.data?.data() as Map<String, dynamic>?;
+          var userData = userSnapshot.data?.data() as Map<String, dynamic>?;
           if (userData == null) {
             return Center(child: Text('No user data available'));
           }
+
           String photoURL = userData['photoURL'] ?? '';
-          int userScore = userData['score'] ?? 0;
           String username = userData['name'] ?? 'User';
           String capitalizedUsername =
               '${username[0].toUpperCase()}${username.substring(1)}';
 
-          return StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .doc(user!.uid)
-                .collection('score')
-                .doc('M1')
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+          return FutureBuilder<Map<String, dynamic>>(
+            future: fetchAllScores(user!.uid),
+            builder: (context, scoreSnapshot) {
+              if (scoreSnapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+              if (scoreSnapshot.hasError) {
+                return Center(child: Text('Error: ${scoreSnapshot.error}'));
               }
 
-              var data = snapshot.data?.data() as Map<String, dynamic>?;
-              if (data == null) {
-                return Center(child: Text('No score data available'));
-              }
-
-              int M1L1Point = data['M1L1Point'] ?? 0;
-              int M1L2Point = data['M1L2Point'] ?? 0;
-              int M1L3Point = data['M1L3Point'] ?? 0;
-              int M1L4Point = data['M1L4Point'] ?? 0;
-              // int M1L5Point = data['M1L5Point'] ?? 0;
-
-              int TotalPoints =
-                  M1L1Point + M1L2Point + M1L3Point + M1L4Point;
+              final scoreData = scoreSnapshot.data!;
+              final totalTrophies = scoreData['totalTrophies'];
+              final totalPoints = scoreData['totalPoints'];
 
               return Stack(
                 children: [
@@ -106,7 +132,7 @@ class HomePage extends StatelessWidget {
                           ),
                           SizedBox(height: 20),
                           Text(
-                            'Welcome, ${capitalizedUsername ?? 'User'}',
+                            'Welcome, $capitalizedUsername',
                             style: TextStyle(
                                 fontSize: 24, fontWeight: FontWeight.bold),
                           ),
@@ -114,83 +140,11 @@ class HomePage extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 150,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 5,
-                                      offset: Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Column(
-                                      children: [
-                                        Icon(Icons.emoji_events,
-                                            size: 50, color: Colors.amber),
-                                        SizedBox(height: 10),
-                                        SizedBox(height: 5),
-                                        Text(
-                                          '$userScore',
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              buildCard(Icons.emoji_events,
+                                  '$totalTrophies', Colors.amber),
                               SizedBox(width: 20),
-                              Container(
-                                width: 150,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 5,
-                                      offset: Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Column(
-                                      children: [
-                                        Icon(Icons.star,
-                                            size: 50, color: Colors.yellow),
-                                        SizedBox(height: 10),
-                                        SizedBox(height: 5),
-                                        Text(
-                                          '$TotalPoints',
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              buildCard(Icons.star, '$totalPoints',
+                                  Colors.yellow),
                             ],
                           ),
                           SizedBox(height: 30),
@@ -199,7 +153,8 @@ class HomePage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ModuleSelectionScreen(),
+                                  builder: (context) =>
+                                      ModuleSelectionScreen(),
                                 ),
                               );
                             },
@@ -217,6 +172,44 @@ class HomePage extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  // Helper card widget
+  Widget buildCard(IconData icon, String value, Color color) {
+    return Container(
+      width: 150,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Icon(icon, size: 50, color: color),
+              SizedBox(height: 10),
+              Text(
+                value,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

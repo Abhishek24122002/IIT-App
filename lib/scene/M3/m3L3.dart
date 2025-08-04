@@ -138,8 +138,12 @@ class _M3L3State extends State<M3L3> {
   // Generate random positions for the vegetables in each basket
   void _generateVegetablePositions() {
     Random random = Random();
-    double basketSize = 180.0; // Increased basket size
-    double vegetableSize = 50.0; // Increased vegetable size
+
+    double screenWidth = MediaQuery.of(context).size.width;
+  double basketSize = screenWidth / 4 * 0.72; // match container size in _buildBasket
+  double vegetableSize = basketSize * 0.28; // scale relative to basket
+    // double basketSize = 180.0; // Increased basket size
+    // double vegetableSize = 50.0; // Increased vegetable size
 
     for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
       List<Offset> usedPositions = []; // Track used positions to avoid overlap
@@ -217,7 +221,7 @@ class _M3L3State extends State<M3L3> {
               'Find and collect all the potatoes!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             _buildBasketRow(),
           ],
         ),
@@ -225,30 +229,51 @@ class _M3L3State extends State<M3L3> {
     );
   }
 
+  // Widget _buildBasketRow() {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //     children: [
+  //       _buildBasket(0),
+  //       _buildBasket(1),
+  //       _buildBasket(2),
+  //     ],
+  //   );
+  // }
+
   Widget _buildBasketRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Row(
       children: [
+        SizedBox(width: 16), // Padding from left
         _buildBasket(0),
+        SizedBox(width: 16),
         _buildBasket(1),
+        SizedBox(width: 16),
         _buildBasket(2),
+        SizedBox(width: 16), // Padding from right
       ],
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildBasket(int basketIndex) {
+    double basketWidth = MediaQuery.of(context).size.width / 4;
+double basketHeight = basketWidth;
     return Stack(
       alignment: Alignment.center,
       children: [
         Image.asset(
           'assets/basket.png',
-          width: 250,
-          height: 250,
+           width: basketWidth,
+  height: basketHeight,
           fit: BoxFit.cover,
         ),
         Container(
-          width: 180,
-          height: 180,
+           width: basketWidth * 0.72, // for inner container
+  height: basketHeight * 0.72,
           child: _buildVegetableStack(basketIndex),
         ),
       ],
@@ -257,6 +282,9 @@ class _M3L3State extends State<M3L3> {
 
   Widget _buildVegetableStack(int basketIndex) {
     List<Widget> vegetableWidgets = [];
+    double screenWidth = MediaQuery.of(context).size.width;
+double basketSize = screenWidth / 4 * 0.72;
+double vegetableSize = basketSize * 0.28;
 
     for (int i = 0; i < baskets[basketIndex].length; i++) {
       String vegetable = baskets[basketIndex][i];
@@ -284,8 +312,8 @@ class _M3L3State extends State<M3L3> {
               },
               child: Image.asset(
                 'assets/$vegetable.png',
-                height: 50, // Increased size
-                width: 50,
+               height: vegetableSize,
+  width: vegetableSize,
               ),
             ),
           ),
@@ -322,7 +350,7 @@ Widget _buildCollectedPotatoesCounter() {
           // Actual image
           Image.asset(
             'assets/Potato.png',
-            height: 60, // Size of the image
+            height: 50, // Size of the image
           ),
         ],
       ),
@@ -344,7 +372,7 @@ Widget _buildCollectedPotatoesCounter() {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Potato.png', height: 60),
+              Image.asset('assets/Potato.png', height: 50),
             ],
           ),
         ),

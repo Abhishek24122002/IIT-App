@@ -127,46 +127,46 @@ class _M3L3_3State extends State<M3L3_3> {
 
   // Generate random positions for the fruits in each basket
   void _generateFruitPositions() {
-    Random random = Random();
-    double basketSize = 180.0; // Assuming the basket container is 180x180
-    double fruitSize = 50.0; // Assuming each fruit image is 50x50
+  Random random = Random();
 
-    for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
-      List<Offset> usedPositions = []; // Track used positions to avoid overlap
+  double screenWidth = MediaQuery.of(context).size.width;
+  double basketSize = screenWidth / 4 * 0.72; // match container size
+  double fruitSize = basketSize * 0.28;
 
-      for (int i = 0; i < baskets[basketIndex].length; i++) {
-        Offset position = Offset.zero; // Initialize with a default value
-        bool positionFound = false;
+  for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
+    List<Offset> usedPositions = [];
 
-        // Attempt to place the fruit without overlap
-        for (int attempt = 0; attempt < 10; attempt++) {
-          double randomTop = random.nextDouble() * (basketSize - fruitSize);
-          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
-          position = Offset(randomLeft, randomTop);
+    for (int i = 0; i < baskets[basketIndex].length; i++) {
+      Offset position = Offset.zero;
+      bool positionFound = false;
 
-          // Check for overlap
-          bool overlaps = usedPositions.any((usedPosition) {
-            return (position - usedPosition).distance < fruitSize;
-          });
+      for (int attempt = 0; attempt < 10; attempt++) {
+        double randomTop = random.nextDouble() * (basketSize - fruitSize);
+        double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+        position = Offset(randomLeft, randomTop);
 
-          if (!overlaps) {
-            positionFound = true;
-            usedPositions.add(position);
-            break;
-          }
+        bool overlaps = usedPositions.any((usedPosition) {
+          return (position - usedPosition).distance < fruitSize;
+        });
+
+        if (!overlaps) {
+          positionFound = true;
+          usedPositions.add(position);
+          break;
         }
-
-        // If a position without overlap wasn't found, allow overlap
-        if (!positionFound) {
-          double randomTop = random.nextDouble() * (basketSize - fruitSize);
-          double randomLeft = random.nextDouble() * (basketSize - fruitSize);
-          position = Offset(randomLeft, randomTop);
-        }
-
-        fruitPositions[basketIndex].add(position);
       }
+
+      if (!positionFound) {
+        double randomTop = random.nextDouble() * (basketSize - fruitSize);
+        double randomLeft = random.nextDouble() * (basketSize - fruitSize);
+        position = Offset(randomLeft, randomTop);
+      }
+
+      fruitPositions[basketIndex].add(position);
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -215,78 +215,88 @@ class _M3L3_3State extends State<M3L3_3> {
   }
 
   Widget _buildBasketRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Row(
       children: [
+        SizedBox(width: 16),
         _buildBasket(0),
+        SizedBox(width: 16),
         _buildBasket(1),
+        SizedBox(width: 16),
         _buildBasket(2),
+        SizedBox(width: 16),
       ],
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildBasket(int basketIndex) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Image.asset(
-          'assets/basket.png',
-          width: 250,
-          height: 250,
-          fit: BoxFit.cover,
-        ),
-        Container(
-          width:
-              180, // Ensure the Container has a fixed size matching the basket
-          height: 180, // Same size as the basket image
-          child: _buildFruitStack(basketIndex),
-        ),
-      ],
-    );
-  }
+  double screenWidth = MediaQuery.of(context).size.width;
+  double basketSize = screenWidth / 4;
+  double innerContainerSize = basketSize * 0.72;
 
-  Widget _buildFruitStack(int basketIndex) {
-    List<Widget> fruitWidgets = [];
+  return Stack(
+    alignment: Alignment.center,
+    children: [
+      Image.asset(
+        'assets/basket.png',
+        width: basketSize,
+        height: basketSize,
+        fit: BoxFit.cover,
+      ),
+      Container(
+        width: innerContainerSize,
+        height: innerContainerSize,
+        child: _buildFruitStack(basketIndex, innerContainerSize),
+      ),
+    ],
+  );
+}
 
-    for (int i = 0; i < baskets[basketIndex].length; i++) {
-      String fruit = baskets[basketIndex][i];
-      Offset position = fruitPositions[basketIndex][i];
 
-      if (fruit.isNotEmpty) {
-        fruitWidgets.add(
-          Positioned(
-            top: position.dy,
-            left: position.dx,
-            child: GestureDetector(
-              onTap: () {
-                if (fruit == 'Apple') {
-                  setState(() {
-                    collectedApples++;
-                    baskets[basketIndex][i] = ''; // Remove the apple
-                    if (collectedApples == 10) {
-                      // Example: 10 apples in total
-                      M3L3_3Point = 1; // Example: 10 oranges in total
-                      showLevelCompleteDialog();
-                      updateFirebaseDataM3L3_3();
-                    }
-                  });
-                }
-              },
-              child: Image.asset(
-                'assets/$fruit.png',
-                height: 50,
-                width: 50,
-              ),
+  Widget _buildFruitStack(int basketIndex, double basketSize) {
+  double fruitSize = basketSize * 0.28;
+  List<Widget> fruitWidgets = [];
+
+  for (int i = 0; i < baskets[basketIndex].length; i++) {
+    String fruit = baskets[basketIndex][i];
+    Offset position = fruitPositions[basketIndex][i];
+
+    if (fruit.isNotEmpty) {
+      fruitWidgets.add(
+        Positioned(
+          top: position.dy,
+          left: position.dx,
+          child: GestureDetector(
+            onTap: () {
+              if (fruit == 'Apple') {
+                setState(() {
+                  collectedApples++;
+                  baskets[basketIndex][i] = '';
+                  if (collectedApples == 10) {
+                    M3L3_3Point = 1;
+                    showLevelCompleteDialog();
+                    updateFirebaseDataM3L3_3();
+                  }
+                });
+              }
+            },
+            child: Image.asset(
+              'assets/$fruit.png',
+              height: fruitSize,
+              width: fruitSize,
             ),
           ),
-        );
-      }
+        ),
+      );
     }
-
-    return Stack(
-      children: fruitWidgets,
-    );
   }
+
+  return Stack(children: fruitWidgets);
+}
+
 
   Widget _buildCollectedApplesCounter() {
     return Row(

@@ -37,6 +37,10 @@ class _M2L3State extends State<M2L3> {
   int M2L3Point = 0;
   List<Widget> levels = [M2L1(), M2L2(), M2L3(), M2L4()];
   int currentLevelIndex = 2;
+  late ScrollController _horizontalController;
+  late ScrollController _verticalController;
+  bool dragging = false;
+  ScrollPhysics scrollPhysics = const AlwaysScrollableScrollPhysics();
 
   @override
   void initState() {
@@ -47,6 +51,8 @@ class _M2L3State extends State<M2L3> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    _horizontalController = ScrollController();
+    _verticalController = ScrollController();
     // Start a timer to show the hint button after 10 seconds
     Timer(Duration(seconds: 10), () {
       setState(() {
@@ -67,15 +73,70 @@ class _M2L3State extends State<M2L3> {
     if (isOnPath(newPosition)) {
       setState(() {
         characterPosition = newPosition;
+
         if ((characterPosition - icecreamPosition).distance <= 10 &&
             !iceCreamReached) {
           iceCreamReached = true;
           showIceCreamPopup();
-        } // Check if the character is close enough to the house and has bought ice cream
+        }
+
         if ((characterPosition - housePosition).distance <= 30 &&
             iceCreamReached) {
           M2L3Point = 1;
           updateFirebaseDataM2L3();
+        }
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        const edgePadding = 300.0;
+
+        final screenHeight = MediaQuery.of(context).size.height;
+        final screenWidth = MediaQuery.of(context).size.width;
+
+        final currentVerticalOffset = _verticalController.offset;
+        final currentHorizontalOffset = _horizontalController.offset;
+
+        final visibleTop = currentVerticalOffset;
+        final visibleBottom = visibleTop + screenHeight;
+
+        final visibleLeft = currentHorizontalOffset;
+        final visibleRight = visibleLeft + screenWidth;
+
+        double? targetVerticalOffset;
+        double? targetHorizontalOffset;
+
+        if (characterPosition.dy < visibleTop + edgePadding) {
+          targetVerticalOffset = (characterPosition.dy - edgePadding)
+              .clamp(0.0, _verticalController.position.maxScrollExtent);
+        } else if (characterPosition.dy > visibleBottom - edgePadding) {
+          targetVerticalOffset =
+              (characterPosition.dy - screenHeight + edgePadding)
+                  .clamp(0.0, _verticalController.position.maxScrollExtent);
+        }
+
+        if (characterPosition.dx < visibleLeft + edgePadding) {
+          targetHorizontalOffset = (characterPosition.dx - edgePadding)
+              .clamp(0.0, _horizontalController.position.maxScrollExtent);
+        } else if (characterPosition.dx > visibleRight - edgePadding) {
+          targetHorizontalOffset =
+              (characterPosition.dx - screenWidth + edgePadding)
+                  .clamp(0.0, _horizontalController.position.maxScrollExtent);
+        }
+
+        if (targetVerticalOffset != null) {
+          _verticalController.animateTo(
+            targetVerticalOffset,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+
+        if (targetHorizontalOffset != null) {
+          _horizontalController.animateTo(
+            targetHorizontalOffset,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
         }
       });
     }
@@ -87,7 +148,7 @@ class _M2L3State extends State<M2L3> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Thank You!'),
-          content: Text('Thank you grandpa for ice cream! Now we can go home'),
+          content: Text('Thank you grandpa for Sweets! Now we can go home'),
           actions: [
             TextButton(
               child: Text('OK'),
@@ -210,6 +271,32 @@ class _M2L3State extends State<M2L3> {
     return user?.uid ?? '';
   }
 
+  void moveCharacter(Offset delta) {
+    Offset newPosition = characterPosition + delta;
+
+    if (isOnPath(newPosition)) {
+      setState(() {
+        characterPosition = newPosition;
+
+        if ((characterPosition - icecreamPosition).distance <= 15 &&
+            !iceCreamReached) {
+          iceCreamReached = true;
+          showIceCreamPopup();
+        }
+
+        if ((characterPosition - housePosition).distance <= 30 &&
+            iceCreamReached) {
+          M2L3Point = 1;
+          updateFirebaseDataM2L3();
+        }
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToKeepCharacterVisible();
+      });
+    }
+  }
+
   void updateFirebaseDataM2L3() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -246,174 +333,321 @@ class _M2L3State extends State<M2L3> {
 
   @override
   void dispose() {
+    _horizontalController.dispose();
+    _verticalController.dispose();
     super.dispose();
+  }
+
+  void scrollToKeepCharacterVisible() {
+    const double margin = 50.0; // How close to edge before scrolling
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final currentHorizontalOffset = _horizontalController.offset;
+    final currentVerticalOffset = _verticalController.offset;
+
+    final visibleLeft = currentHorizontalOffset;
+    final visibleRight = visibleLeft + screenWidth;
+    final visibleTop = currentVerticalOffset;
+    final visibleBottom = visibleTop + screenHeight;
+
+    double? targetHorizontalOffset;
+    double? targetVerticalOffset;
+
+    // Check horizontal position and adjust scroll only if character moves near edges
+    if (characterPosition.dx < visibleLeft + margin) {
+      // Move scroll left just enough to keep margin
+      targetHorizontalOffset = (characterPosition.dx - margin)
+          .clamp(0.0, _horizontalController.position.maxScrollExtent);
+    } else if (characterPosition.dx > visibleRight - margin) {
+      // Move scroll right just enough to keep margin
+      targetHorizontalOffset = (characterPosition.dx - screenWidth + margin)
+          .clamp(0.0, _horizontalController.position.maxScrollExtent);
+    }
+
+    // Check vertical position and adjust scroll only if character moves near edges
+    if (characterPosition.dy < visibleTop + margin) {
+      // Scroll up gently
+      targetVerticalOffset = (characterPosition.dy - margin)
+          .clamp(0.0, _verticalController.position.maxScrollExtent);
+    } else if (characterPosition.dy > visibleBottom - margin) {
+      // Scroll down gently
+      targetVerticalOffset = (characterPosition.dy - screenHeight + margin)
+          .clamp(0.0, _verticalController.position.maxScrollExtent);
+    }
+
+    // Animate only if needed and small distance to avoid big jumps
+    if (targetHorizontalOffset != null) {
+      final double diff =
+          (targetHorizontalOffset - currentHorizontalOffset).abs();
+      if (diff > 1) {
+        // animate only if significant scroll needed
+        _horizontalController.animateTo(
+          targetHorizontalOffset,
+          duration: Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+        );
+      }
+    }
+
+    if (targetVerticalOffset != null) {
+      final double diff = (targetVerticalOffset - currentVerticalOffset).abs();
+      if (diff > 1) {
+        _verticalController.animateTo(
+          targetVerticalOffset,
+          duration: Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: const Color.fromARGB(255, 110, 238, 117),
-        child: Stack(
-          children: [
-            CustomPaint(
-              size: Size(double.infinity, double.infinity),
-              painter: PathPainter(),
-            ),
-            Positioned(
-              left: initialPosition.dx - 25,
-              top: initialPosition.dy - 18,
-              child: Image.asset('assets/school.png', width: 50, height: 50),
-            ),
-            Positioned(
-              left: characterPosition.dx - 10,
-              top: characterPosition.dy - 10,
-              child:
-                  Image.asset('assets/old_circle.png', width: 25, height: 25),
-            ),
-            Positioned(
-              left: housePosition.dx - 27,
-              top: housePosition.dy - 40,
-              child: Image.asset('assets/home.png', width: 50, height: 50),
-            ),
-            Positioned(
-              left: icecreamPosition.dx - 27,
-              top: icecreamPosition.dy - 40,
-              child: Image.asset('assets/Sweets_Store.png', width: 60, height: 60),
-            ),
-            if (lakeVisible)
-              Positioned(
-                left: 455,
-                top: 130,
-                child: Image.asset('assets/lake.png', width: 120, height: 120),
+      body: Stack(
+        children: [
+          // Scrollable game area
+          SingleChildScrollView(
+            controller: _verticalController,
+            scrollDirection: Axis.vertical,
+            physics: NeverScrollableScrollPhysics(),
+            child: SingleChildScrollView(
+              controller: _horizontalController,
+              scrollDirection: Axis.horizontal,
+              physics: NeverScrollableScrollPhysics(),
+              child: Container(
+                width: 1200,
+                height: 800,
+                color: Color.fromARGB(255, 110, 238, 117),
+                child: Stack(
+                  children: [
+                    CustomPaint(
+                      size: Size(1200, 800),
+                      painter: PathPainter(),
+                    ),
+                    Positioned(
+                      left: initialPosition.dx - 25,
+                      top: initialPosition.dy - 18,
+                      child: Image.asset('assets/school.png',
+                          width: 50, height: 50),
+                    ),
+                    Positioned(
+                      left: housePosition.dx - 27,
+                      top: housePosition.dy - 40,
+                      child:
+                          Image.asset('assets/home.png', width: 50, height: 50),
+                    ),
+                    Positioned(
+                      left: icecreamPosition.dx - 27,
+                      top: icecreamPosition.dy - 40,
+                      child: Image.asset('assets/Sweets_Store.png',
+                          width: 60, height: 60),
+                    ),
+                    if (lakeVisible)
+                      Positioned(
+                        left: 455,
+                        top: 130,
+                        child: Image.asset('assets/lake.png',
+                            width: 120, height: 120),
+                      ),
+                    Positioned(
+                      left: 390 - 25,
+                      top: 350 - 40,
+                      child: Image.asset('assets/bakery.png',
+                          width: 70, height: 70),
+                    ),
+                    Positioned(
+                      left: 630 - 25,
+                      top: 350 - 28,
+                      child:
+                          Image.asset('assets/shop.png', width: 50, height: 50),
+                    ),
+                    Positioned(
+                      left: characterPosition.dx - 12,
+                      top: characterPosition.dy - 12,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onPanStart: (details) {
+                          final localTouch = details.localPosition;
+                          if ((localTouch - Offset(12, 12)).distance <= 30) {
+                            // Start dragging and disable scroll
+                            setState(() {
+                              dragging = true;
+                            });
+                          }
+                        },
+                        onPanUpdate: (details) {
+                          if (!dragging) return;
+
+                          Offset newPosition =
+                              characterPosition + details.delta;
+
+                          if (isOnPath(newPosition)) {
+                            setState(() {
+                              characterPosition = newPosition;
+
+                              if ((characterPosition - icecreamPosition)
+                                          .distance <=
+                                      10 &&
+                                  !iceCreamReached) {
+                                iceCreamReached = true;
+                                showIceCreamPopup();
+                              }
+
+                              if ((characterPosition - housePosition)
+                                          .distance <=
+                                      30 &&
+                                  iceCreamReached) {
+                                M2L3Point = 1;
+                                updateFirebaseDataM2L3();
+                              }
+                            });
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              scrollToKeepCharacterVisible();
+                            });
+                          }
+                        },
+                        onPanEnd: (_) {
+                          // Stop dragging and re-enable scroll
+                          setState(() {
+                            dragging = false;
+                          });
+                        },
+                        child: Image.asset(
+                          'assets/old_circle.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            Positioned(
-              left: 390 - 25,
-              top: 350 - 40,
-              child: Image.asset('assets/bakery.png', width: 70, height: 70),
             ),
-            Positioned(
-              left: 630 - 25,
-              top: 350 - 28,
-              child: Image.asset('assets/shop.png', width: 50, height: 50),
-            ),
+          ),
+
+          // Overlay widgets outside scroll area
+          // Align(
+          //   alignment: Alignment.bottomRight,
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(15.0),
+          //     child: Joystick(
+          //       base: JoystickBase(size: 160, withBorderCircle: false),
+          //       mode: JoystickMode.all,
+          //       listener: (details) {
+          //         onJoystickUpdate(details.x, details.y);
+          //       },
+          //     ),
+          //   ),
+          // ),
+
+//
+
+          if (showHintButton)
             Align(
-              alignment: Alignment.bottomRight,
+              alignment: Alignment.bottomLeft,
               child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Joystick(
-                  base: JoystickBase(
-                    size: 160,
-                    withBorderCircle: false,
-                  ),
-                  mode: JoystickMode.all,
-                  listener: (details) {
-                    onJoystickUpdate(details.x, details.y);
-                  },
-                ),
-              ),
-            ),
-            if (showHintButton)
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(100, 15, 15, 30),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber, // Button background color
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(18.0), // Rounded edges
-                      ),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12), // Padding inside the button
+                padding: const EdgeInsets.fromLTRB(100, 15, 15, 30),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
                     ),
-                    onPressed: showHint,
-                    child: Text(
-                      'Show Hint',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
-                ),
-              ),
-            if (showHintMessage)
-              Positioned(
-                top: 40,
-                right: 20,
-                child: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10,
-                        spreadRadius: 1,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
+                  onPressed: showHint,
                   child: Text(
-                    'Take Left From The Lake For Sweet Shop',
+                    'Show Hint',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-            if ((characterPosition - housePosition).distance <= 30)
-            
-              Align(
-                alignment: Alignment.center,
-                child: Container(
-                  // color: Colors.white,
-                  padding: const EdgeInsets.all(16.0),
-                  child: iceCreamReached
-                      ? ElevatedButton(
-                          onPressed: () {
-                            M2L3Point = 1;
-                            updateFirebaseDataM2L3();
-                            
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => M2L4()),
-                            );
-                          },
-                          child: Text('Next Module'),
-                          
-                        )
-                      : Container(
-                          padding: const EdgeInsets.all(20.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white, // White background
-                            borderRadius:
-                                BorderRadius.circular(12.0), // Rounded corners
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withOpacity(0.2), // Shadow color
-                                blurRadius: 10.0, // Spread of the shadow
-                                offset: Offset(0, 5), // Position of the shadow
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            'Buy Sweet first',
-                            style: TextStyle(
-                              fontSize: 20.0, // Slightly larger text
-                              fontWeight: FontWeight.bold, // Bold text
-                              color: Colors
-                                  .redAccent, // Attractive color for the text
-                            ),
-                          ),
-                        ),
+            ),
+
+          if (showHintMessage)
+            Positioned(
+              top: 40,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  'Take Left From The Lake For Sweet Shop',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
-          ],
-        ),
+            ),
+
+          if ((characterPosition - housePosition).distance <= 30)
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                child: iceCreamReached
+                    ? ElevatedButton(
+                        onPressed: () {
+                          M2L3Point = 1;
+                          updateFirebaseDataM2L3();
+
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => M2L4()),
+                          );
+                        },
+                        child: Text('Next Module'),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(20.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10.0,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'Buy Sweet first',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  Timer? _movementTimer;
+
+  void stopMoving() {
+    _movementTimer?.cancel();
+  }
+
+  void startMoving(Offset direction) {
+    _movementTimer = Timer.periodic(Duration(milliseconds: 100), (_) {
+      moveCharacter(direction);
+    });
   }
 }
 

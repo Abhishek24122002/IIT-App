@@ -24,46 +24,13 @@ class _M3L3_2State extends State<M3L3_2> {
   int collectedOranges = 0;
   bool showPopup = true;
   int M3L3_2Point = 0;
-  List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
+  List<Widget> levels = [M3L1(), M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(), M3L4(), M3L4_2()];
   int currentLevelIndex = 4;
 
   List<List<String>> baskets = [
-    [
-      'Apple',
-      'Apple',
-      'Apple',
-      'Apple',
-      "Apple",
-      'Apple',
-      'Apple',
-      'Orange',
-      'Orange',
-      'Orange'
-    ],
-    [
-      'Mango',
-      'Mango',
-      'Mango',
-      'Mango',
-      'Orange',
-      'Orange',
-      'Orange',
-      'Orange',
-      'Orange',
-      'Orange'
-    ],
-    [
-      'Tomato',
-      'Tomato',
-      'Tomato',
-      'Tomato',
-      'Tomato',
-      'Tomato',
-      'Tomato',
-      'Tomato',
-      'Tomato',
-      'Orange'
-    ],
+    ['Apple', 'Apple', 'Apple', 'Apple', "Apple", 'Apple', 'Apple', 'Orange', 'Orange', 'Orange'],
+    ['Mango', 'Mango', 'Mango', 'Mango', 'Orange', 'Orange', 'Orange', 'Orange', 'Orange', 'Orange'],
+    ['Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Tomato', 'Orange'],
   ];
 
   List<List<Offset>> fruitPositions = [[], [], []];
@@ -71,12 +38,10 @@ class _M3L3_2State extends State<M3L3_2> {
   @override
   void initState() {
     super.initState();
-    // Force landscape mode
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    // Generate random positions only once when the screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _generateFruitPositions();
       showInstructionDialog();
@@ -95,27 +60,14 @@ class _M3L3_2State extends State<M3L3_2> {
       String userUid = getCurrentUserUid();
 
       if (userUid.isNotEmpty) {
-        // Reference to the user's document
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userUid);
-
-        // Reference to the 'score' document with document ID 'M3'
-        DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M3');
-
-        // Check if the 'M2' document exists
+        DocumentReference userDocRef = firestore.collection('users').doc(userUid);
+        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M3');
         DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
 
         if (!scoreDocSnapshot.exists) {
-          // If the document doesn't exist, create it with the initial score
-          await scoreDocRef.set({
-            'M3L3_2Point': M3L3_2Point,
-          });
+          await scoreDocRef.set({'M3L3_2Point': M3L3_2Point});
         } else {
-          // If the document exists, update the fields
-          await scoreDocRef.update({
-            'M3L3_2Point': M3L3_2Point,
-          });
+          await scoreDocRef.update({'M3L3_2Point': M3L3_2Point});
         }
       }
     } catch (e) {
@@ -123,34 +75,26 @@ class _M3L3_2State extends State<M3L3_2> {
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  // Generate random positions for the fruits in each basket
   void _generateFruitPositions() {
     Random random = Random();
-    double basketSize = 180.0; // Assuming the basket container is 180x180
-    double fruitSize = 50.0; // Assuming each fruit image is 50x50
+    double screenWidth = MediaQuery.of(context).size.width;
+    double basketSize = screenWidth / 4 * 0.72;
+    double fruitSize = basketSize * 0.28;
 
     for (int basketIndex = 0; basketIndex < baskets.length; basketIndex++) {
-      List<Offset> usedPositions = []; // Track used positions to avoid overlap
+      List<Offset> usedPositions = [];
 
       for (int i = 0; i < baskets[basketIndex].length; i++) {
-        Offset position = Offset.zero; // Initialize with a default value
+        Offset position = Offset.zero;
         bool positionFound = false;
 
-        // Attempt to place the fruit without overlap
         for (int attempt = 0; attempt < 10; attempt++) {
           double randomTop = random.nextDouble() * (basketSize - fruitSize);
           double randomLeft = random.nextDouble() * (basketSize - fruitSize);
           position = Offset(randomLeft, randomTop);
 
-          // Check for overlap
-          bool overlaps = usedPositions.any((usedPosition) {
-            return (position - usedPosition).distance < fruitSize;
-          });
+          bool overlaps = usedPositions.any((usedPosition) =>
+              (position - usedPosition).distance < fruitSize);
 
           if (!overlaps) {
             positionFound = true;
@@ -159,7 +103,6 @@ class _M3L3_2State extends State<M3L3_2> {
           }
         }
 
-        // If a position without overlap wasn't found, allow overlap
         if (!positionFound) {
           double randomTop = random.nextDouble() * (basketSize - fruitSize);
           double randomLeft = random.nextDouble() * (basketSize - fruitSize);
@@ -176,24 +119,18 @@ class _M3L3_2State extends State<M3L3_2> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Find the Oranges - Level 4'),
-          _buildCollectedOrangesCounter(),
-        ],
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Find the Oranges - Level 4'),
+            _buildCollectedOrangesCounter(),
+          ],
+        ),
       ),
-    ),
       body: Stack(
         children: [
-          if (!showPopup)
-            _buildGameScreen(), // Show game content only if popup is not displayed
-          if (showPopup) _buildPopupMessage(), // Show popup message if needed
-          // Positioned(
-          //   top: 20,
-          //   right: 20,
-          //   child: _buildCollectedOrangesCounter(),
-          // ),
+          if (!showPopup) _buildGameScreen(),
+          if (showPopup) _buildPopupMessage(),
         ],
       ),
     );
@@ -201,55 +138,63 @@ class _M3L3_2State extends State<M3L3_2> {
 
   Widget _buildGameScreen() {
     return Center(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Find and collect all oranges!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            _buildBasketRow(),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Find and collect all oranges!',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          _buildBasketRow(),
+        ],
       ),
     );
   }
 
   Widget _buildBasketRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildBasket(0),
-        _buildBasket(1),
-        _buildBasket(2),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(width: 16),
+          _buildBasket(0),
+          SizedBox(width: 16),
+          _buildBasket(1),
+          SizedBox(width: 16),
+          _buildBasket(2),
+          SizedBox(width: 16),
+        ],
+      ),
     );
   }
 
   Widget _buildBasket(int basketIndex) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double basketSize = screenWidth / 4;
+    double basketInnerSize = basketSize * 0.72;
+
     return Stack(
       alignment: Alignment.center,
       children: [
         Image.asset(
           'assets/basket.png',
-          width: 250,
-          height: 250,
+          width: basketSize,
+          height: basketSize,
           fit: BoxFit.cover,
         ),
         Container(
-          width:
-              180, // Ensure the Container has a fixed size matching the basket
-          height: 180, // Same size as the basket image
-          child: _buildFruitStack(basketIndex),
+          width: basketInnerSize,
+          height: basketInnerSize,
+          child: _buildFruitStack(basketIndex, basketInnerSize),
         ),
       ],
     );
   }
 
-  Widget _buildFruitStack(int basketIndex) {
+  Widget _buildFruitStack(int basketIndex, double basketInnerSize) {
     List<Widget> fruitWidgets = [];
+    double fruitSize = basketInnerSize * 0.28;
 
     for (int i = 0; i < baskets[basketIndex].length; i++) {
       String fruit = baskets[basketIndex][i];
@@ -265,9 +210,9 @@ class _M3L3_2State extends State<M3L3_2> {
                 if (fruit == 'Orange') {
                   setState(() {
                     collectedOranges++;
-                    baskets[basketIndex][i] = ''; // Remove the orange
+                    baskets[basketIndex][i] = '';
                     if (collectedOranges == 10) {
-                      M3L3_2Point = 1; // Example: 10 oranges in total
+                      M3L3_2Point = 1;
                       showLevelCompleteDialog();
                       updateFirebaseDataM3L3_2();
                     }
@@ -276,8 +221,8 @@ class _M3L3_2State extends State<M3L3_2> {
               },
               child: Image.asset(
                 'assets/$fruit.png',
-                height: 50,
-                width: 50,
+                height: fruitSize,
+                width: fruitSize,
               ),
             ),
           ),
@@ -285,9 +230,7 @@ class _M3L3_2State extends State<M3L3_2> {
       }
     }
 
-    return Stack(
-      children: fruitWidgets,
-    );
+    return Stack(children: fruitWidgets);
   }
 
   Widget _buildCollectedOrangesCounter() {
@@ -297,7 +240,7 @@ class _M3L3_2State extends State<M3L3_2> {
           alignment: Alignment.center,
           children: [
             Container(
-              height:50,
+              height: 50,
               width: 70,
               decoration: BoxDecoration(
                 boxShadow: [
@@ -306,17 +249,16 @@ class _M3L3_2State extends State<M3L3_2> {
                     spreadRadius: 0.2,
                     blurRadius: 20,
                   ),
-                ]
+                ],
               ),
             ),
-        
-          Image.asset('assets/Orange.png', height: 60), 
-          ],),// Larger orange icon
+            Image.asset('assets/Orange.png', height: 60),
+          ],
+        ),
         SizedBox(width: 10),
         Text(
           '$collectedOranges',
-          style: TextStyle(
-              fontSize: 30, fontWeight: FontWeight.bold), // Larger font size
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -339,7 +281,7 @@ class _M3L3_2State extends State<M3L3_2> {
             child: Text('OK'),
             onPressed: () {
               setState(() {
-                showPopup = false; // Close the popup and show the game screen
+                showPopup = false;
               });
             },
           ),
@@ -366,7 +308,7 @@ class _M3L3_2State extends State<M3L3_2> {
             ElevatedButton(
               child: Text('Next Level'),
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
                 navigateToNextLevel();
               },
             ),
@@ -388,10 +330,4 @@ class _M3L3_2State extends State<M3L3_2> {
       );
     }
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: M3L3_2(),
-  ));
 }

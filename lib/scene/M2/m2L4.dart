@@ -319,9 +319,9 @@ class _M2L4State extends State<M2L4> with SingleTickerProviderStateMixin {
 
   Widget sweetWidget(int index) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10),
-      width: 60,
-      height: 60,
+      margin: EdgeInsets.symmetric(horizontal: 4),
+      width: 50,
+      height: 50,
       alignment: Alignment.center,
       child: sweetDropped[index]
           ? Container(

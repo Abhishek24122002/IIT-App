@@ -35,12 +35,10 @@ class _M3L4State extends State<M3L4> {
       DeviceOrientation.landscapeRight,
     ]);
 
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
     });
   }
-
 
   String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
@@ -77,50 +75,78 @@ class _M3L4State extends State<M3L4> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        final screenHeight = MediaQuery.of(context).size.height;
+        final screenWidth = MediaQuery.of(context).size.width;
+
         return AlertDialog(
-          title: Text('Instructions'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                Text(
-                  'You have ₹100 to buy milk, cheese, and yogurt.\n'
-                  'You must buy at least 1 of each item. Maximum amount you can spend is ₹100.\n'
-                  'Prices are as follows:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        Image.asset('assets/Milk.png', width: 50, height: 50),
-                        Text('Milk: ₹30'),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Image.asset('assets/cheese.png', width: 50, height: 50),
-                        Text('Cheese: ₹20'),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Image.asset('assets/yougurt.png', width: 50, height: 50),
-                        Text('Yogurt: ₹10'),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+          title: Text(
+            'Instructions',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: screenHeight * 0.7, // 70% of screen
+              maxWidth: screenWidth * 0.9,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ✅ Show images & prices first
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 15,
+                    runSpacing: 10,
+                    children: [
+                      Column(
+                        children: [
+                          Image.asset('assets/Milk.png', width: 40, height: 40),
+                          Text('Milk: ₹30', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Image.asset('assets/cheese.png',
+                              width: 40, height: 40),
+                          Text('Cheese: ₹20', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Image.asset('assets/yougurt.png',
+                              width: 40, height: 40),
+                          Text('Yogurt: ₹10', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  // ✅ Instructions text below
+                  Text(
+                    'You have ₹100 to buy milk, cheese, and yogurt.\n'
+                    'You must buy at least 1 of each item.\n'
+                    'Maximum amount you can spend is ₹100.',
+                    style: TextStyle(fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
+          actionsAlignment: MainAxisAlignment.center, // center align button
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
+            SizedBox(
+              width: 80, // ✅ smaller width button
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  textStyle: TextStyle(fontSize: 14),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
             ),
           ],
         );
@@ -198,16 +224,20 @@ class _M3L4State extends State<M3L4> {
                   children: [
                     Text(
                       'Collected Items:',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 10),
                     Text('Milk: $milkCounter', style: TextStyle(fontSize: 16)),
-                    Text('Cheese: $cheeseCounter', style: TextStyle(fontSize: 16)),
-                    Text('Yogurt: $yogurtCounter', style: TextStyle(fontSize: 16)),
+                    Text('Cheese: $cheeseCounter',
+                        style: TextStyle(fontSize: 16)),
+                    Text('Yogurt: $yogurtCounter',
+                        style: TextStyle(fontSize: 16)),
                     SizedBox(height: 10),
                     Text(
                       'Remaining Rs: ₹$totalRs',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
@@ -218,8 +248,7 @@ class _M3L4State extends State<M3L4> {
                       ),
                       child: Text('Empty Cart'),
                     ),
-                    if (_hasBoughtAllItems())
-                      SizedBox(height: 20),
+                    if (_hasBoughtAllItems()) SizedBox(height: 20),
                     if (_hasBoughtAllItems())
                       ElevatedButton(
                         onPressed: () {
@@ -274,7 +303,8 @@ class _M3L4State extends State<M3L4> {
                             height: 70,
                             child: GridView.builder(
                               padding: EdgeInsets.all(0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 8,
                                 crossAxisSpacing: 2,
                                 mainAxisSpacing: 0,
@@ -308,7 +338,8 @@ class _M3L4State extends State<M3L4> {
                             height: 70,
                             child: GridView.builder(
                               padding: EdgeInsets.all(0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 8,
                                 crossAxisSpacing: 2,
                                 mainAxisSpacing: 0,
@@ -342,7 +373,8 @@ class _M3L4State extends State<M3L4> {
                             height: 70,
                             child: GridView.builder(
                               padding: EdgeInsets.all(0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 8,
                                 crossAxisSpacing: 2,
                                 mainAxisSpacing: 0,
@@ -377,7 +409,6 @@ class _M3L4State extends State<M3L4> {
     );
   }
 }
-
 
 void main() {
   runApp(MaterialApp(

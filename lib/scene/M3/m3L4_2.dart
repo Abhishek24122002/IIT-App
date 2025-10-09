@@ -70,62 +70,144 @@ class _M3L4_2State extends State<M3L4_2> {
     }
   }
 
-  void _showInstructions() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Instructions'),
-          content: SingleChildScrollView(
+  // void _showInstructions() {
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('Instructions'),
+  //         content: SingleChildScrollView(
+  //           child: Column(
+  //             children: [
+  //               Text(
+  //                 'You have ₹100 to buy eggs, bread, and flour.\n'
+  //                 'You must buy at least 1 of each item. Maximum amount you can spend is ₹100.\n'
+  //                 'Prices are as follows:',
+  //                 style: TextStyle(fontSize: 16),
+  //               ),
+  //               SizedBox(height: 10),
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                 children: [
+  //                   Column(
+  //                     children: [
+  //                       Image.asset('assets/Eggs.png', width: 50, height: 50),
+  //                       Text('eggs: ₹30'),
+  //                     ],
+  //                   ),
+  //                   Column(
+  //                     children: [
+  //                       Image.asset('assets/Bread.png', width: 50, height: 50),
+  //                       Text('bread: ₹20'),
+  //                     ],
+  //                   ),
+  //                   Column(
+  //                     children: [
+  //                       Image.asset('assets/Flour.png', width: 50, height: 50),
+  //                       Text('flour: ₹10'),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //               _showAnnouncement();
+  //             },
+  //             child: Text('OK'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+void _showInstructions() {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      final screenHeight = MediaQuery.of(context).size.height;
+      final screenWidth = MediaQuery.of(context).size.width;
+
+      return AlertDialog(
+        title: Text(
+          'Instructions',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: screenHeight * 0.7, // 70% of screen
+            maxWidth: screenWidth * 0.9,
+          ),
+          child: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'You have ₹100 to buy eggs, bread, and flour.\n'
-                  'You must buy at least 1 of each item. Maximum amount you can spend is ₹100.\n'
-                  'Prices are as follows:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // ✅ Show images & prices first
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 15,
+                  runSpacing: 10,
                   children: [
                     Column(
                       children: [
-                        Image.asset('assets/Eggs.png', width: 50, height: 50),
-                        Text('eggs: ₹30'),
+                        Image.asset('assets/Eggs.png', width: 40, height: 40),
+                        Text('Eggs: ₹30', style: TextStyle(fontSize: 13)),
                       ],
                     ),
                     Column(
                       children: [
-                        Image.asset('assets/Bread.png', width: 50, height: 50),
-                        Text('bread: ₹20'),
+                        Image.asset('assets/Bread.png', width: 40, height: 40),
+                        Text('Bread: ₹20', style: TextStyle(fontSize: 13)),
                       ],
                     ),
                     Column(
                       children: [
-                        Image.asset('assets/Flour.png', width: 50, height: 50),
-                        Text('flour: ₹10'),
+                        Image.asset('assets/Flour.png', width: 40, height: 40),
+                        Text('Flour: ₹10', style: TextStyle(fontSize: 13)),
                       ],
                     ),
                   ],
                 ),
+                SizedBox(height: 12),
+                // ✅ Instructions text below
+                Text(
+                  'You have ₹100 to buy eggs, bread, and flour.\n'
+                  'You must buy at least 1 of each item.\n'
+                  'Maximum amount you can spend is ₹100.',
+                  style: TextStyle(fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
+        ),
+        actionsAlignment: MainAxisAlignment.center, // center align button
+        actions: [
+          SizedBox(
+            width: 80, // ✅ smaller width button
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                textStyle: TextStyle(fontSize: 14),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
-                _showAnnouncement();
+                _showAnnouncement(); // keep your announcement
               },
-              child: Text('OK'),
+              child: Text("OK"),
             ),
-          ],
-        );
-      },
-    );
-  }
+          ),
+        ],
+      );
+    },
+  );
+}
 
   void onAudioComplete() {
     showConversationDialog();

@@ -692,7 +692,7 @@ class PathPainter extends CustomPainter {
     path6.quadraticBezierTo(520, 300, 630, 350);
 
     canvas.drawPath(path, paint);
-    canvas.drawPath(path2, paint);
+    canvas.drawPath(path2, paint);     
     canvas.drawPath(path3, paint);
     canvas.drawPath(path4, paint);
     canvas.drawPath(path5, paint);

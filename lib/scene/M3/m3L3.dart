@@ -22,7 +22,16 @@ class _M3L3State extends State<M3L3> {
   int collectedPotatoes = 0;
   bool showPopup = true;
   int M3L3Point = 0;
-  List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
+  List<Widget> levels = [
+    M3L1(),
+    M3L1_2(),
+    M3L2(),
+    M3L3(),
+    M3L3_2(),
+    M3L3_3(),
+    M3L4(),
+    M3L4_2()
+  ];
   int currentLevelIndex = 3;
 
   List<List<String>> baskets = [
@@ -140,8 +149,9 @@ class _M3L3State extends State<M3L3> {
     Random random = Random();
 
     double screenWidth = MediaQuery.of(context).size.width;
-  double basketSize = screenWidth / 4 * 0.72; // match container size in _buildBasket
-  double vegetableSize = basketSize * 0.28; // scale relative to basket
+    double basketSize =
+        screenWidth / 4 * 0.72; // match container size in _buildBasket
+    double vegetableSize = basketSize * 0.28; // scale relative to basket
     // double basketSize = 180.0; // Increased basket size
     // double vegetableSize = 50.0; // Increased vegetable size
 
@@ -189,14 +199,14 @@ class _M3L3State extends State<M3L3> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Find the Potatoes - Level 3'),
-          _buildCollectedPotatoesCounter(), // Add the counter here
-        ],
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Find the Potatoes - Level 3'),
+            _buildCollectedPotatoesCounter(), // Add the counter here
+          ],
+        ),
       ),
-    ),
       body: Stack(
         children: [
           if (!showPopup) _buildGameScreen(),
@@ -241,39 +251,37 @@ class _M3L3State extends State<M3L3> {
   // }
 
   Widget _buildBasketRow() {
-    
-  return SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    child: Row(
-      children: [
-        SizedBox(width: 16), // Padding from left
-        _buildBasket(0),
-        SizedBox(width: 16),
-        _buildBasket(1),
-        SizedBox(width: 16),
-        _buildBasket(2),
-        SizedBox(width: 16), // Padding from right
-      ],
-    ),
-  );
-}
-
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(width: 16), // Padding from left
+          _buildBasket(0),
+          SizedBox(width: 16),
+          _buildBasket(1),
+          SizedBox(width: 16),
+          _buildBasket(2),
+          SizedBox(width: 16), // Padding from right
+        ],
+      ),
+    );
+  }
 
   Widget _buildBasket(int basketIndex) {
     double basketWidth = MediaQuery.of(context).size.width / 4;
-double basketHeight = basketWidth;
+    double basketHeight = basketWidth;
     return Stack(
       alignment: Alignment.center,
       children: [
         Image.asset(
           'assets/basket.png',
-           width: basketWidth,
-  height: basketHeight,
+          width: basketWidth,
+          height: basketHeight,
           fit: BoxFit.cover,
         ),
         Container(
-           width: basketWidth * 0.72, // for inner container
-  height: basketHeight * 0.72,
+          width: basketWidth * 0.72, // for inner container
+          height: basketHeight * 0.72,
           child: _buildVegetableStack(basketIndex),
         ),
       ],
@@ -283,8 +291,8 @@ double basketHeight = basketWidth;
   Widget _buildVegetableStack(int basketIndex) {
     List<Widget> vegetableWidgets = [];
     double screenWidth = MediaQuery.of(context).size.width;
-double basketSize = screenWidth / 4 * 0.72;
-double vegetableSize = basketSize * 0.28;
+    double basketSize = screenWidth / 4 * 0.72;
+    double vegetableSize = basketSize * 0.28;
 
     for (int i = 0; i < baskets[basketIndex].length; i++) {
       String vegetable = baskets[basketIndex][i];
@@ -312,8 +320,8 @@ double vegetableSize = basketSize * 0.28;
               },
               child: Image.asset(
                 'assets/$vegetable.png',
-               height: vegetableSize,
-  width: vegetableSize,
+                height: vegetableSize,
+                width: vegetableSize,
               ),
             ),
           ),
@@ -326,69 +334,120 @@ double vegetableSize = basketSize * 0.28;
     );
   }
 
-
-Widget _buildCollectedPotatoesCounter() {
-  return Row(
-    children: [
-      Stack(
-        alignment: Alignment.center,
-        children: [
-          // Glowing effect
-          Container(
-            height: 50,
-            width: 70,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.amber.withOpacity(0.8), // Golden glow
-                  spreadRadius: 0.2,
-                  blurRadius: 20,
-                ),
-              ],
+  Widget _buildCollectedPotatoesCounter() {
+    return Row(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Glowing effect
+            Container(
+              height: 50,
+              width: 70,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.8), // Golden glow
+                    spreadRadius: 0.2,
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Actual image
-          Image.asset(
-            'assets/Potato.png',
-            height: 50, // Size of the image
-          ),
-        ],
-      ),
-      SizedBox(width: 10),
-      Text(
-        '$collectedPotatoes',
-        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-      ),
-    ],
-  );
-}
+            // Actual image
+            Image.asset(
+              'assets/Potato.png',
+              height: 45, // Size of the image
+            ),
+          ],
+        ),
+        SizedBox(width: 10),
+        Text(
+          '$collectedPotatoes',
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
 
-
+  // Widget _buildPopupMessage() {
+  //   return Center(
+  //     child: AlertDialog(
+  //       title: Text('Collect All Potatoes To Complete Level'),
+  //       content: SingleChildScrollView(
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Image.asset('assets/Potato.png', height: 50),
+  //           ],
+  //         ),
+  //       ),
+  //       actions: <Widget>[
+  //         ElevatedButton(
+  //           child: Text('OK'),
+  //           onPressed: () {
+  //             setState(() {
+  //               showPopup = false;
+  //             });
+  //           },
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
   Widget _buildPopupMessage() {
-    return Center(
-      child: AlertDialog(
-        title: Text('Collect All Potatoes To Complete Level'),
-        content: SingleChildScrollView(
+  final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  return Center(
+    child: AlertDialog(
+      title: Text(
+        'Collect All Potatoes To Complete Level',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: screenHeight * 0.6, // up to 60% of screen
+          maxWidth: screenWidth * 0.85,
+        ),
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Potato.png', height: 50),
+              Image.asset('assets/Potato.png', height: 50, width: 50),
+              SizedBox(height: 12),
+              Text(
+                'Gather all potatoes in this level to proceed!',
+                style: TextStyle(fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
-        actions: <Widget>[
-          ElevatedButton(
-            child: Text('OK'),
+      ),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        SizedBox(
+          width: 80,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              textStyle: TextStyle(fontSize: 14),
+            ),
             onPressed: () {
               setState(() {
                 showPopup = false;
               });
             },
+            child: Text("OK"),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   void showInstructionDialog() {
     setState(() {

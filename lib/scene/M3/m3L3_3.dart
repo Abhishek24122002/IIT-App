@@ -318,7 +318,7 @@ class _M3L3_3State extends State<M3L3_3> {
                 ],
               ),
             ),
-            Image.asset('assets/Apple.png', height: 50),
+            Image.asset('assets/Apple.png', height: 45),
           ],
         ), // Larger apple icon
         SizedBox(width: 10),
@@ -332,30 +332,58 @@ class _M3L3_3State extends State<M3L3_3> {
   }
 
   Widget _buildPopupMessage() {
-    return Center(
-      child: AlertDialog(
-        title: Text('Collect All Apples To Complete Level'),
-        content: SingleChildScrollView(
+  final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  return Center(
+    child: AlertDialog(
+      title: Text(
+        'Collect All Apples To Complete Level',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: screenHeight * 0.6, // up to 60% of screen
+          maxWidth: screenWidth * 0.85,
+        ),
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/Apple.png', height: 60),
+              Image.asset('assets/Apple.png', height: 50, width: 50),
+              SizedBox(height: 12),
+              Text(
+                'Gather all apples in this level to proceed!',
+                style: TextStyle(fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
-        actions: <Widget>[
-          ElevatedButton(
-            child: Text('OK'),
+      ),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        SizedBox(
+          width: 80,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              textStyle: TextStyle(fontSize: 14),
+            ),
             onPressed: () {
               setState(() {
                 showPopup = false; // Close the popup and show the game screen
               });
             },
+            child: Text("OK"),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   void showInstructionDialog() {
     setState(() {

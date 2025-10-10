@@ -1,5 +1,4 @@
 import 'package:alzymer/scene/M3/M3L3.dart';
-import 'package:alzymer/scene/M3/m3L1.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +15,7 @@ class _M3L2State extends State<M3L2> {
   bool showHintOptions = false;
   bool isAnswerCorrect = false;
   Timer? _timer;
-  String selectedFruit = ''; // Fruit fetched from Firebase
+  String selectedFruit = '';
   List<String> hintFruits = [];
   int M3L2Point = 0;
 
@@ -25,6 +24,7 @@ class _M3L2State extends State<M3L2> {
     super.initState();
     fetchSelectedFruit();
     startAnswerTimer();
+    WidgetsBinding.instance.addPostFrameCallback((_) => initialPopup());
   }
 
   void fetchSelectedFruit() async {
@@ -34,7 +34,6 @@ class _M3L2State extends State<M3L2> {
 
       if (user != null) {
         FirebaseFirestore firestore = FirebaseFirestore.instance;
-
         DocumentSnapshot snapshot = await firestore
             .collection('users')
             .doc(user.uid)
@@ -46,15 +45,14 @@ class _M3L2State extends State<M3L2> {
           setState(() {
             selectedFruit = snapshot.get('Fruit_Selected') ?? '';
           });
-        } else {
-          print('No Fruit_Selected found for M1');
         }
       }
     } catch (e) {
       print('Error fetching Fruit_Selected: $e');
     }
   }
-   String getCurrentUserUid() {
+
+  String getCurrentUserUid() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
     return user?.uid ?? '';
@@ -64,30 +62,11 @@ class _M3L2State extends State<M3L2> {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       String userUid = getCurrentUserUid();
-
       if (userUid.isNotEmpty) {
-        // Reference to the user's document
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userUid);
-
-        // Reference to the 'score' document with document ID 'M3'
         DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M3');
+            firestore.collection('users').doc(userUid).collection('score').doc('M3');
 
-        // Check if the 'M2' document exists
-        DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
-
-        if (!scoreDocSnapshot.exists) {
-          // If the document doesn't exist, create it with the initial score
-          await scoreDocRef.set({
-            'M3L2Point': M3L2Point,
-          });
-        } else {
-          // If the document exists, update the fields
-          await scoreDocRef.update({
-            'M3L2Point': M3L2Point,
-          });
-        }
+        await scoreDocRef.set({'M3L2Point': M3L2Point}, SetOptions(merge: true));
       }
     } catch (e) {
       print('Error updating data: $e');
@@ -96,9 +75,7 @@ class _M3L2State extends State<M3L2> {
 
   void startAnswerTimer() {
     _timer = Timer(Duration(seconds: 10), () {
-      setState(() {
-        showHintButton = true;
-      });
+      setState(() => showHintButton = true);
     });
   }
 
@@ -123,115 +100,237 @@ class _M3L2State extends State<M3L2> {
         showHintButton = false;
         showHintOptions = false;
       });
+      _showCorrectDialog();
     } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Incorrect'),
-            content: Text('Try again!'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('OK'),
+      _showIncorrectDialog();
+    }
+  }
+
+  void _showCorrectDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('🎉 Great Job!'),
+          content: Text('Your answer is correct! You may move to the next level.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  M3L2Point = 1;
+                  updateFirebaseDataM3L2();
+                });
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => M3L3()),
+                );
+              },
+              child: Text('Next Level'),
+            ),
+          ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        );
+      },
+    );
+  }
+
+  void _showIncorrectDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('❌ Oops!'),
+          content: Text('That’s not correct. Try again!'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        );
+      },
+    );
+  }
+
+  void initialPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Center(
+            child: Text(
+              'Task 2',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 22.0,
+                color: Color.fromARGB(255, 94, 114, 228),
+              ),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Instructions:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
+                  color: Color.fromARGB(255, 158, 124, 193),
+                ),
+              ),
+              SizedBox(height: 8.0),
+              Text(
+                'Type the name of the fruit that you ate in the previous level. If you are unsure, you can use hints after 10 seconds.',
+                style: TextStyle(fontSize: 14.0, color: Colors.black87),
               ),
             ],
-          );
-        },
-      );
-    }
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Got it!',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
+                  color: Color.fromARGB(255, 94, 114, 228),
+                ),
+              ),
+            ),
+          ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Module 3 Level 2"),
+        title: Text("Buy the Fruit You Ate"),
         centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'You need to buy the fruit that you ate',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // const SizedBox(height: 10),
+            // Text(
+            //   "Type your answer below:",
+            //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            // ),
+            // const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.blueAccent, width: 1.2),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blueAccent.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: answerController,
-                  decoration: InputDecoration(
-                    labelText: 'Your Answer',
-                    border: OutlineInputBorder(),
-                    hintText: 'Type the fruit name here',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20),
-                if (!isAnswerCorrect)
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.lightGreen,
-                    ),
-                    onPressed: () => checkAnswer(answerController.text),
-                    child: Text('Submit'),
-                  ),
-                  if (!isAnswerCorrect)
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.amberAccent,
-                    ),
-                    onPressed: showHint,
-                    child: Text('Show Hint'),
-                  ),
-                  Wrap(
-                    spacing: 10,
-                    children: hintFruits.map((fruit) {
-                      return ElevatedButton(
-                        onPressed: () => checkAnswer(fruit),
-                        child: Text(fruit),
-                      );
-                    }).toList(),
-                  ),
-              ],
-            ),
-          ),
-          if (isAnswerCorrect)
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.green,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      M3L2Point =1;
-                      updateFirebaseDataM3L2();
-                    });
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => M3L3(),
-                      ),
-                    );
-                  },
-                  child: Text('Next Level'),
+                ],
+              ),
+              child: TextField(
+                controller: answerController,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  hintText: 'Type the fruit name here',
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(14),
                 ),
               ),
             ),
-        ],
+            const SizedBox(height: 20),
+
+            if (!isAnswerCorrect)
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => checkAnswer(answerController.text),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: Text(
+                      "Submit",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (showHintButton)
+                    ElevatedButton(
+                      onPressed: showHint,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                      child: Text(
+                        "Show Hint",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 16),
+                      ),
+                    ),
+                ],
+              ),
+
+            const SizedBox(height: 15),
+            if (showHintOptions)
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: hintFruits.map((fruit) {
+                  return GestureDetector(
+                    onTap: () => checkAnswer(fruit),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.lightBlue, Colors.blue],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          )
+                        ],
+                      ),
+                      child: Text(
+                        fruit,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+          ],
+        ),
       ),
     );
   }

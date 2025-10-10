@@ -57,6 +57,9 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showInstructions();
+    });
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -89,6 +92,29 @@ class _M2L2State extends State<M2L2> with SingleTickerProviderStateMixin {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
     return user?.uid ?? '';
+  }
+
+  void _showInstructions() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Instructions to complete level'),
+          content: Text(
+            
+            'Help Grandpa find his way to school! \n\n Use the arrow buttons on the screen to move him. Stay on the road and find a way to the school on the map shown on the screen. You can see the child’s face on the screen, go there to pick him up. When you reach the school, the level will be complete.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void updateFirebaseDataM2L2() async {

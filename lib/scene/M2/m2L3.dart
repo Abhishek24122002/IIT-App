@@ -51,6 +51,9 @@ class _M2L3State extends State<M2L3> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showInstructions();
+    });
     _horizontalController = ScrollController();
     _verticalController = ScrollController();
     // Start a timer to show the hint button after 10 seconds
@@ -140,6 +143,28 @@ class _M2L3State extends State<M2L3> {
         }
       });
     }
+  }
+  void _showInstructions() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Instructions to complete level'),
+          content: Text(
+            
+            'Help Grandpa find his way home! \n\n Touch and slide his picture along the path on the map. Stay on the road and try not to go off track. When you reach home, the level will be complete. Remember the talk from the previous level; it will help you finish this task.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void showIceCreamPopup() {

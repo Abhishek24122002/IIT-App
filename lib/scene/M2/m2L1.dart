@@ -1,4 +1,3 @@
-
 import 'package:alzymer/scene/M1/m1L1.dart';
 import 'package:alzymer/scene/M1/m1L2.dart';
 import 'package:alzymer/scene/M1/m1L3.dart';
@@ -16,6 +15,11 @@ import 'M2L4.dart';
 import 'm2L2.dart';
 import 'm2L3.dart';
 import 'm2L5.dart';
+
+// buttons
+import 'package:alzymer/components/start_button.dart';
+import 'package:alzymer/components/answer_button.dart';
+import 'package:alzymer/components/next_level_button.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -119,7 +123,8 @@ class _M2L1State extends State<M2L1> {
             firestore.collection('users').doc(userUid);
 
         // Reference to the 'score' document with document ID 'M2'
-        DocumentReference scoreDocRef = userDocRef.collection('score').doc('M2');
+        DocumentReference scoreDocRef =
+            userDocRef.collection('score').doc('M2');
 
         DocumentReference attemptDocRef =
             userDocRef.collection('attempt').doc('M2');
@@ -167,34 +172,31 @@ class _M2L1State extends State<M2L1> {
   }
 
   void submitAnswer(String time) {
-  M2L1Attempts++;
+    M2L1Attempts++;
 
-  String pickupTime = "3:00 PM";
+    String pickupTime = "3:00 PM";
 
-  if (time == pickupTime) {
-    showCelebrationDialog();
+    if (time == pickupTime) {
+      showCelebrationDialog();
+      setState(() {
+        showAnswerButtons = false;
+        nextLevelButton = true;
+        showHintButton = false;
+        showSpeechBubble = false;
+        M2L1Point = 1;
+      });
+
+      updateFirebaseDataM2L1();
+      ScoreManager.updateUserScore(1);
+    } else {
+      showTryAgainDialog();
+    }
+
     setState(() {
-      showAnswerButtons = false;
-      nextLevelButton = true;
-      showHintButton = false;
-      showSpeechBubble = false;
-      M2L1Point = 1;
+      showSpeechBubble = true;
+      userAnswer = 'Today\'s pickup time is $pickupTime';
     });
-
-    updateFirebaseDataM2L1();
-    ScoreManager.updateUserScore(1);
-  } else {
-    showTryAgainDialog();
   }
-
-  setState(() {
-    showSpeechBubble = true;
-    userAnswer = 'Today\'s pickup time is $pickupTime';
-  });
-}
-
-
-     
 
   void _showInputDialog() {
     showDialog(
@@ -247,8 +249,6 @@ class _M2L1State extends State<M2L1> {
   }
 
   void showHint() {
-    
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -309,34 +309,34 @@ class _M2L1State extends State<M2L1> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      FocusScope.of(context).requestFocus(new FocusNode());
-    },
-    child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: SingleChildScrollView(
-          child: Stack(
-            children: [
-              Image.asset(
-                'assets/bg1.jpg',
-                fit: BoxFit.cover,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-              ),
-              Positioned(
-                top: 50.0,
-                left: -130.0,
-                child: Image.asset(
-                  getSpeechBubbleImage(),
-                  width: 500.0,
-                  height: 500.0,
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(new FocusNode());
+      },
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: SingleChildScrollView(
+            child: Stack(
+              children: [
+                Image.asset(
+                  'assets/bg1.jpg',
+                  fit: BoxFit.cover,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
                 ),
-              ),
-              Positioned(
+                Positioned(
+                  top: 50.0,
+                  left: -130.0,
+                  child: Image.asset(
+                    getSpeechBubbleImage(),
+                    width: 500.0,
+                    height: 500.0,
+                  ),
+                ),
+                Positioned(
                   top: 12.0,
                   right: 130.0,
                   child: Image.asset(
@@ -345,104 +345,107 @@ Widget build(BuildContext context) {
                     height: 90.0,
                   ),
                 ),
-              Positioned(
-                bottom: -50.0,
-                right: 20.0,
-                child: Image.asset(
-                  'assets/man2.png',
-                  width: 200.0,
-                  height: 400.0,
-                ),
-              ),
-              Positioned(
-                top: 150.0,
-                right: 200,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Visibility(
-                      visible: showSpeechBubble,
-                      child: SpeechBubble(
-                        text: userAnswer.isNotEmpty
-                            ? 'Please pick him from school. I have some urgent office work now' // Change the text here
-                            : getSpeechBubbleText(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 80.0,
-                left: 150.0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Visibility(
-                      visible: userAnswer.isNotEmpty,
-                      child: SpeechBubble(
-                        text: userAnswer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Positioned(
-                bottom: 20.0,
-                left: 30.0,
-                child: Row(
-                  children: [
-                    Visibility(
-                      visible: showStartButton,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            showSpeechBubble = true;
-                            showStartButton = false;
-                            showAnswerButtons = true;
-                          });
-                        },
-                        child: Text('Start'),
-                      ),
-                    ),
-                    if (showAnswerButtons)
-                      ElevatedButton(
-                        onPressed: () {
-                          _showInputDialog();
-                        },
-                        child: Text('Select Pickup Time'),
-                      ),
-                  ],
-                ),
-              ),
-              if (nextLevelButton)
                 Positioned(
-                  bottom: 20.0,
-                  right: 30.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      navigateToNextLevel();
-                    },
-                    child: Text('Next Level'),
+                  bottom: -50.0,
+                  right: 20.0,
+                  child: Image.asset(
+                    'assets/man2.png',
+                    width: 200.0,
+                    height: 400.0,
                   ),
                 ),
-              if (M2L1Attempts >= 1 && showHintButton)
                 Positioned(
-                  bottom: 20.0,
-                  right: 30.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showHint();
-                    },
-                    child: Text('Show Hint'),
+                  top: 150.0,
+                  right: 200,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                        visible: showSpeechBubble,
+                        child: SpeechBubble(
+                          text: userAnswer.isNotEmpty
+                              ? 'Please pick him from school. I have some urgent office work now' // Change the text here
+                              : getSpeechBubbleText(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-            ],
+                Positioned(
+                  top: 80.0,
+                  left: 150.0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                        visible: userAnswer.isNotEmpty,
+                        child: SpeechBubble(
+                          text: userAnswer,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  bottom: 20.0,
+                  left: 30.0,
+                  child: Row(
+                    children: [
+                      Visibility(
+                        visible: showStartButton,
+                        child: StartButton(
+                          onPressed: () {
+                            setState(() {
+                              showSpeechBubble = true;
+                              showStartButton = false;
+                              showAnswerButtons = true;
+                            });
+                          },
+                          label: 'Start',
+                        ),
+                      ),
+                      if (showAnswerButtons)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: AnswerButton(
+                            onPressed: () {
+                              _showInputDialog();
+                            },
+                            label: 'Select Pickup Time', // 👈 Custom label here
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (nextLevelButton)
+                  Positioned(
+                    bottom: 20.0,
+                    right: 30.0,
+                    child: NextLevelButton(
+                      onPressed: () {
+                        navigateToNextLevel();
+                      },
+                      label: 'Next Level',
+                    ),
+                  ),
+                if (M2L1Attempts >= 1 && showHintButton)
+                  Positioned(
+                    bottom: 20.0,
+                    right: 30.0,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        showHint();
+                      },
+                      child: Text('Show Hint'),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   @override
   void dispose() {

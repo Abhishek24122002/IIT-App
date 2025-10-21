@@ -9,6 +9,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 
+// buttons
+import 'package:alzymer/components/start_button.dart';
+import 'package:alzymer/components/answer_button.dart';
+import 'package:alzymer/components/next_level_button.dart';
+
 class SpeechBubble extends StatelessWidget {
   final String text;
 
@@ -424,54 +429,62 @@ class _M1L2State extends State<M1L2> {
                 ),
                 Positioned(
                   bottom: 20.0,
-                  left: 30.0,
+                  left: 20.0,
+                  right: 20.0,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Visibility(
-                        visible: showStartButton,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              showSpeechBubble = true;
-                              showStartButton = false;
-                              showAnswerButton = true;
-                            });
-                          },
-                          child: Text('Start'),
-                        ),
+                      // LEFT SIDE — Start, Answer, Hint
+                      Row(
+                        children: [
+                          if (showStartButton)
+                            StartButton(
+                              onPressed: () {
+                                setState(() {
+                                  showSpeechBubble = true;
+                                  showStartButton = false;
+                                  showAnswerButton = true;
+                                });
+                              },
+                            ),
+                          if (showAnswerButton && !nextLevelButton)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: AnswerButton(
+                                onPressed: _showInputDialog,
+                              ),
+                            ),
+                          if (showHintButton)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orangeAccent,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: showHint,
+                                child: const Text(
+                                  'Hint',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      if (showAnswerButton && nextLevelButton==false)
-                        ElevatedButton(
-                          onPressed: () {
-                            _showInputDialog();
-                          },
-                          child: Text('Answer the Question'),
+
+                      // RIGHT SIDE — Next Level
+                      if (nextLevelButton)
+                        NextLevelButton(
+                          onPressed: navigateToNextLevel,
                         ),
                     ],
                   ),
                 ),
-                if (nextLevelButton)
-                  Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        navigateToNextLevel();
-                      },
-                      child: Text('Next Level'),
-                    ),
-                  ),
-                if (showHintButton)
-                  Positioned(
-                    bottom: 20.0,
-                    right: 30.0,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showHint();
-                      },
-                      child: Text('Show Hint'),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -489,7 +502,7 @@ class _M1L2State extends State<M1L2> {
     ]);
     super.dispose();
   }
-  
+
   void initialPopup() {
     showDialog(
       context: context,

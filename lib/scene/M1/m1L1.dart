@@ -10,7 +10,11 @@ import 'package:alzymer/scene/M1/M1L2.dart';
 import 'package:alzymer/scene/M1/M1L3.dart';
 import 'package:alzymer/scene/M1/M1L4.dart';
 import 'package:alzymer/ScoreManager.dart';
-import 'package:flutter/cupertino.dart';
+
+// buttons
+import 'package:alzymer/components/start_button.dart';
+import 'package:alzymer/components/answer_button.dart';
+import 'package:alzymer/components/next_level_button.dart';
 
 class SpeechBubble extends StatelessWidget {
   final String text;
@@ -340,42 +344,60 @@ class _M1L1State extends State<M1L1> {
                 ),
                 Positioned(
                   bottom: 20.0,
-                  right: 100,
+                  left: 20.0,
+                  right: 20.0,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (showStartButton)
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              showStartButton = false;
-                              showAnswerButton = true;
-                              showSpeechBubble = true;
-                              grandchildMessage = getSpeechBubbleText();
-                              grandpaMessage = '';
-                            });
-                          },
-                          child: Text('Start'),
-                        ),
-                      if (showAnswerButton)
-                        ElevatedButton(
-                          onPressed: () {
-                            _showDatePickerDialog();
-                          },
-                          child: Text('Answer'),
-                        ),
+                      // LEFT SIDE — Start, Answer, Hint
+                      Row(
+                        children: [
+                          if (showStartButton)
+                            StartButton(
+                              onPressed: () {
+                                setState(() {
+                                  showStartButton = false;
+                                  showAnswerButton = true;
+                                  showSpeechBubble = true;
+                                  grandchildMessage = getSpeechBubbleText();
+                                  grandpaMessage = '';
+                                });
+                              },
+                            ),
+                          if (showAnswerButton)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: AnswerButton(
+                                onPressed: _showDatePickerDialog,
+                              ),
+                            ),
+                          if (showHintButton)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orangeAccent,
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: showHint,
+                                child: Text(
+                                  'Hint',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      // RIGHT SIDE — Next Level
                       if (nextLevelButton)
-                        ElevatedButton(
-                          onPressed: () {
-                            navigateToNextLevel();
-                          },
-                          child: Text('Next Level'),
-                        ),
-                      if (showHintButton)
-                        ElevatedButton(
-                          onPressed: () {
-                            showHint();
-                          },
-                          child: Text('Hint'),
+                        NextLevelButton(
+                          onPressed: navigateToNextLevel,
                         ),
                     ],
                   ),

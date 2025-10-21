@@ -29,6 +29,7 @@ class _M3L4_2State extends State<M3L4_2> {
   final int itemsToBuy = 3;
   int M3L4_2Point = 0;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  String? errorMessage;
 
   @override
   void initState() {
@@ -126,88 +127,90 @@ class _M3L4_2State extends State<M3L4_2> {
   //     },
   //   );
   // }
-void _showInstructions() {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      final screenHeight = MediaQuery.of(context).size.height;
-      final screenWidth = MediaQuery.of(context).size.width;
+  void _showInstructions() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        final screenHeight = MediaQuery.of(context).size.height;
+        final screenWidth = MediaQuery.of(context).size.width;
 
-      return AlertDialog(
-        title: Text(
-          'Instructions',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        content: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: screenHeight * 0.7, // 70% of screen
-            maxWidth: screenWidth * 0.9,
+        return AlertDialog(
+          title: Text(
+            'Instructions',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ✅ Show images & prices first
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 15,
-                  runSpacing: 10,
-                  children: [
-                    Column(
-                      children: [
-                        Image.asset('assets/Eggs.png', width: 40, height: 40),
-                        Text('Eggs: ₹30', style: TextStyle(fontSize: 13)),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Image.asset('assets/Bread.png', width: 40, height: 40),
-                        Text('Bread: ₹20', style: TextStyle(fontSize: 13)),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Image.asset('assets/Flour.png', width: 40, height: 40),
-                        Text('Flour: ₹10', style: TextStyle(fontSize: 13)),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-                // ✅ Instructions text below
-                Text(
-                  'You have ₹100 to buy eggs, bread, and flour.\n'
-                  'You must buy at least 1 of each item.\n'
-                  'Maximum amount you can spend is ₹100.',
-                  style: TextStyle(fontSize: 13),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: screenHeight * 0.7, // 70% of screen
+              maxWidth: screenWidth * 0.9,
             ),
-          ),
-        ),
-        actionsAlignment: MainAxisAlignment.center, // center align button
-        actions: [
-          SizedBox(
-            width: 80, // ✅ smaller width button
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                textStyle: TextStyle(fontSize: 14),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ✅ Show images & prices first
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 15,
+                    runSpacing: 10,
+                    children: [
+                      Column(
+                        children: [
+                          Image.asset('assets/Eggs.png', width: 40, height: 40),
+                          Text('Eggs: ₹30', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Image.asset('assets/Bread.png',
+                              width: 40, height: 40),
+                          Text('Bread: ₹20', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Image.asset('assets/Flour.png',
+                              width: 40, height: 40),
+                          Text('Flour: ₹10', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  // ✅ Instructions text below
+                  Text(
+                    'You have ₹100 to buy eggs, bread, and flour.\n'
+                    'You must buy at least 1 of each item.\n'
+                    'Maximum amount you can spend is ₹100.',
+                    style: TextStyle(fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showAnnouncement(); // keep your announcement
-              },
-              child: Text("OK"),
             ),
           ),
-        ],
-      );
-    },
-  );
-}
+          actionsAlignment: MainAxisAlignment.center, // center align button
+          actions: [
+            SizedBox(
+              width: 80, // ✅ smaller width button
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  textStyle: TextStyle(fontSize: 14),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showAnnouncement(); // keep your announcement
+                },
+                child: Text("OK"),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void onAudioComplete() {
     showConversationDialog();
@@ -224,17 +227,13 @@ void _showInstructions() {
     List<String> selectedItems = [];
     List<String> items = [
       'Milk',
+      'Cheese',
+      'Yogurt',
       'Eggs',
       'Bread',
-      'Butter',
-      'Cheese',
-      'Juice',
-      'Fruits',
-      'Vegetables',
-      'Cereal',
-      'Snacks',
-      'Coffee',
-      'Tea'
+      'Flour',
+      'Tea',
+      'Coffee'
     ];
 
     ScrollController _scrollController = ScrollController();
@@ -245,7 +244,6 @@ void _showInstructions() {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            // Scroll to the latest message
             void scrollToBottom() {
               Future.delayed(Duration(milliseconds: 100), () {
                 _scrollController.animateTo(
@@ -256,36 +254,24 @@ void _showInstructions() {
               });
             }
 
-            // Update conversation and move to next response
             void addConversation(String response, String friendReply) {
               setState(() {
                 userResponse = response;
                 friendResponse = friendReply;
-
-                // Add user and friend's response to the conversation
                 conversation.add({'speaker': 'User', 'message': response});
                 conversation.add({'speaker': 'Friend', 'message': friendReply});
 
-                // Branch logic for next steps
-                if (friendReply == "What are you doing here?") {
-                  // User's reply after "How are you?"
-                  userResponse = ""; // Reset for new options
-                } else if (friendReply == "Oh! What things are you getting?") {
-                  // Show item selection UI
+                if (friendReply == "Oh! What things are you getting?") {
                   showItemSelection = true;
-                } else if (friendReply.contains("Well, take care!")) {
-                  // End conversation
-                  userResponse = ""; // No further options
                 }
               });
-              scrollToBottom(); // Scroll to the latest message
+              scrollToBottom();
             }
 
-            // Confirm the selected items
             void confirmItems() {
               setState(() {
                 conversation.add({
-                  'speaker': 'User', 
+                  'speaker': 'User',
                   'message': 'I am getting: ' + selectedItems.join(', ')
                 });
                 conversation.add({
@@ -296,7 +282,7 @@ void _showInstructions() {
                 conversation
                     .add({'speaker': 'User', 'message': 'Thank You, Goodbye!'});
                 conversation.add({'speaker': 'Friend', 'message': 'Goodbye!'});
-                showItemSelection = false; // Hide item selection UI
+                showItemSelection = false;
               });
               scrollToBottom();
             }
@@ -304,13 +290,7 @@ void _showInstructions() {
             return AlertDialog(
               title: Text(
                 'Conversation With Old Friend in Mall',
-                style: TextStyle(
-                  fontSize: 18, // Set the font size to a smaller value
-                  fontWeight:
-                      FontWeight.bold, // Optional: Adjust font weight if needed
-                  color:
-                      Colors.black, // Optional: Adjust the text color if needed
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               content: SingleChildScrollView(
                 controller: _scrollController,
@@ -360,35 +340,86 @@ void _showInstructions() {
                           ],
                         ),
                       ),
-                    if (showItemSelection)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: Wrap(
-                          spacing: 10,
-                          children: items.map((item) {
-                            return ChoiceChip(
-                              label: Text(item),
-                              selected: selectedItems.contains(item),
-                              onSelected: (selected) {
-                                setState(() {
-                                  if (selected) {
-                                    if (selectedItems.length < 9) {
-                                      selectedItems.add(item);
-                                    }
-                                  } else {
-                                    selectedItems.remove(item);
-                                  }
-                                });
-                              },
-                            );
-                          }).toList(),
-                        ),
+
+                    // ✅ ChoiceChip section (item selection)
+                    if (showItemSelection) ...[
+                      SizedBox(height: 15),
+                      Text(
+                        'Select 6 correct grocery items:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
+                      Wrap(
+                        spacing: 10,
+                        children: items.map((item) {
+                          return ChoiceChip(
+                            label: Text(item),
+                            selected: selectedItems.contains(item),
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  if (selectedItems.length < 6) {
+                                    selectedItems.add(item);
+                                  }
+                                } else {
+                                  selectedItems.remove(item);
+                                }
+                                errorMessage =
+                                    null; // clear error when user reselects
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      if (errorMessage != null) ...[
+                        SizedBox(height: 8),
+                        Text(
+                          errorMessage!,
+                          style: TextStyle(
+                              color: Colors.red, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ],
                   ],
                 ),
               ),
+
+              // ✅ Buttons at bottom
               actions: [
-                if (userResponse.isEmpty) ...[
+                if (showItemSelection)
+                  TextButton(
+                    onPressed: (() {
+                      final requiredItems = {
+                        'Milk',
+                        'Cheese',
+                        'Yogurt',
+                        'Eggs',
+                        'Bread',
+                        'Flour',
+                      };
+                      final selectedSet = selectedItems.toSet();
+                      final isCorrect = selectedSet.length == 6 &&
+                          selectedSet.containsAll(requiredItems);
+
+                      if (isCorrect) {
+                        confirmItems();
+                      } else {
+                        setState(() {
+                          errorMessage =
+                              'Please select only the correct 6 grocery items that you need to purchase in this and previous task.';
+                        });
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          _scrollController.animateTo(
+                            _scrollController.position.maxScrollExtent,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        });
+                      }
+                    }),
+                    child: Text("Confirm Selection"),
+                  )
+                else if (userResponse.isEmpty) ...[
                   TextButton(
                     onPressed: () {
                       addConversation("How are you?",
@@ -420,11 +451,6 @@ void _showInstructions() {
                           "Just passing time.", "Oh, okay. Well, take care!");
                     },
                     child: Text('Reply "Just passing time."'),
-                  ),
-                ] else if (showItemSelection) ...[
-                  TextButton(
-                    onPressed: selectedItems.length == 9 ? confirmItems : null,
-                    child: Text("Confirm Selection"),
                   ),
                 ] else
                   TextButton(

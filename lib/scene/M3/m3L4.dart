@@ -203,6 +203,8 @@ class _M3L4State extends State<M3L4> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    final size = MediaQuery.of(context).size;
+    final bool isSmallScreen = size.width < 800;
 
     return Scaffold(
       appBar: AppBar(
@@ -237,7 +239,7 @@ class _M3L4State extends State<M3L4> {
                     Text(
                       'Remaining Rs: ₹$totalRs',
                       style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(

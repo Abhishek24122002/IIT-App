@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 import 'package:firebase_core/firebase_core.dart';
+import '../../components/next_level_button.dart';
 
 class M2L4 extends StatefulWidget {
   @override
@@ -301,14 +302,13 @@ class _M2L4State extends State<M2L4> with SingleTickerProviderStateMixin {
               ),
               //remove this navigation logic
               if (progress == 1.0)
-                ElevatedButton(
+                NextLevelButton(
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => M3L1()),
-                    ); // Navigate to M3L2
+                    );
                   },
-                  child: Text('Next Level'),
                 ),
             ],
           ),

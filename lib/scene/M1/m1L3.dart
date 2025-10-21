@@ -9,6 +9,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+// buttons
+import 'package:alzymer/components/start_button.dart';
+import 'package:alzymer/components/answer_button.dart';
+import 'package:alzymer/components/next_level_button.dart';
+
 class SpeechBubble extends StatelessWidget {
   final String text;
 
@@ -466,14 +471,14 @@ void updateFirebaseUserAnswer(String selectedFruit) async {
                     ],
                   ),
                 ),
-                Positioned(
+                                Positioned(
                   bottom: 20.0,
                   left: 30.0,
                   child: Row(
                     children: [
                       Visibility(
                         visible: showStartButton,
-                        child: ElevatedButton(
+                        child: StartButton(
                           onPressed: () {
                             setState(() {
                               showSpeechBubble = true;
@@ -481,24 +486,27 @@ void updateFirebaseUserAnswer(String selectedFruit) async {
                               showSelectFruitButton = true;
                             });
                           },
-                          child: Text('Start'),
+                          label: 'Start',
                         ),
                       ),
                       if (showSelectFruitButton)
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              showSpeechBubble = false;
-                              showBoyImage = false;
-                              showTable = true;
-                              showFruit = true;
-                              showfruitbasket = true;
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: AnswerButton(
+                            onPressed: () {
+                              setState(() {
+                                showSpeechBubble = false;
+                                showBoyImage = false;
+                                showTable = true;
+                                showFruit = true;
+                                showfruitbasket = true;
 
-                              showInstruction();
-                              showAllFruits();
-                            });
-                          },
-                          child: Text('Sure'),
+                                showInstruction();
+                                showAllFruits();
+                              });
+                            },
+                            label: 'Ok', // 👈 Instead of "Answer"
+                          ),
                         ),
                     ],
                   ),
@@ -508,14 +516,15 @@ void updateFirebaseUserAnswer(String selectedFruit) async {
                   right: 30.0,
                   child: Visibility(
                     visible: fruitSelected,
-                    child: ElevatedButton(
+                    child: NextLevelButton(
                       onPressed: () {
                         navigateToNextLevel();
                       },
-                      child: Text('Next Level'),
+                      label: 'Next Level',
                     ),
                   ),
                 ),
+
               ],
             ),
           ),

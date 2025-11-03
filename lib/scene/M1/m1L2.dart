@@ -70,7 +70,7 @@ class _M1L2State extends State<M1L2> {
   String weather = '';
   List<Widget> levels = [M1L1(), M1L2(), M1L3(), M1L4()];
   int currentLevelIndex = 1;
-  String sceneImage = 'assets/bg1.jpg';
+  String sceneImage = 'assets/bg1.png';
   int M1L2Attempts = 0;
   int M1L2Point = 0;
 
@@ -296,17 +296,17 @@ class _M1L2State extends State<M1L2> {
     // Set background based on weather
     switch (weather.toLowerCase()) {
       case 'winter':
-        sceneImage = 'assets/winter.jpg';
+        sceneImage = 'assets/winter.png';
         break;
       case 'rainy':
-        sceneImage = 'assets/rainy.jpg';
+        sceneImage = 'assets/rainy.png';
         break;
       case 'summer':
-        sceneImage = 'assets/summer.jpg';
+        sceneImage = 'assets/summer.png';
         break;
       default:
         // Default background if weather is unknown
-        sceneImage = 'assets/bg1.jpg';
+        sceneImage = 'assets/bg1.png';
         break;
     }
   }
@@ -355,7 +355,7 @@ class _M1L2State extends State<M1L2> {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(sceneImage),
-            fit: BoxFit.cover,
+            fit: BoxFit.fill,
           ),
         ),
         child: SafeArea(

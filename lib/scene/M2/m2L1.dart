@@ -322,8 +322,8 @@ class _M2L1State extends State<M2L1> {
             child: Stack(
               children: [
                 Image.asset(
-                  'assets/bg1.jpg',
-                  fit: BoxFit.cover,
+                  'assets/bg1.png',
+                  fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                 ),
@@ -336,15 +336,15 @@ class _M2L1State extends State<M2L1> {
                     height: 500.0,
                   ),
                 ),
-                Positioned(
-                  top: 12.0,
-                  right: 130.0,
-                  child: Image.asset(
-                    'assets/clock3.png',
-                    width: 90.0,
-                    height: 90.0,
-                  ),
-                ),
+                // Positioned(
+                //   top: 12.0,
+                //   right: 130.0,
+                //   child: Image.asset(
+                //     'assets/clock3.png',
+                //     width: 90.0,
+                //     height: 90.0,
+                //   ),
+                // ),
                 Positioned(
                   bottom: -50.0,
                   right: 20.0,

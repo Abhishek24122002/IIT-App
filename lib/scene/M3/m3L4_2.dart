@@ -31,6 +31,10 @@ class _M3L4_2State extends State<M3L4_2> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   String? errorMessage;
 
+  int distractorCounter = 0;
+  List<bool> distractorVisibility = List.generate(6, (index) => true);
+  final int distractorPrice = 60;
+
   @override
   void initState() {
     super.initState();
@@ -507,17 +511,52 @@ class _M3L4_2State extends State<M3L4_2> {
     onAudioComplete();
   }
 
+  Widget _buildColumn(List<bool> visibilityList, Function(int) onTap,
+    String imagePath, double size) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: List.generate(3, (index) {
+      return Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: visibilityList[index]
+            ? GestureDetector(
+                onTap: () => onTap(index),
+                child: Image.asset(
+                  imagePath,
+                  width: size,
+                  height: size,
+                  fit: BoxFit.contain,
+                ),
+              )
+            : Opacity(
+                opacity: 0, // invisible but occupies space
+                child: Image.asset(
+                  imagePath,
+                  width: size,
+                  height: size,
+                ),
+              ),
+      );
+    }),
+  );
+}
+
   void _resetCart() {
-    setState(() {
-      eggsCounter = 0;
-      breadCounter = 0;
-      flourCounter = 0;
-      eggsVisibility = List.generate(6, (index) => true);
-      breadVisibility = List.generate(6, (index) => true);
-      flourVisibility = List.generate(6, (index) => true);
-      totalRs = 100;
-    });
-  }
+  setState(() {
+    eggsCounter = 0;
+    breadCounter = 0;
+    flourCounter = 0;
+    distractorCounter = 0;
+
+    eggsVisibility = List.generate(6, (index) => true);
+    breadVisibility = List.generate(6, (index) => true);
+    flourVisibility = List.generate(6, (index) => true);
+    distractorVisibility = List.generate(6, (index) => true);
+
+    totalRs = 100;
+  });
+}
+
 
   void _pickeggs(int index) {
     setState(() {
@@ -549,8 +588,24 @@ class _M3L4_2State extends State<M3L4_2> {
     });
   }
 
+  void _pickDistractor(int index) {
+    setState(() {
+      if (totalRs - distractorPrice >= 0 && distractorVisibility[index]) {
+        distractorVisibility[index] = false;
+        distractorCounter++;
+        totalRs -= distractorPrice;
+      }
+    });
+  }
+
   bool _hasBoughtAllItems() {
-    return eggsCounter > 0 && breadCounter > 0 && flourCounter > 0;
+    bool hasAllRequired =
+        eggsCounter > 0 && breadCounter > 0 && flourCounter > 0;
+    bool boughtDistractor = distractorCounter > 0;
+
+    // Fail if distractor bought
+    if (boughtDistractor) return false;
+    return hasAllRequired;
   }
 
   void _showHintOverlay(String hintText) {
@@ -580,6 +635,7 @@ class _M3L4_2State extends State<M3L4_2> {
     if (eggsCounter > 0) uniqueItemCount++;
     if (breadCounter > 0) uniqueItemCount++;
     if (flourCounter > 0) uniqueItemCount++;
+    if (distractorCounter > 0) uniqueItemCount++;
 
     // Add logic here if there is a fourth unique item to track
     // e.g., `if (anotherCounter > 0) uniqueItemCount++;`
@@ -647,6 +703,8 @@ class _M3L4_2State extends State<M3L4_2> {
                         style: TextStyle(fontSize: 16)),
                     Text('Flour: $flourCounter',
                         style: TextStyle(fontSize: 16)),
+                    Text('Fruit: $distractorCounter',
+                        style: TextStyle(fontSize: 16)),
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _resetCart,
@@ -656,22 +714,37 @@ class _M3L4_2State extends State<M3L4_2> {
                       ),
                       child: Text('Empty Cart'),
                     ),
-                    if (_hasBoughtAllItems())
-                      ElevatedButton(
-                        onPressed: () {
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_hasBoughtAllItems()) {
+                          // ✅ Success case
                           M3L4_2Point = 1;
                           updateFirebaseDataM3L4_2();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => M4L1()),
                           );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: Text('Buy Now'),
+                        } else {
+                          // ❌ Show message when requirements not met
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Please buy all required items first!',
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Colors.redAccent,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
                       ),
+                      child: Text('Buy Now'),
+                    ),
                   ],
                 ),
               ),
@@ -683,16 +756,14 @@ class _M3L4_2State extends State<M3L4_2> {
                 child: Column(
                   children: [
                     // Shelf Container with Blue Border
+                    // Shelf Container with Blue Border
                     Container(
                       margin: EdgeInsets.all(10),
                       padding: EdgeInsets.all(5),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.blue,
-                          width: 5,
-                        ),
+                        border: Border.all(color: Colors.blue, width: 5),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
@@ -703,103 +774,22 @@ class _M3L4_2State extends State<M3L4_2> {
                       ),
                       child: Column(
                         children: [
-                          // Row for eggs
-                          Container(
-                            width: screenWidth * 0.5,
-                            height: 70,
-                            child: GridView.builder(
-                              padding: EdgeInsets.all(0),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 6,
-                                crossAxisSpacing: 2,
-                                mainAxisSpacing: 0,
-                                childAspectRatio: 0.7,
-                              ),
-                              itemCount: 6,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return eggsVisibility[index]
-                                    ? GestureDetector(
-                                        onTap: () => _pickeggs(index),
-                                        child: Image.asset(
-                                          'assets/Eggs.png',
-                                          fit: BoxFit.contain,
-                                          height: 40,
-                                        ),
-                                      )
-                                    : Container();
-                              },
-                            ),
-                          ),
-                          // Divider
-                          Divider(
-                            color: Colors.grey,
-                            thickness: 3,
-                            height: 30,
-                          ),
-                          // Row for bread
-                          Container(
-                            width: screenWidth * 0.5,
-                            height: 70,
-                            child: GridView.builder(
-                              padding: EdgeInsets.all(0),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 6,
-                                crossAxisSpacing: 2,
-                                mainAxisSpacing: 0,
-                                childAspectRatio: 0.7,
-                              ),
-                              itemCount: 6,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return breadVisibility[index]
-                                    ? GestureDetector(
-                                        onTap: () => _pickbread(index),
-                                        child: Image.asset(
-                                          'assets/Bread.png',
-                                          fit: BoxFit.contain,
-                                          height: 30,
-                                        ),
-                                      )
-                                    : Container();
-                              },
-                            ),
-                          ),
-                          // Divider
-                          Divider(
-                            color: Colors.grey,
-                            thickness: 3,
-                            height: 30,
-                          ),
-                          // Row for flour
-                          Container(
-                            width: screenWidth * 0.5,
-                            height: 70,
-                            child: GridView.builder(
-                              padding: EdgeInsets.all(0),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 6,
-                                crossAxisSpacing: 2,
-                                mainAxisSpacing: 0,
-                                childAspectRatio: 0.7,
-                              ),
-                              itemCount: 6,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return flourVisibility[index]
-                                    ? GestureDetector(
-                                        onTap: () => _pickflour(index),
-                                        child: Image.asset(
-                                          'assets/Flour.png',
-                                          fit: BoxFit.contain,
-                                          height: 40,
-                                        ),
-                                      )
-                                    : Container();
-                              },
+
+                          Center(
+                            child: Wrap(
+                              spacing: 20,
+                              runSpacing: 20,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                _buildColumn(eggsVisibility, _pickeggs,
+                                    'assets/Eggs.png', 80),
+                                _buildColumn(breadVisibility, _pickbread,
+                                    'assets/Bread.png', 80),
+                                _buildColumn(flourVisibility, _pickflour,
+                                    'assets/Flour.png', 80),
+                                _buildColumn(distractorVisibility,
+                                    _pickDistractor, 'assets/Grapes.png', 80),
+                              ],
                             ),
                           ),
                         ],

@@ -881,7 +881,7 @@ class _M2L3State extends State<M2L3> {
         return AlertDialog(
           title: Text('Instructions to complete level'),
           content: Text(
-            'Help Grandpa find his way home! \n\n Touch and slide his picture along the path on the map. Stay on the road and try not to go off track. When you reach home, the level will be complete. Remember the talk from the previous level; it will help you finish this task.',
+            'Help Grandpa find his way home! \n\n Please slide the Grandpa’s icon/figure to navigate Grandpa getting home from School after picking up his grandson. Remember to also help Grandpa fulfil the wish of Granson and get him an ice cream at the ice cream parlour before getting home. ',
           ),
           actions: [
             TextButton(

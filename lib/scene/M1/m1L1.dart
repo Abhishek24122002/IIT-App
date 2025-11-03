@@ -319,8 +319,8 @@ class _M1L1State extends State<M1L1> {
             child: Stack(
               children: [
                 Image.asset(
-                  'assets/bg1.jpg',
-                  fit: BoxFit.cover,
+                  'assets/bg1.png',
+                  fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                 ),

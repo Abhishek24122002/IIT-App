@@ -365,8 +365,8 @@ void updateFirebaseUserAnswer(String selectedFruit) async {
             child: Stack(
               children: [
                 Image.asset(
-                  'assets/bg1.jpg',
-                  fit: BoxFit.cover,
+                  'assets/bg1.png',
+                  fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                 ),
@@ -379,15 +379,15 @@ void updateFirebaseUserAnswer(String selectedFruit) async {
                     height: 500.0,
                   ),
                 ),
-                Positioned(
-                  top: 12.0,
-                  right: 120.0,
-                  child: Image.asset(
-                    'assets/clock10.png',
-                    width: 100.0,
-                    height: 100.0,
-                  ),
-                ),
+                // Positioned(
+                //   top: 12.0,
+                //   right: 120.0,
+                //   child: Image.asset(
+                //     'assets/clock10.png',
+                //     width: 100.0,
+                //     height: 100.0,
+                //   ),
+                // ),
                 Positioned(
                   bottom: 20.0,
                   right: 20.0,
@@ -425,7 +425,7 @@ void updateFirebaseUserAnswer(String selectedFruit) async {
                   ),
                 ),
                 Positioned(
-                  bottom: 120.0,
+                  bottom: 90.0,
                   left: 220.0,
                   child: Visibility(
                     visible: showFruit && !fruitSelected,

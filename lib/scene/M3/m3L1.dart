@@ -168,19 +168,19 @@ class _M3L1State extends State<M3L1> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Icon(Icons.traffic, color: Colors.blueGrey),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'There are 13 Signals Between Home and The Mall.',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
+              // SizedBox(height: 10),
+              // Row(
+              //   children: [
+              //     Icon(Icons.traffic, color: Colors.blueGrey),
+              //     SizedBox(width: 10),
+              //     Expanded(
+              //       child: Text(
+              //         'There are 13 Signals Between Home and The Mall.',
+              //         style: TextStyle(fontSize: 16),
+              //       ),
+              //     ),
+              //   ],
+              // ),
               SizedBox(height: 10),
               Row(
                 children: [

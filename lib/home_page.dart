@@ -14,35 +14,34 @@ class HomePage extends StatelessWidget {
     final firestore = FirebaseFirestore.instance;
     final modules = ['M1', 'M2', 'M3', 'M4'];
     int totalTrophies = 0;
-int totalPoints = 0;
+    int totalPoints = 0;
 
-for (String module in modules) {
-  final doc = await firestore
-      .collection('users')
-      .doc(uid)
-      .collection('score')
-      .doc(module)
-      .get();
+    for (String module in modules) {
+      final doc = await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('score')
+          .doc(module)
+          .get();
 
-  final data = doc.data();
-  if (data != null) {
-    // Add trophy after ensuring it's casted to int
-    final trophy = data['${module}Trophy'];
-    if (trophy is num) {
-      totalTrophies += trophy.toInt();
-    }
-
-    // Sum all MxLxPoint fields safely
-    data.forEach((key, value) {
-      if (key.startsWith('${module}L') && key.endsWith('Point')) {
-        if (value is num) {
-          totalPoints += value.toInt();
+      final data = doc.data();
+      if (data != null) {
+        // Add trophy after ensuring it's casted to int
+        final trophy = data['${module}Trophy'];
+        if (trophy is num) {
+          totalTrophies += trophy.toInt();
         }
-      }
-    });
-  }
-}
 
+        // Sum all MxLxPoint fields safely
+        data.forEach((key, value) {
+          if (key.startsWith('${module}L') && key.endsWith('Point')) {
+            if (value is num) {
+              totalPoints += value.toInt();
+            }
+          }
+        });
+      }
+    }
 
     return {
       'totalTrophies': totalTrophies,
@@ -89,7 +88,6 @@ for (String module in modules) {
             return Center(child: Text('No user data available'));
           }
 
-          String photoURL = userData['photoURL'] ?? '';
           String username = userData['name'] ?? 'User';
           String capitalizedUsername =
               '${username[0].toUpperCase()}${username.substring(1)}';
@@ -108,66 +106,47 @@ for (String module in modules) {
               final totalTrophies = scoreData['totalTrophies'];
               final totalPoints = scoreData['totalPoints'];
 
-              return Stack(
-                children: [
-                  SingleChildScrollView(
-                    child: Center(
-                      child: Column(
+              return SingleChildScrollView(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 80),
+                      Text(
+                        'Welcome, $capitalizedUsername',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(height: 60),
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(width: 2, color: Colors.blue),
-                            ),
-                            child: CircleAvatar(
-                              radius: 70,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage: photoURL.isNotEmpty
-                                  ? NetworkImage(photoURL)
-                                  : AssetImage('assets/old_male_icon.jpg')
-                                      as ImageProvider,
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            'Welcome, $capitalizedUsername',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              buildCard(Icons.emoji_events,
-                                  '$totalTrophies', Colors.amber),
-                              SizedBox(width: 20),
-                              buildCard(Icons.star, '$totalPoints',
-                                  Colors.yellow),
-                            ],
-                          ),
-                          SizedBox(height: 30),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ModuleSelectionScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              "Let's Play",
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
+                          buildCard(Icons.emoji_events, '$totalTrophies',
+                              Colors.amber),
+                          SizedBox(width: 20),
+                          buildCard(Icons.star, '$totalPoints', Colors.yellow),
                         ],
                       ),
-                    ),
+                      SizedBox(height: 40),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ModuleSelectionScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          "Let's Play",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               );
             },
           );

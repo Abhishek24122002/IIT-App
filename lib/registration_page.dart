@@ -385,9 +385,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'home_page.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -399,39 +396,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  File? _image;
-  String? _imageURL;
+
   String? _selectedGender;
   DateTime? _selectedDate;
   bool _obscurePassword = true;
   bool _passwordValidated = true;
   String _errorMessage = '';
-
-  Future<void> _getImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      }
-    });
-  }
-
-  Future<String> _uploadImage(String userId) async {
-    if (_image == null) return '';
-    try {
-      Reference storageReference = FirebaseStorage.instance
-          .ref()
-          .child('profile_pictures')
-          .child('$userId.jpg');
-      UploadTask uploadTask = storageReference.putFile(_image!);
-      TaskSnapshot snapshot = await uploadTask;
-      return await snapshot.ref.getDownloadURL();
-    } catch (e) {
-      print('Upload Image Error: $e');
-      return '';
-    }
-  }
 
   bool _isPasswordValid(String password) {
     String pattern =
@@ -447,6 +417,26 @@ class _RegistrationPageState extends State<RegistrationPage> {
       contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
     );
+  }
+
+  // 🧩 Initialize Firebase Score Documents for M1–M4
+  Future<void> _initializeUserScores(String uid) async {
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(uid);
+
+    // List of all module IDs
+    final modules = ['M1', 'M2', 'M3', 'M4'];
+
+    // For each module, create a "score" document with default values
+    for (var module in modules) {
+      await userDoc.collection('score').doc(module).set({
+        '${module}Trophy': 0,
+        '${module}L1Point': 0,
+        '${module}L2Point': 0,
+        '${module}L3Point': 0,
+        '${module}L4Point': 0,
+        // Add more fields if your module has more levels
+      });
+    }
   }
 
   @override
@@ -475,13 +465,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 10),
-                  // Logo
                   Image.asset(
                     'assets/logo.png',
                     width: screenWidth * 0.16,
                   ),
                   const SizedBox(height: 5),
-                  // App name
                   Text(
                     "IdeaTool",
                     style: TextStyle(
@@ -498,8 +486,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Form Card
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
@@ -517,29 +503,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Profile Picture
-                        // GestureDetector(
-                        //   onTap: _getImage,
-                        //   child: CircleAvatar(
-                        //     radius: 32,
-                        //     backgroundImage:
-                        //         _image != null ? FileImage(_image!) : null,
-                        //     child: _image == null
-                        //         ? const Icon(Icons.add_a_photo, size: 22)
-                        //         : null,
-                        //   ),
-                        // ),
-                        // const SizedBox(height: 8),
-
-                        // Name Field
+                        // Full Name
                         TextField(
                           controller: nameController,
-                          decoration:
-                              _inputDecoration("Full Name", Icons.person_outline),
+                          decoration: _inputDecoration(
+                              "Full Name", Icons.person_outline),
                         ),
                         const SizedBox(height: 10),
 
-                        // DOB Field
+                        // Date of Birth
                         TextField(
                           readOnly: true,
                           controller: TextEditingController(
@@ -565,10 +537,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         ),
                         const SizedBox(height: 10),
 
-                        // Gender Dropdown
+                        // Gender
                         InputDecorator(
-                          decoration: _inputDecoration(
-                              "Gender", Icons.people_outline),
+                          decoration:
+                              _inputDecoration("Gender", Icons.people_outline),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: _selectedGender,
@@ -590,7 +562,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         ),
                         const SizedBox(height: 10),
 
-                        // Email Field
+                        // Email
                         TextField(
                           controller: emailController,
                           decoration: _inputDecoration(
@@ -598,19 +570,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         ),
                         const SizedBox(height: 10),
 
-                        // Password Field
+                        // Password
                         TextField(
                           controller: passwordController,
                           obscureText: _obscurePassword,
-                          decoration: _inputDecoration(
-                                  "Password", Icons.lock_outline)
-                              .copyWith(
+                          decoration:
+                              _inputDecoration("Password", Icons.lock_outline)
+                                  .copyWith(
                             suffixIcon: IconButton(
                               icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  size: 20),
+                                _obscurePassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                size: 20,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   _obscurePassword = !_obscurePassword;
@@ -642,8 +615,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         // Register Button
                         ElevatedButton(
                           onPressed: () async {
-                            String password =
-                                passwordController.text.trim();
+                            String password = passwordController.text.trim();
                             if (!_isPasswordValid(password)) {
                               setState(() {
                                 _passwordValidated = false;
@@ -652,30 +624,32 @@ class _RegistrationPageState extends State<RegistrationPage> {
                             }
 
                             try {
-                              UserCredential userCredential =
-                                  await FirebaseAuth.instance
-                                      .createUserWithEmailAndPassword(
+                              UserCredential userCredential = await FirebaseAuth
+                                  .instance
+                                  .createUserWithEmailAndPassword(
                                 email: emailController.text.trim(),
                                 password: password,
                               );
 
-                              String photoURL =
-                                  await _uploadImage(userCredential.user!.uid);
-                              _imageURL = photoURL;
+                              String uid = userCredential.user!.uid;
 
+                              // Create user profile document
                               await FirebaseFirestore.instance
                                   .collection('users')
-                                  .doc(userCredential.user!.uid)
+                                  .doc(uid)
                                   .set({
                                 'name': nameController.text.trim(),
                                 'email': emailController.text.trim(),
-                                'photoURL': _imageURL,
                                 'gender': _selectedGender,
                                 'dob': _selectedDate != null
                                     ? Timestamp.fromDate(_selectedDate!)
                                     : null,
                               });
 
+                              // Initialize scores for M1–M4
+                              await _initializeUserScores(uid);
+
+                              // Navigate to Home
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
@@ -684,6 +658,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 ),
                               );
                             } catch (e) {
+                              print('Registration error: $e');
                               setState(() {
                                 _errorMessage =
                                     'Registration failed. Try again later.';
@@ -691,8 +666,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             backgroundColor:
                                 const Color.fromARGB(255, 255, 140, 0),
                             shape: RoundedRectangleBorder(
@@ -714,8 +688,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         OutlinedButton(
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             side: const BorderSide(color: Colors.blue),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),

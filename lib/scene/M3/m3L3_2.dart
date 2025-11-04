@@ -23,7 +23,7 @@ class M3L3_2 extends StatefulWidget {
 class _M3L3_2State extends State<M3L3_2> {
   int collectedOranges = 0;
   bool showPopup = true;
-  int M3L3_2Point = 0;
+  int M3L3_2Score = 0;
   List<Widget> levels = [M3L1(), M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(), M3L4(), M3L4_2()];
   int currentLevelIndex = 4;
 
@@ -65,9 +65,9 @@ class _M3L3_2State extends State<M3L3_2> {
         DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
 
         if (!scoreDocSnapshot.exists) {
-          await scoreDocRef.set({'M3L3_2Point': M3L3_2Point});
+          await scoreDocRef.set({'M3L3_2Score': M3L3_2Score});
         } else {
-          await scoreDocRef.update({'M3L3_2Point': M3L3_2Point});
+          await scoreDocRef.update({'M3L3_2Score': M3L3_2Score});
         }
       }
     } catch (e) {
@@ -212,7 +212,7 @@ class _M3L3_2State extends State<M3L3_2> {
                     collectedOranges++;
                     baskets[basketIndex][i] = '';
                     if (collectedOranges == 10) {
-                      M3L3_2Point = 1;
+                      M3L3_2Score = 1;
                       showLevelCompleteDialog();
                       updateFirebaseDataM3L3_2();
                     }

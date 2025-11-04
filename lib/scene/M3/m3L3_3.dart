@@ -22,7 +22,7 @@ class M3L3_3 extends StatefulWidget {
 class _M3L3_3State extends State<M3L3_3> {
   int collectedApples = 0;
   bool showPopup = true;
-  int M3L3_3Point = 0;
+  int M3L3_3Score = 0;
   List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
   int currentLevelIndex = 5;
 
@@ -109,12 +109,12 @@ class _M3L3_3State extends State<M3L3_3> {
         if (!scoreDocSnapshot.exists) {
           // If the document doesn't exist, create it with the initial score
           await scoreDocRef.set({
-            'M3L3_3Point': M3L3_3Point,
+            'M3L3_3Score': M3L3_3Score,
           });
         } else {
           // If the document exists, update the fields
           await scoreDocRef.update({
-            'M3L3_3Point': M3L3_3Point,
+            'M3L3_3Score': M3L3_3Score,
           });
         }
       }
@@ -276,7 +276,7 @@ class _M3L3_3State extends State<M3L3_3> {
                   collectedApples++;
                   baskets[basketIndex][i] = '';
                   if (collectedApples == 10) {
-                    M3L3_3Point = 1;
+                    M3L3_3Score = 1;
                     showLevelCompleteDialog();
                     updateFirebaseDataM3L3_3();
                   }

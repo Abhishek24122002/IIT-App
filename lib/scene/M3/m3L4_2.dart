@@ -5,8 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
-
-import '../M4/m4L1.dart';
+import 'package:alzymer/module_page.dart';
 
 class M3L4_2 extends StatefulWidget {
   @override
@@ -27,7 +26,7 @@ class _M3L4_2State extends State<M3L4_2> {
   bool showHintOverlay = false;
   int hintStep = 0;
   final int itemsToBuy = 3;
-  int M3L4_2Point = 0;
+  int M3L4_2Score = 0;
   final AudioPlayer _audioPlayer = AudioPlayer();
   String? errorMessage;
 
@@ -64,73 +63,16 @@ class _M3L4_2State extends State<M3L4_2> {
         DocumentReference userDocRef =
             firestore.collection('users').doc(userUid);
         DocumentReference scoreDocRef =
-            userDocRef.collection('score').doc('M5');
+            userDocRef.collection('score').doc('M3');
 
         await scoreDocRef.update({
-          'M3L4_2Point': M3L4_2Point,
+          'M3L4_2Score': M3L4_2Score,
         });
       }
     } catch (e) {
       print('Error updating data: $e');
     }
   }
-
-  // void _showInstructions() {
-  //   showDialog(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('Instructions'),
-  //         content: SingleChildScrollView(
-  //           child: Column(
-  //             children: [
-  //               Text(
-  //                 'You have ₹100 to buy eggs, bread, and flour.\n'
-  //                 'You must buy at least 1 of each item. Maximum amount you can spend is ₹100.\n'
-  //                 'Prices are as follows:',
-  //                 style: TextStyle(fontSize: 16),
-  //               ),
-  //               SizedBox(height: 10),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                 children: [
-  //                   Column(
-  //                     children: [
-  //                       Image.asset('assets/Eggs.png', width: 50, height: 50),
-  //                       Text('eggs: ₹30'),
-  //                     ],
-  //                   ),
-  //                   Column(
-  //                     children: [
-  //                       Image.asset('assets/Bread.png', width: 50, height: 50),
-  //                       Text('bread: ₹20'),
-  //                     ],
-  //                   ),
-  //                   Column(
-  //                     children: [
-  //                       Image.asset('assets/Flour.png', width: 50, height: 50),
-  //                       Text('flour: ₹10'),
-  //                     ],
-  //                   ),
-  //                 ],
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //               _showAnnouncement();
-  //             },
-  //             child: Text('OK'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
   void _showInstructions() {
     showDialog(
       context: context,
@@ -141,7 +83,7 @@ class _M3L4_2State extends State<M3L4_2> {
 
         return AlertDialog(
           title: Text(
-            'Instructions',
+            'Instructions (Scroll to read complete instructions)',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           content: ConstrainedBox(
@@ -718,11 +660,11 @@ class _M3L4_2State extends State<M3L4_2> {
                       onPressed: () {
                         if (_hasBoughtAllItems()) {
                           // ✅ Success case
-                          M3L4_2Point = 1;
+                          M3L4_2Score = 1;
                           updateFirebaseDataM3L4_2();
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => M4L1()),
+                            MaterialPageRoute(builder: (context) => ModuleSelectionScreen()),
                           );
                         } else {
                           // ❌ Show message when requirements not met

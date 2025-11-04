@@ -12,7 +12,12 @@
           "package_name": "com.example.alzymer"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "737994431569-5hmjii0rd111h5ml53lhsc17jui2m2cm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBJN1MfITjT2YY3iZwWMqO2yq9TUmRxPvA"
@@ -20,7 +25,41 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "737994431569-5hmjii0rd111h5ml53lhsc17jui2m2cm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737994431569:android:15a478d4afe65d39a8ec70",
+        "android_client_info": {
+          "package_name": "com.ideatool.alzymer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "737994431569-5hmjii0rd111h5ml53lhsc17jui2m2cm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJN1MfITjT2YY3iZwWMqO2yq9TUmRxPvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "737994431569-5hmjii0rd111h5ml53lhsc17jui2m2cm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

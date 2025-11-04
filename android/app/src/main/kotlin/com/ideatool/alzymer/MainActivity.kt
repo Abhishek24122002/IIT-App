@@ -1,4 +1,4 @@
-package com.example.alzymer
+package com.ideatool.alzymer
 
 import io.flutter.embedding.android.FlutterActivity
 

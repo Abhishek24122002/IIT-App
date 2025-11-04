@@ -38,9 +38,8 @@ class _M3L1State extends State<M3L1> {
   bool islevelcompleted = false; // Flag to track level completion
   bool isPositionLoaded = false; // Flag to track if position is loaded
   String? gender;
-  int Without_timer_Point = 0;
-  // int M3L1Point = 0;
-  List<Widget> levels = [M3L1(),M3L1_2(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
+  int M3L1Point = 0;
+  List<Widget> levels = [M3L1(), M3L2(), M3L3(), M3L3_2(), M3L3_3(),M3L4(),M3L4_2()];
   int currentLevelIndex = 0;
 
   @override
@@ -116,22 +115,26 @@ class _M3L1State extends State<M3L1> {
 
       // Check if the 'M2' document exists
       DocumentSnapshot scoreDocSnapshot = await scoreDocRef.get();
+      int totalSignals = getSignalYPositions().length;
 
       if (!scoreDocSnapshot.exists) {
         // If the document doesn't exist, create it with the initial score
         await scoreDocRef.set({
-          // 'M3L1Point': M3L1Point,
+          'M3L1Point': M3L1Point,
           // 'M3L1_Green_Signal': points,
-          'Without_timer_Point': Without_timer_Point,
+          
+
           'Without_timer_Green_Signal': points,
+          'M3L1_Total_Signal': totalSignals,
         });
       } else {
         // If the document exists, update the fields
         await scoreDocRef.update({
-          // 'M3L1Point': M3L1Point,
+          'M3L1Point': M3L1Point,
           // 'M3L1_Green_Signal': points,
-          'Without_timer_Point': Without_timer_Point,
+
           'Without_timer_Green_Signal': points,
+          'M3L1_Total_Signal': totalSignals,
         });
       }
     }
@@ -497,16 +500,22 @@ void dispose() {
     double mallPositionY = 0.0; 
 
     // Check if the character has crossed all signals
-    if (points >= getSignalYPositions().length) {
-      showCongratulationsPopup(context);
-      
-    }
+    if (points >= getSignalYPositions().length && !islevelcompleted) {
+  M3L1Point = 1;
+
+  updateFirebaseDataM3L1();
+  showCongratulationsPopup(context);
+}
+
     bool hasReachedMall =
           characterPosition!.dy <= (mallPositionY + 100); // Add some buffer to ensure condition is met
+          
 
+int totalSignals = getSignalYPositions().length;
       if (hasReachedMall) {
-        // M3L1Point=1;
-        Without_timer_Point=1;
+        M3L1Point=1;
+        M3L1_Total_Signal: totalSignals;
+
        
         updateFirebaseDataM3L1();
         Future.delayed(Duration.zero, () => showCongratulationsPopup(context));

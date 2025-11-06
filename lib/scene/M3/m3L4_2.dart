@@ -368,10 +368,10 @@ class _M3L4_2State extends State<M3L4_2> {
                 else if (userResponse.isEmpty) ...[
                   TextButton(
                     onPressed: () {
-                      addConversation("How are you?",
+                      addConversation("I am fine, How are you?",
                           "I am also fine! What are you doing here?");
                     },
-                    child: Text('Ask "How are you?"'),
+                    child: Text('Answer & Ask "How are you?"'),
                   ),
                   TextButton(
                     onPressed: () {

@@ -14,7 +14,6 @@ import 'package:alzymer/ScoreManager.dart';
 import 'M2L4.dart';
 import 'm2L2.dart';
 import 'm2L3.dart';
-import 'm2L5.dart';
 
 // buttons
 import 'package:alzymer/components/start_button.dart';

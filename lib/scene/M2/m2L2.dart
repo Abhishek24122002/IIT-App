@@ -2,8 +2,6 @@
 // import 'package:alzymer/ScoreManagerModule.dart';
 import 'package:alzymer/scene/M2/M2L3.dart';
 import 'package:alzymer/scene/M2/M2L4.dart';
-import 'package:alzymer/scene/M2/m2L2.dart';
-import 'package:alzymer/scene/M2/m2L5.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';

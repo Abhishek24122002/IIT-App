@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:alzymer/scene/M3/M3L3.dart';
 import 'package:alzymer/scene/M3/M3L4.dart';
-import 'package:alzymer/scene/M3/m3L2_old.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
